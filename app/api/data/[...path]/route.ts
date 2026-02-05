@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = 'edge';
+
 const CONFIG = {
   instance: process.env.NCB_INSTANCE!,
   dataApiUrl: process.env.NCB_DATA_API_URL!,
