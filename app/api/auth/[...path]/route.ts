@@ -2,31 +2,53 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = 'edge';
 
-const CONFIG = {
-  instance: process.env.NCB_INSTANCE!,
-  apiUrl: process.env.NCB_AUTH_API_URL!,
-};
+function getConfig() {
+  const instance = process.env.NCB_INSTANCE;
+  const apiUrl = process.env.NCB_AUTH_API_URL;
+
+  if (!instance || !apiUrl) {
+    throw new Error(`Missing environment variables: NCB_INSTANCE=${instance ? 'set' : 'MISSING'}, NCB_AUTH_API_URL=${apiUrl ? 'set' : 'MISSING'}`);
+  }
+
+  return { instance, apiUrl };
+}
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { path } = await params;
-  return proxy(req, path.join("/"));
+  try {
+    const { path } = await params;
+    return proxy(req, path.join("/"));
+  } catch (error) {
+    console.error('Auth GET error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { path } = await params;
-  const pathStr = path.join("/");
+  try {
+    const { path } = await params;
+    const pathStr = path.join("/");
 
-  if (pathStr === "sign-out") {
-    return handleSignOut(req);
+    if (pathStr === "sign-out") {
+      return handleSignOut(req);
+    }
+
+    return proxy(req, pathStr, await req.text());
+  } catch (error) {
+    console.error('Auth POST error:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Internal Server Error' },
+      { status: 500 }
+    );
   }
-
-  return proxy(req, pathStr, await req.text());
 }
 
 function extractAuthCookies(cookieHeader: string): string {
@@ -77,6 +99,7 @@ function transformSetCookieForLocalhost(cookie: string): string {
 }
 
 async function handleSignOut(req: NextRequest) {
+  const config = getConfig();
   const response = new NextResponse(JSON.stringify({ success: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
@@ -84,8 +107,8 @@ async function handleSignOut(req: NextRequest) {
 
   try {
     const searchParams = new URLSearchParams();
-    searchParams.set("Instance", CONFIG.instance);
-    const url = `${CONFIG.apiUrl}/sign-out?${searchParams.toString()}`;
+    searchParams.set("Instance", config.instance);
+    const url = `${config.apiUrl}/sign-out?${searchParams.toString()}`;
     const origin = req.headers.get("origin") || req.nextUrl.origin;
     const authCookies = extractAuthCookies(req.headers.get("cookie") || "");
 
@@ -93,7 +116,7 @@ async function handleSignOut(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Database-Instance": CONFIG.instance,
+        "X-Database-Instance": config.instance,
         Cookie: authCookies,
         Origin: origin,
       },
@@ -127,9 +150,10 @@ async function handleSignOut(req: NextRequest) {
 }
 
 async function proxy(req: NextRequest, path: string, body?: string) {
+  const config = getConfig();
   const searchParams = new URLSearchParams();
-  searchParams.set("Instance", CONFIG.instance);
-  const url = `${CONFIG.apiUrl}/${path}?${searchParams.toString()}`;
+  searchParams.set("Instance", config.instance);
+  const url = `${config.apiUrl}/${path}?${searchParams.toString()}`;
   const origin = req.headers.get("origin") || req.nextUrl.origin;
 
   const authCookies = extractAuthCookies(req.headers.get("cookie") || "");
@@ -138,7 +162,7 @@ async function proxy(req: NextRequest, path: string, body?: string) {
     method: req.method,
     headers: {
       "Content-Type": "application/json",
-      "X-Database-Instance": CONFIG.instance,
+      "X-Database-Instance": config.instance,
       Cookie: authCookies,
       Origin: origin,
     },
