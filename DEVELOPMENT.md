@@ -1,6 +1,6 @@
 # AI SMB CRM - Development Guide
 
-> **Domain:** `app.kreation.com`
+> **Domain:** `app.kre8tion.com`
 > **Database:** NoCodeBackend instance `36905_ai_smb_crm`
 > **Stack:** Next.js 15 + TypeScript + Tailwind CSS 4 + Cloudflare Pages
 
@@ -29,7 +29,7 @@ This document outlines extension points and patterns for developing new features
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        FRONTEND                                  │
-│  app.kreation.com (Cloudflare Pages)                            │
+│  app.kre8tion.com (Cloudflare Pages)                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
@@ -992,7 +992,7 @@ NCB_DATA_API_URL=https://app.nocodebackend.com/api/data
 
 ### Domain Setup
 
-1. Add custom domain `app.kreation.com` in Cloudflare Pages
+1. Add custom domain `app.kre8tion.com` in Cloudflare Pages
 2. Add DNS CNAME record pointing to Cloudflare Pages
 3. Enable SSL/TLS
 

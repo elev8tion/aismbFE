@@ -616,7 +616,7 @@ Hi [Customer Name],
 You've been invited to access your partnership dashboard at AI SMB Partners.
 
 Click below to create your account:
-[Create Account Button] → https://app.kreation.com/portal/invite?token=xxx
+[Create Account Button] → https://app.kre8tion.com/portal/invite?token=xxx
 
 What you'll be able to see:
 • Your partnership progress and current phase

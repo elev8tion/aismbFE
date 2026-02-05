@@ -113,7 +113,7 @@ export default function LoginPage() {
         {/* Back to landing */}
         <div className="mt-6 text-center">
           <a
-            href="https://kreation.com"
+            href="https://kre8tion.com"
             className="text-sm text-white/40 hover:text-white/60 transition-colors"
           >
             ← Back to AI SMB Partners

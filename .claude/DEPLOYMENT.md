@@ -5,17 +5,17 @@
 | Setting | Value |
 |---------|-------|
 | **Project Name** | `ai-smb-crm` |
-| **Production URL** | https://app.kreation.com |
+| **Production URL** | https://app.kre8tion.com |
 | **GitHub Repository** | https://github.com/elev8tion/aismbFE.git |
 | **Database** | NoCodeBackend `36905_ai_smb_crm` |
-| **Related Project** | Landing Page at https://kreation.com |
+| **Related Project** | Landing Page at https://kre8tion.com |
 
 ---
 
 ## Architecture Overview
 
 ```
-kreation.com (Landing Page)          app.kreation.com (CRM)
+kre8tion.com (Landing Page)          app.kre8tion.com (CRM)
 ├── ai-smb-partners/                 ├── ai_smb_crm_frontend/
 ├── Cloudflare: kre8tion-app         ├── Cloudflare: ai-smb-crm
 ├── Voice Agent + ROI Calculator     ├── Dashboard + Pipeline + Leads
@@ -43,8 +43,8 @@ npx wrangler pages deploy .vercel/output/static --project-name=ai-smb-crm --comm
 
 1. Go to Cloudflare Dashboard → Workers & Pages → ai-smb-crm
 2. Click "Custom domains" tab
-3. Add `app.kreation.com`
-4. Cloudflare will auto-configure DNS if kreation.com is managed there
+3. Add `app.kre8tion.com`
+4. Cloudflare will auto-configure DNS if kre8tion.com is managed there
 
 ### 3. Set Environment Variables
 
@@ -150,7 +150,7 @@ npm run dev
 ### Lead Flow
 
 ```
-Landing Page (kreation.com)
+Landing Page (kre8tion.com)
     │
     ├── Voice Agent Session → POST /api/webhooks/voice-agent
     │                               ↓
@@ -160,7 +160,7 @@ Landing Page (kreation.com)
                                     ↓
                             CRM Database (NCB)
                                     ↓
-                            CRM Dashboard (app.kreation.com)
+                            CRM Dashboard (app.kre8tion.com)
 ```
 
 ### Webhook Endpoints (To Implement)
@@ -228,5 +228,5 @@ VALUES ('connect@elev8tion.one', 'admin', 'Admin', 'America/New_York');
 - **Cloudflare Dashboard:** https://dash.cloudflare.com
 - **NoCodeBackend Dashboard:** https://app.nocodebackend.com
 - **GitHub Repository:** https://github.com/elev8tion/aismbFE
-- **CRM (Production):** https://app.kreation.com
-- **Landing Page (Production):** https://kreation.com
+- **CRM (Production):** https://app.kre8tion.com
+- **Landing Page (Production):** https://kre8tion.com
