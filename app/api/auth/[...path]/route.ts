@@ -107,7 +107,7 @@ async function handleSignOut(req: NextRequest) {
 
   try {
     const searchParams = new URLSearchParams();
-    searchParams.set("Instance", config.instance);
+    searchParams.set("instance", config.instance);
     const url = `${config.apiUrl}/sign-out?${searchParams.toString()}`;
     const origin = req.headers.get("origin") || req.nextUrl.origin;
     const authCookies = extractAuthCookies(req.headers.get("cookie") || "");
@@ -152,7 +152,7 @@ async function handleSignOut(req: NextRequest) {
 async function proxy(req: NextRequest, path: string, body?: string) {
   const config = getConfig();
   const searchParams = new URLSearchParams();
-  searchParams.set("Instance", config.instance);
+  searchParams.set("instance", config.instance);
   const url = `${config.apiUrl}/${path}?${searchParams.toString()}`;
   const origin = req.headers.get("origin") || req.nextUrl.origin;
 
