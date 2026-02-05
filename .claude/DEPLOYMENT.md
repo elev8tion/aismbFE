@@ -205,21 +205,91 @@ npx wrangler pages deployment tail --project-name=ai-smb-crm
 
 ---
 
-## First Admin Setup
+## NoCodeBackend Authentication
 
-The CRM uses role-based access control. The first user to sign in with `connect@elev8tion.one` will automatically be assigned the `admin` role.
+### CRITICAL: API Parameter Case Sensitivity
 
-**How it works:**
-1. User signs in via NoCodeBackend auth
-2. `usePermissions` hook checks for user_profile record
-3. If no profile exists and email is `connect@elev8tion.one`, creates admin profile
-4. Otherwise, creates customer profile (default role)
+**NCB requires lowercase `instance` parameter, NOT `Instance`.**
 
-**Manual admin setup via SQL (if needed):**
-```sql
-INSERT INTO user_profiles (user_id, role, display_name, timezone)
-VALUES ('connect@elev8tion.one', 'admin', 'Admin', 'America/New_York');
+```bash
+# CORRECT
+?instance=36905_ai_smb_crm
+
+# WRONG - will return "Missing instance parameter"
+?Instance=36905_ai_smb_crm
 ```
+
+### Enable Email/Password Auth
+
+Before users can sign up/sign in, the credential provider must be enabled:
+
+```sql
+-- Run via NCB MCP server or dashboard
+INSERT INTO ncba_config (id, provider, enabled, created_at, updated_at)
+VALUES (UUID(), 'credential', 1, NOW(), NOW());
+```
+
+Verify auth is enabled:
+```bash
+curl -s "https://app.nocodebackend.com/api/user-auth/providers?instance=36905_ai_smb_crm"
+# Should return: {"providers":{"email":true,"credential":true,...}}
+```
+
+### Creating Users
+
+**NEVER manually insert into `ncba_user` or `ncba_account` tables.**
+
+Always use the NCB sign-up API:
+
+```bash
+curl -X POST "https://app.nocodebackend.com/api/user-auth/sign-up/email?instance=36905_ai_smb_crm" \
+  -H "Content-Type: application/json" \
+  -H "X-Database-Instance: 36905_ai_smb_crm" \
+  -d '{"name":"Admin","email":"connect@elev8tion.one","password":"YourPassword123"}'
+```
+
+The API returns the user ID which you then use for role assignment:
+```json
+{"token":"...","user":{"id":"GlF8YbrMWMq3YsUF3jlLovv3VtKsWyQp","email":"connect@elev8tion.one",...}}
+```
+
+### Assigning Admin Role
+
+After creating a user via the sign-up API, assign their role:
+
+```sql
+INSERT INTO user_profiles (user_id, role, display_name, timezone, created_at, updated_at)
+VALUES ('<USER_ID_FROM_SIGNUP>', 'admin', 'Admin', 'America/New_York', NOW(), NOW());
+```
+
+### Debugging Auth Issues
+
+1. **"Missing instance parameter"** → Use lowercase `instance` not `Instance`
+2. **500 Internal Server Error on sign-up** → Check `ncba_config` has credential provider enabled
+3. **Empty JSON response** → Check Cloudflare environment variables are set for Production
+4. **"Unexpected end of JSON input"** → API returning empty response, check env vars
+
+Test auth directly:
+```bash
+# Test providers endpoint
+curl "https://app.nocodebackend.com/api/user-auth/providers?instance=36905_ai_smb_crm"
+
+# Test sign-in
+curl -X POST "https://app.nocodebackend.com/api/user-auth/sign-in/email?instance=36905_ai_smb_crm" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your@email.com","password":"yourpassword"}'
+```
+
+---
+
+## Current Admin Account
+
+| Setting | Value |
+|---------|-------|
+| **Email** | `connect@elev8tion.one` |
+| **Password** | `TestAdmin123` |
+| **Role** | `admin` |
+| **User ID** | `GlF8YbrMWMq3YsUF3jlLovv3VtKsWyQp` |
 
 ---
 
