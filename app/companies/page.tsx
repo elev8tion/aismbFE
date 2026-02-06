@@ -15,8 +15,8 @@ export default function CompaniesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+      <div className="page-content">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.companies}</h1>
             <p className="text-sm md:text-base text-white/60 mt-1">{companies.length} companies</p>
@@ -27,7 +27,7 @@ export default function CompaniesPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-gap)]">
           {companies.map((company) => (
             <div key={company.id} className="card card-interactive">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">

@@ -11,9 +11,9 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="page-content">
         {/* Header */}
-        <div className="mb-6 md:mb-8">
+        <div className="mb-[var(--space-section)]">
           <h1 className="text-xl md:text-2xl font-bold text-white">{t.dashboard.title}</h1>
           <p className="text-sm md:text-base text-white/60 mt-1">
             {t.dashboard.welcome}, {user?.name || 'User'}
@@ -21,7 +21,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6 mb-6 md:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[var(--space-gap)] mb-[var(--space-section)]">
           <StatCard
             label={t.dashboard.newLeads}
             value="127"
@@ -53,7 +53,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[var(--space-gap)]">
           {/* Recent Activity */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
@@ -120,12 +120,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Pipeline Overview */}
-        <div className="card mt-4 md:mt-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6">
+        <div className="card mt-[var(--space-gap)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-[var(--space-gap)]">
             <h2 className="text-base md:text-lg font-semibold text-white">Pipeline Overview</h2>
             <button className="btn-secondary text-sm w-full sm:w-auto">View Pipeline</button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[var(--space-gap)]">
             <PipelineStage label="New Lead" count={12} value="$48,000" color="stage-new" />
             <PipelineStage label="Contacted" count={8} value="$32,000" color="stage-contacted" />
             <PipelineStage label="Discovery" count={6} value="$54,000" color="stage-discovery" />

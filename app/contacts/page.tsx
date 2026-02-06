@@ -16,8 +16,8 @@ export default function ContactsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+      <div className="page-content">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.contacts}</h1>
             <p className="text-sm md:text-base text-white/60 mt-1">{contacts.length} contacts</p>
@@ -28,7 +28,7 @@ export default function ContactsPage() {
           </button>
         </div>
 
-        <div className="card overflow-hidden -mx-4 md:mx-0 rounded-none md:rounded-2xl">
+        <div className="card overflow-hidden -mx-[var(--space-page)] md:mx-0 rounded-none md:rounded-2xl">
           <div className="overflow-x-auto">
           <table className="table-glass">
             <thead>

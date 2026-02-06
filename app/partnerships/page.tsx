@@ -14,13 +14,13 @@ export default function PartnershipsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="mb-6 md:mb-8">
+      <div className="page-content">
+        <div className="mb-[var(--space-section)]">
           <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.partnerships}</h1>
           <p className="text-sm md:text-base text-white/60 mt-1">{partnerships.length} active partnerships</p>
         </div>
 
-        <div className="space-y-4 md:space-y-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-gap)' }}>
           {partnerships.map((partnership) => (
             <div key={partnership.id} className="card">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -44,7 +44,7 @@ export default function PartnershipsPage() {
                 </div>
               </div>
 
-              <div className="mt-4 md:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <div className="mt-[var(--space-gap)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--space-gap)]">
                 {/* Phase Progress */}
                 <div>
                   <p className="text-xs md:text-sm text-white/50 mb-2">Current Phase</p>

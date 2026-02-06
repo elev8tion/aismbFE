@@ -18,9 +18,9 @@ export default function LeadsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="page-content">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">{t.leads.title}</h1>
             <p className="text-sm md:text-base text-white/60 mt-1">{leads.length} total leads</p>
@@ -32,7 +32,7 @@ export default function LeadsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-4 md:mb-6">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 mb-[var(--space-gap)]">
           <div className="flex bg-white/5 rounded-xl p-1 overflow-x-auto">
             {['all', 'new', 'contacted', 'qualified', 'converted'].map((f) => (
               <button
@@ -57,7 +57,7 @@ export default function LeadsPage() {
         </div>
 
         {/* Table */}
-        <div className="card overflow-hidden -mx-4 md:mx-0 rounded-none md:rounded-2xl">
+        <div className="card overflow-hidden -mx-[var(--space-page)] md:mx-0 rounded-none md:rounded-2xl">
           <div className="overflow-x-auto">
           <table className="table-glass">
             <thead>

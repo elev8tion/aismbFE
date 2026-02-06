@@ -10,8 +10,8 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 lg:p-8 max-w-4xl">
-        <h1 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">{t.nav.settings}</h1>
+      <div className="page-content max-w-4xl">
+        <h1 className="text-xl md:text-2xl font-bold text-white mb-[var(--space-section)]">{t.nav.settings}</h1>
 
         {/* Profile Section */}
         <div className="card mb-6">

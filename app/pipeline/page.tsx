@@ -33,9 +33,9 @@ export default function PipelinePage() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="page-content">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">{t.pipeline.title}</h1>
             <p className="text-sm md:text-base text-white/60 mt-1">
@@ -49,7 +49,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Pipeline Board */}
-        <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex gap-[var(--space-gap)] overflow-x-auto pb-4 -mx-[var(--space-page)] px-[var(--space-page)] md:mx-0 md:px-0">
           {stages.map((stage) => {
             const stageValue = stage.deals.reduce((sum, deal) => sum + deal.value, 0);
             return (
