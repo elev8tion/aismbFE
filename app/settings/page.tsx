@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function SettingsPage() {
   const { t, language, setLanguage } = useTranslations();
@@ -11,7 +12,7 @@ export default function SettingsPage() {
   return (
     <DashboardLayout>
       <div className="page-content max-w-4xl">
-        <h1 className="text-xl md:text-2xl font-bold text-white mb-[var(--space-section)]">{t.nav.settings}</h1>
+        <PageHeader title={t.nav.settings} />
 
         {/* Profile Section */}
         <div className="card mb-6">

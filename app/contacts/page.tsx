@@ -2,6 +2,8 @@
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
+import { PlusIcon, EmailIcon, PhoneIcon, EditIcon } from '@/components/icons';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function ContactsPage() {
   const { t } = useTranslations();
@@ -17,16 +19,16 @@ export default function ContactsPage() {
   return (
     <DashboardLayout>
       <div className="page-content">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.contacts}</h1>
-            <p className="text-sm md:text-base text-white/60 mt-1">{contacts.length} {t.contacts.contactsCount}</p>
-          </div>
-          <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
-            <PlusIcon className="w-5 h-5" />
-            {t.contacts.addContact}
-          </button>
-        </div>
+        <PageHeader
+          title={t.nav.contacts}
+          subtitle={<>{contacts.length} {t.contacts.contactsCount}</>}
+          action={
+            <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
+              <PlusIcon className="w-5 h-5" />
+              {t.contacts.addContact}
+            </button>
+          }
+        />
 
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
@@ -89,34 +91,3 @@ export default function ContactsPage() {
   );
 }
 
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
-  );
-}
-
-function EmailIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-  );
-}
-
-function PhoneIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-    </svg>
-  );
-}
-
-function EditIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-    </svg>
-  );
-}

@@ -2,6 +2,9 @@
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
+import { PlusIcon } from '@/components/icons';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { DotRating } from '@/components/ui/ProgressBar';
 
 export default function CompaniesPage() {
   const { t } = useTranslations();
@@ -16,16 +19,16 @@ export default function CompaniesPage() {
   return (
     <DashboardLayout>
       <div className="page-content">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.companies}</h1>
-            <p className="text-sm md:text-base text-white/60 mt-1">{companies.length} {t.companies.companiesCount}</p>
-          </div>
-          <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
-            <PlusIcon className="w-5 h-5" />
-            {t.companies.addCompany}
-          </button>
-        </div>
+        <PageHeader
+          title={t.nav.companies}
+          subtitle={<>{companies.length} {t.companies.companiesCount}</>}
+          action={
+            <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
+              <PlusIcon className="w-5 h-5" />
+              {t.companies.addCompany}
+            </button>
+          }
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-gap)]">
           {companies.map((company) => (
@@ -41,19 +44,7 @@ export default function CompaniesPage() {
               <div className="mt-4 pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-white/50">{t.companies.aiMaturityScore}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <div
-                          key={n}
-                          className={`w-2 h-2 rounded-full ${
-                            n <= company.aiScore ? 'bg-primary-electricBlue' : 'bg-white/10'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-white/60">{company.aiScore}/5</span>
-                  </div>
+                  <DotRating value={company.aiScore} />
                 </div>
 
                 <div className="flex items-center justify-between text-sm mt-2">
@@ -78,10 +69,3 @@ export default function CompaniesPage() {
   );
 }
 
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
-  );
-}

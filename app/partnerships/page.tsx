@@ -2,6 +2,9 @@
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
+import { getTierClass, getPartnershipStatusClass, getHealthColor } from '@/lib/utils/statusClasses';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { StepProgress } from '@/components/ui/ProgressBar';
 
 export default function PartnershipsPage() {
   const { t } = useTranslations();
@@ -15,10 +18,10 @@ export default function PartnershipsPage() {
   return (
     <DashboardLayout>
       <div className="page-content">
-        <div className="mb-[var(--space-section)]">
-          <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.partnerships}</h1>
-          <p className="text-sm md:text-base text-white/60 mt-1">{partnerships.length} {t.partnerships.activePartnerships}</p>
-        </div>
+        <PageHeader
+          title={t.nav.partnerships}
+          subtitle={<>{partnerships.length} {t.partnerships.activePartnerships}</>}
+        />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-gap)' }}>
           {partnerships.map((partnership) => (
@@ -30,7 +33,7 @@ export default function PartnershipsPage() {
                     <span className={`tag ${getTierClass(partnership.tier)}`}>
                       {partnership.tier}
                     </span>
-                    <span className={`tag ${getStatusClass(partnership.status)}`}>
+                    <span className={`tag ${getPartnershipStatusClass(partnership.status)}`}>
                       {partnership.status}
                     </span>
                   </div>
@@ -48,18 +51,10 @@ export default function PartnershipsPage() {
                 {/* Phase Progress */}
                 <div>
                   <p className="text-xs md:text-sm text-white/50 mb-2">{t.partnerships.currentPhase}</p>
-                  <div className="flex gap-2">
-                    {['discover', 'co-create', 'deploy', 'independent'].map((phase, i) => (
-                      <div
-                        key={phase}
-                        className={`flex-1 h-2 rounded-full ${
-                          i <= getPhaseIndex(partnership.phase)
-                            ? 'bg-primary-electricBlue'
-                            : 'bg-white/10'
-                        }`}
-                      />
-                    ))}
-                  </div>
+                  <StepProgress
+                    steps={['discover', 'co-create', 'deploy', 'independent']}
+                    currentStep={partnership.phase}
+                  />
                   <p className="text-xs md:text-sm text-white mt-1 capitalize">{partnership.phase.replace('-', ' ')}</p>
                 </div>
 
@@ -86,31 +81,3 @@ export default function PartnershipsPage() {
   );
 }
 
-function getPhaseIndex(phase: string) {
-  const phases = ['discover', 'co-create', 'deploy', 'independent'];
-  return phases.indexOf(phase);
-}
-
-function getTierClass(tier: string) {
-  switch (tier) {
-    case 'discovery': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    case 'foundation': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-    case 'architect': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    default: return '';
-  }
-}
-
-function getStatusClass(status: string) {
-  switch (status) {
-    case 'onboarding': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-    case 'active': return 'tag-success';
-    case 'graduated': return 'bg-green-500/20 text-green-400 border-green-500/30';
-    default: return '';
-  }
-}
-
-function getHealthColor(health: number) {
-  if (health >= 80) return 'text-green-400';
-  if (health >= 60) return 'text-yellow-400';
-  return 'text-red-400';
-}

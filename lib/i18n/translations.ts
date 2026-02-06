@@ -2,6 +2,7 @@ export interface Translations {
   // Navigation
   nav: {
     dashboard: string;
+    bookings: string;
     leads: string;
     pipeline: string;
     companies: string;
@@ -128,6 +129,53 @@ export interface Translations {
     healthWarnings: string;
     saveChanges: string;
   };
+  // Bookings
+  bookings: {
+    title: string;
+    subtitle: string;
+    totalBookings: string;
+    upcoming: string;
+    past: string;
+    all: string;
+    pending: string;
+    confirmed: string;
+    cancelled: string;
+    guest: string;
+    date: string;
+    time: string;
+    status: string;
+    noBookings: string;
+    confirmBooking: string;
+    cancelBooking: string;
+    viewDetails: string;
+    availability: string;
+    availabilitySubtitle: string;
+    weeklyHours: string;
+    blockedDates: string;
+    addBlockedDate: string;
+    removeBlockedDate: string;
+    available: string;
+    unavailable: string;
+    startTime: string;
+    endTime: string;
+    reason: string;
+    monday: string;
+    tuesday: string;
+    wednesday: string;
+    thursday: string;
+    friday: string;
+    saturday: string;
+    sunday: string;
+    saved: string;
+    saveAvailability: string;
+    bookingConfirmed: string;
+    bookingCancelled: string;
+    notes: string;
+    phone: string;
+    timezone: string;
+    duration: string;
+    minutesShort: string;
+  };
   // Common
   common: {
     search: string;
@@ -174,6 +222,7 @@ export const translations: Record<'en' | 'es', Translations> = {
   en: {
     nav: {
       dashboard: 'Dashboard',
+      bookings: 'Bookings',
       leads: 'Leads',
       pipeline: 'Pipeline',
       companies: 'Companies',
@@ -293,6 +342,52 @@ export const translations: Record<'en' | 'es', Translations> = {
       healthWarnings: 'Partnership health warnings',
       saveChanges: 'Save Changes',
     },
+    bookings: {
+      title: 'Bookings',
+      subtitle: 'Manage your strategy call bookings',
+      totalBookings: 'total bookings',
+      upcoming: 'Upcoming',
+      past: 'Past',
+      all: 'All',
+      pending: 'Pending',
+      confirmed: 'Confirmed',
+      cancelled: 'Cancelled',
+      guest: 'Guest',
+      date: 'Date',
+      time: 'Time',
+      status: 'Status',
+      noBookings: 'No bookings found',
+      confirmBooking: 'Confirm',
+      cancelBooking: 'Cancel',
+      viewDetails: 'View Details',
+      availability: 'Availability',
+      availabilitySubtitle: 'Set your weekly hours and blocked dates',
+      weeklyHours: 'Weekly Hours',
+      blockedDates: 'Blocked Dates',
+      addBlockedDate: 'Block Date',
+      removeBlockedDate: 'Remove',
+      available: 'Available',
+      unavailable: 'Unavailable',
+      startTime: 'Start',
+      endTime: 'End',
+      reason: 'Reason',
+      monday: 'Monday',
+      tuesday: 'Tuesday',
+      wednesday: 'Wednesday',
+      thursday: 'Thursday',
+      friday: 'Friday',
+      saturday: 'Saturday',
+      sunday: 'Sunday',
+      saved: 'Changes saved',
+      saveAvailability: 'Save Availability',
+      bookingConfirmed: 'Booking confirmed',
+      bookingCancelled: 'Booking cancelled',
+      notes: 'Notes',
+      phone: 'Phone',
+      timezone: 'Timezone',
+      duration: 'Duration',
+      minutesShort: 'min',
+    },
     common: {
       search: 'Search...',
       filter: 'Filter',
@@ -335,6 +430,7 @@ export const translations: Record<'en' | 'es', Translations> = {
   es: {
     nav: {
       dashboard: 'Panel',
+      bookings: 'Reservas',
       leads: 'Prospectos',
       pipeline: 'Pipeline',
       companies: 'Empresas',
@@ -453,6 +549,52 @@ export const translations: Record<'en' | 'es', Translations> = {
       voiceAlerts: 'Alertas de sesiones de voz',
       healthWarnings: 'Advertencias de salud de asociaciones',
       saveChanges: 'Guardar Cambios',
+    },
+    bookings: {
+      title: 'Reservas',
+      subtitle: 'Gestiona tus reservas de llamadas estratégicas',
+      totalBookings: 'reservas en total',
+      upcoming: 'Próximas',
+      past: 'Pasadas',
+      all: 'Todas',
+      pending: 'Pendiente',
+      confirmed: 'Confirmada',
+      cancelled: 'Cancelada',
+      guest: 'Invitado',
+      date: 'Fecha',
+      time: 'Hora',
+      status: 'Estado',
+      noBookings: 'No se encontraron reservas',
+      confirmBooking: 'Confirmar',
+      cancelBooking: 'Cancelar',
+      viewDetails: 'Ver Detalles',
+      availability: 'Disponibilidad',
+      availabilitySubtitle: 'Configura tu horario semanal y fechas bloqueadas',
+      weeklyHours: 'Horario Semanal',
+      blockedDates: 'Fechas Bloqueadas',
+      addBlockedDate: 'Bloquear Fecha',
+      removeBlockedDate: 'Eliminar',
+      available: 'Disponible',
+      unavailable: 'No Disponible',
+      startTime: 'Inicio',
+      endTime: 'Fin',
+      reason: 'Motivo',
+      monday: 'Lunes',
+      tuesday: 'Martes',
+      wednesday: 'Miércoles',
+      thursday: 'Jueves',
+      friday: 'Viernes',
+      saturday: 'Sábado',
+      sunday: 'Domingo',
+      saved: 'Cambios guardados',
+      saveAvailability: 'Guardar Disponibilidad',
+      bookingConfirmed: 'Reserva confirmada',
+      bookingCancelled: 'Reserva cancelada',
+      notes: 'Notas',
+      phone: 'Teléfono',
+      timezone: 'Zona Horaria',
+      duration: 'Duración',
+      minutesShort: 'min',
     },
     common: {
       search: 'Buscar...',

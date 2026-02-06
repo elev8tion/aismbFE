@@ -2,6 +2,9 @@
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
+import { PlusIcon } from '@/components/icons';
+import { getTierClass } from '@/lib/utils/statusClasses';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function PipelinePage() {
   const { t } = useTranslations();
@@ -34,19 +37,16 @@ export default function PipelinePage() {
   return (
     <DashboardLayout>
       <div className="page-content">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-white">{t.pipeline.title}</h1>
-            <p className="text-sm md:text-base text-white/60 mt-1">
-              {t.pipeline.totalPipelineValue}: <span className="text-white font-semibold">${totalValue.toLocaleString()}</span>
-            </p>
-          </div>
-          <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
-            <PlusIcon className="w-5 h-5" />
-            {t.pipeline.newOpportunity}
-          </button>
-        </div>
+        <PageHeader
+          title={t.pipeline.title}
+          subtitle={<>{t.pipeline.totalPipelineValue}: <span className="text-white font-semibold">${totalValue.toLocaleString()}</span></>}
+          action={
+            <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
+              <PlusIcon className="w-5 h-5" />
+              {t.pipeline.newOpportunity}
+            </button>
+          }
+        />
 
         {/* Pipeline Board */}
         <div className="flex gap-[var(--space-gap)] overflow-x-auto pb-4 -mx-[var(--space-page)] px-[var(--space-page)] md:mx-0 md:px-0">
@@ -97,19 +97,4 @@ export default function PipelinePage() {
   );
 }
 
-function getTierClass(tier: string) {
-  switch (tier) {
-    case 'discovery': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    case 'foundation': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-    case 'architect': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    default: return '';
-  }
-}
 
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-    </svg>
-  );
-}
