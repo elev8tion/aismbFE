@@ -57,9 +57,9 @@ export default function LeadsPage() {
         </div>
 
         {/* Table */}
-        <div className="card overflow-hidden -mx-[var(--space-page)] md:mx-0 rounded-none md:rounded-2xl">
+        <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-          <table className="table-glass">
+          <table className="table-glass min-w-[600px]">
             <thead>
               <tr>
                 <th>Name</th>
