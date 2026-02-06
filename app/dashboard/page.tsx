@@ -8,6 +8,7 @@ import { TaskItem } from '@/components/ui/TaskItem';
 import { PipelineStage } from '@/components/ui/PipelineStage';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
 import {
   LeadsStatIcon, PipelineStatIcon, PartnersStatIcon, RevenueIcon,
   VoiceIcon, CalculatorIcon, PhoneIcon, EmailIcon,
@@ -63,7 +64,7 @@ export default function DashboardPage() {
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.recentActivity}</h2>
-              <button className="btn-ghost text-sm">{t.dashboard.viewAll}</button>
+              <Link href="/voice-sessions" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
             </div>
             <div className="space-y-4">
               <ActivityItem
@@ -97,7 +98,7 @@ export default function DashboardPage() {
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.tasksDueToday}</h2>
-              <button className="btn-ghost text-sm">{t.dashboard.viewAll}</button>
+              <Link href="/leads" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
             </div>
             <div className="space-y-3">
               <TaskItem
@@ -128,7 +129,7 @@ export default function DashboardPage() {
         <div className="card mt-[var(--space-gap)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-[var(--space-gap)]">
             <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.pipelineOverview}</h2>
-            <button className="btn-secondary text-sm w-full sm:w-auto">{t.dashboard.viewPipeline}</button>
+            <Link href="/pipeline" className="btn-secondary text-sm w-full sm:w-auto">{t.dashboard.viewPipeline}</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[var(--space-gap)]">
             <PipelineStage label={t.pipeline.stages.newLead} count={12} value="$48,000" color="stage-new" />

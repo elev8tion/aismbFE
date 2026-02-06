@@ -176,6 +176,96 @@ export interface Translations {
     duration: string;
     minutesShort: string;
   };
+  // Voice Sessions
+  voiceSessions: {
+    title: string;
+    subtitle: string;
+    totalSessions: string;
+    avgDuration: string;
+    positiveRate: string;
+    questionsAsked: string;
+    all: string;
+    positive: string;
+    neutral: string;
+    negative: string;
+    english: string;
+    spanish: string;
+    session: string;
+    language: string;
+    duration: string;
+    questions: string;
+    sentiment: string;
+    outcome: string;
+    topics: string;
+    painPoints: string;
+    objections: string;
+    intents: string;
+    device: string;
+    referrer: string;
+    transcript: string;
+    noSessions: string;
+    userMessage: string;
+    assistantMessage: string;
+    actions: string;
+    minutes: string;
+    seconds: string;
+    outcomes: {
+      continuedBrowsing: string;
+      roiCalculator: string;
+      bookingScheduled: string;
+      leftSite: string;
+      unknown: string;
+    };
+    sentiments: {
+      positive: string;
+      neutral: string;
+      negative: string;
+      mixed: string;
+    };
+    devices: {
+      desktop: string;
+      mobile: string;
+      tablet: string;
+    };
+  };
+  // ROI Calculations
+  roiCalculations: {
+    title: string;
+    subtitle: string;
+    totalCalculations: string;
+    avgROI: string;
+    emailsCaptured: string;
+    popularTier: string;
+    all: string;
+    withEmail: string;
+    reportRequested: string;
+    industry: string;
+    employees: string;
+    hourlyRate: string;
+    weeklyHours: string;
+    selectedTier: string;
+    projectedROI: string;
+    email: string;
+    timeSaved: string;
+    weeklyValue: string;
+    totalValue: string;
+    investment: string;
+    paybackWeeks: string;
+    timeOnCalc: string;
+    adjustments: string;
+    reportSent: string;
+    noCalculations: string;
+    calculationDetails: string;
+    inputParameters: string;
+    projectedResults: string;
+    perWeek: string;
+    weeks: string;
+    tiers: {
+      discovery: string;
+      foundation: string;
+      architect: string;
+    };
+  };
   // Common
   common: {
     search: string;
@@ -194,6 +284,27 @@ export interface Translations {
     thisWeek: string;
     thisMonth: string;
     backTo: string;
+    creating: string;
+    created: string;
+    saving: string;
+    saved: string;
+    required: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    website: string;
+    industry: string;
+    selectIndustry: string;
+    selectSource: string;
+    selectTier: string;
+    selectStage: string;
+    selectRole: string;
+    selectCompany: string;
+    selectContact: string;
+    companyName: string;
+    name: string;
+    notes: string;
   };
   // Auth
   auth: {
@@ -388,6 +499,94 @@ export const translations: Record<'en' | 'es', Translations> = {
       duration: 'Duration',
       minutesShort: 'min',
     },
+    voiceSessions: {
+      title: 'Voice Sessions',
+      subtitle: 'AI voice agent conversations from your landing page',
+      totalSessions: 'Total Sessions',
+      avgDuration: 'Avg Duration',
+      positiveRate: 'Positive Rate',
+      questionsAsked: 'Questions Asked',
+      all: 'All',
+      positive: 'Positive',
+      neutral: 'Neutral',
+      negative: 'Negative',
+      english: 'English',
+      spanish: 'Spanish',
+      session: 'Session',
+      language: 'Language',
+      duration: 'Duration',
+      questions: 'Questions',
+      sentiment: 'Sentiment',
+      outcome: 'Outcome',
+      topics: 'Topics',
+      painPoints: 'Pain Points',
+      objections: 'Objections',
+      intents: 'Intents',
+      device: 'Device',
+      referrer: 'Referrer',
+      transcript: 'Transcript',
+      noSessions: 'No voice sessions yet',
+      userMessage: 'Visitor',
+      assistantMessage: 'AI Agent',
+      actions: 'Actions Taken',
+      minutes: 'min',
+      seconds: 'sec',
+      outcomes: {
+        continuedBrowsing: 'Continued Browsing',
+        roiCalculator: 'Used ROI Calculator',
+        bookingScheduled: 'Booked a Call',
+        leftSite: 'Left Site',
+        unknown: 'Unknown',
+      },
+      sentiments: {
+        positive: 'Positive',
+        neutral: 'Neutral',
+        negative: 'Negative',
+        mixed: 'Mixed',
+      },
+      devices: {
+        desktop: 'Desktop',
+        mobile: 'Mobile',
+        tablet: 'Tablet',
+      },
+    },
+    roiCalculations: {
+      title: 'ROI Calculations',
+      subtitle: 'ROI calculator submissions from prospects',
+      totalCalculations: 'Total Calculations',
+      avgROI: 'Avg ROI',
+      emailsCaptured: 'Emails Captured',
+      popularTier: 'Most Popular Tier',
+      all: 'All',
+      withEmail: 'With Email',
+      reportRequested: 'Report Requested',
+      industry: 'Industry',
+      employees: 'Employees',
+      hourlyRate: 'Hourly Rate',
+      weeklyHours: 'Weekly Admin Hours',
+      selectedTier: 'Selected Tier',
+      projectedROI: 'Projected ROI',
+      email: 'Email',
+      timeSaved: 'Time Saved',
+      weeklyValue: 'Weekly Value',
+      totalValue: 'Total Value',
+      investment: 'Investment',
+      paybackWeeks: 'Payback Period',
+      timeOnCalc: 'Time on Calculator',
+      adjustments: 'Adjustments',
+      reportSent: 'Report Sent',
+      noCalculations: 'No ROI calculations yet',
+      calculationDetails: 'Calculation Details',
+      inputParameters: 'Input Parameters',
+      projectedResults: 'Projected Results',
+      perWeek: '/week',
+      weeks: 'weeks',
+      tiers: {
+        discovery: 'Discovery',
+        foundation: 'Foundation',
+        architect: 'Architect',
+      },
+    },
     common: {
       search: 'Search...',
       filter: 'Filter',
@@ -405,6 +604,27 @@ export const translations: Record<'en' | 'es', Translations> = {
       thisWeek: 'This Week',
       thisMonth: 'This Month',
       backTo: 'Back to AI KRE8TION Partners',
+      creating: 'Creating...',
+      created: 'Created successfully',
+      saving: 'Saving...',
+      saved: 'Saved successfully',
+      required: 'Required',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email',
+      phone: 'Phone',
+      website: 'Website',
+      industry: 'Industry',
+      selectIndustry: 'Select industry',
+      selectSource: 'Select source',
+      selectTier: 'Select tier',
+      selectStage: 'Select stage',
+      selectRole: 'Select role',
+      selectCompany: 'Select company',
+      selectContact: 'Select contact',
+      companyName: 'Company Name',
+      name: 'Name',
+      notes: 'Notes',
     },
     auth: {
       signIn: 'Sign In',
@@ -596,6 +816,94 @@ export const translations: Record<'en' | 'es', Translations> = {
       duration: 'Duración',
       minutesShort: 'min',
     },
+    voiceSessions: {
+      title: 'Sesiones de Voz',
+      subtitle: 'Conversaciones del agente de voz IA desde tu landing page',
+      totalSessions: 'Total de Sesiones',
+      avgDuration: 'Duración Promedio',
+      positiveRate: 'Tasa Positiva',
+      questionsAsked: 'Preguntas Hechas',
+      all: 'Todas',
+      positive: 'Positiva',
+      neutral: 'Neutral',
+      negative: 'Negativa',
+      english: 'Inglés',
+      spanish: 'Español',
+      session: 'Sesión',
+      language: 'Idioma',
+      duration: 'Duración',
+      questions: 'Preguntas',
+      sentiment: 'Sentimiento',
+      outcome: 'Resultado',
+      topics: 'Temas',
+      painPoints: 'Puntos de Dolor',
+      objections: 'Objeciones',
+      intents: 'Intenciones',
+      device: 'Dispositivo',
+      referrer: 'Referencia',
+      transcript: 'Transcripción',
+      noSessions: 'No hay sesiones de voz aún',
+      userMessage: 'Visitante',
+      assistantMessage: 'Agente IA',
+      actions: 'Acciones Realizadas',
+      minutes: 'min',
+      seconds: 'seg',
+      outcomes: {
+        continuedBrowsing: 'Siguió Navegando',
+        roiCalculator: 'Usó Calculadora ROI',
+        bookingScheduled: 'Reservó una Llamada',
+        leftSite: 'Abandonó el Sitio',
+        unknown: 'Desconocido',
+      },
+      sentiments: {
+        positive: 'Positivo',
+        neutral: 'Neutral',
+        negative: 'Negativo',
+        mixed: 'Mixto',
+      },
+      devices: {
+        desktop: 'Escritorio',
+        mobile: 'Móvil',
+        tablet: 'Tableta',
+      },
+    },
+    roiCalculations: {
+      title: 'Cálculos de ROI',
+      subtitle: 'Cálculos de ROI enviados por prospectos',
+      totalCalculations: 'Total de Cálculos',
+      avgROI: 'ROI Promedio',
+      emailsCaptured: 'Emails Capturados',
+      popularTier: 'Nivel Más Popular',
+      all: 'Todos',
+      withEmail: 'Con Email',
+      reportRequested: 'Informe Solicitado',
+      industry: 'Industria',
+      employees: 'Empleados',
+      hourlyRate: 'Tarifa por Hora',
+      weeklyHours: 'Horas Admin Semanales',
+      selectedTier: 'Nivel Seleccionado',
+      projectedROI: 'ROI Proyectado',
+      email: 'Email',
+      timeSaved: 'Tiempo Ahorrado',
+      weeklyValue: 'Valor Semanal',
+      totalValue: 'Valor Total',
+      investment: 'Inversión',
+      paybackWeeks: 'Período de Retorno',
+      timeOnCalc: 'Tiempo en Calculadora',
+      adjustments: 'Ajustes',
+      reportSent: 'Informe Enviado',
+      noCalculations: 'No hay cálculos de ROI aún',
+      calculationDetails: 'Detalles del Cálculo',
+      inputParameters: 'Parámetros de Entrada',
+      projectedResults: 'Resultados Proyectados',
+      perWeek: '/semana',
+      weeks: 'semanas',
+      tiers: {
+        discovery: 'Descubrimiento',
+        foundation: 'Base',
+        architect: 'Arquitecto',
+      },
+    },
     common: {
       search: 'Buscar...',
       filter: 'Filtrar',
@@ -613,6 +921,27 @@ export const translations: Record<'en' | 'es', Translations> = {
       thisWeek: 'Esta Semana',
       thisMonth: 'Este Mes',
       backTo: 'Volver a AI KRE8TION Partners',
+      creating: 'Creando...',
+      created: 'Creado exitosamente',
+      saving: 'Guardando...',
+      saved: 'Guardado exitosamente',
+      required: 'Requerido',
+      firstName: 'Nombre',
+      lastName: 'Apellido',
+      email: 'Correo Electrónico',
+      phone: 'Teléfono',
+      website: 'Sitio Web',
+      industry: 'Industria',
+      selectIndustry: 'Seleccionar industria',
+      selectSource: 'Seleccionar fuente',
+      selectTier: 'Seleccionar nivel',
+      selectStage: 'Seleccionar etapa',
+      selectRole: 'Seleccionar cargo',
+      selectCompany: 'Seleccionar empresa',
+      selectContact: 'Seleccionar contacto',
+      companyName: 'Nombre de Empresa',
+      name: 'Nombre',
+      notes: 'Notas',
     },
     auth: {
       signIn: 'Iniciar Sesión',

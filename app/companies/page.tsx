@@ -2,19 +2,61 @@
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
+import { useState, useEffect, useCallback } from 'react';
 import { PlusIcon } from '@/components/icons';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DotRating } from '@/components/ui/ProgressBar';
+import { Modal } from '@/components/ui/Modal';
+
+interface Company {
+  id: string;
+  name: string;
+  industry: string;
+  employee_count: string;
+  website?: string;
+  ai_maturity_score: number;
+  city?: string;
+  state?: string;
+  created_at?: string;
+}
+
+const INDUSTRIES = ['HVAC', 'Plumbing', 'Construction', 'Property Management', 'Electrical', 'Landscaping', 'Other'];
+const EMPLOYEE_COUNTS = ['1-5', '5-10', '10-25', '25-50', '50-100', '100+'];
 
 export default function CompaniesPage() {
   const { t } = useTranslations();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [viewCompany, setViewCompany] = useState<Company | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', industry: '', employee_count: '1-5', website: '' });
 
-  const companies = [
-    { id: 1, name: 'ABC Plumbing LLC', industry: 'Plumbing', employees: '10-25', aiScore: 3, contacts: 2, opportunities: 1 },
-    { id: 2, name: 'XYZ Property Management', industry: 'Property Management', employees: '25-50', aiScore: 5, contacts: 3, opportunities: 2 },
-    { id: 3, name: 'Smith & Sons Construction', industry: 'Construction', employees: '25-50', aiScore: 2, contacts: 4, opportunities: 1 },
-    { id: 4, name: 'Quick Fix HVAC', industry: 'HVAC', employees: '5-10', aiScore: 4, contacts: 1, opportunities: 1 },
-  ];
+  const fetchCompanies = useCallback(async () => {
+    try {
+      const res = await fetch('/api/data/read/companies', { credentials: 'include' });
+      const data: { data?: Company[] } = await res.json();
+      if (data.data && data.data.length > 0) { setCompanies(data.data); }
+      else { setCompanies(MOCK_COMPANIES); }
+    } catch { setCompanies(MOCK_COMPANIES); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch('/api/data/create/companies', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) { setShowCreate(false); setForm({ name: '', industry: '', employee_count: '1-5', website: '' }); fetchCompanies(); }
+    } catch (err) { console.error('Failed to create company:', err); }
+    finally { setSaving(false); }
+  };
 
   return (
     <DashboardLayout>
@@ -23,49 +65,116 @@ export default function CompaniesPage() {
           title={t.nav.companies}
           subtitle={<>{companies.length} {t.companies.companiesCount}</>}
           action={
-            <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
+            <button onClick={() => setShowCreate(true)} className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
               <PlusIcon className="w-5 h-5" />
               {t.companies.addCompany}
             </button>
           }
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-gap)]">
-          {companies.map((company) => (
-            <div key={company.id} className="card card-interactive">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="text-sm md:text-base font-semibold text-white truncate">{company.name}</h3>
-                  <p className="text-xs md:text-sm text-white/50 mt-1">{company.industry}</p>
+        {loading ? (
+          <div className="card p-12 text-center"><p className="text-white/60">{t.common.loading}</p></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-gap)]">
+            {companies.map((company) => (
+              <div key={company.id} className="card card-interactive" onClick={() => setViewCompany(company)}>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-sm md:text-base font-semibold text-white truncate">{company.name}</h3>
+                    <p className="text-xs md:text-sm text-white/50 mt-1">{company.industry}</p>
+                  </div>
+                  <span className="tag shrink-0">{company.employee_count} {t.companies.employees}</span>
                 </div>
-                <span className="tag shrink-0">{company.employees} {t.companies.employees}</span>
+
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-white/50">{t.companies.aiMaturityScore}</span>
+                    <DotRating value={company.ai_maturity_score} />
+                  </div>
+                  {company.website && (
+                    <div className="flex items-center justify-between text-sm mt-2">
+                      <span className="text-white/50">{t.common.website}</span>
+                      <span className="text-primary-electricBlue text-xs truncate max-w-[140px]">{company.website}</span>
+                    </div>
+                  )}
+                </div>
+
+                <button onClick={(e) => { e.stopPropagation(); setViewCompany(company); }} className="btn-secondary w-full mt-4 text-sm">
+                  {t.companies.viewDetails}
+                </button>
               </div>
-
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/50">{t.companies.aiMaturityScore}</span>
-                  <DotRating value={company.aiScore} />
-                </div>
-
-                <div className="flex items-center justify-between text-sm mt-2">
-                  <span className="text-white/50">{t.companies.contacts}</span>
-                  <span className="text-white/80">{company.contacts}</span>
-                </div>
-
-                <div className="flex items-center justify-between text-sm mt-2">
-                  <span className="text-white/50">{t.companies.opportunities}</span>
-                  <span className="text-white/80">{company.opportunities}</span>
-                </div>
-              </div>
-
-              <button className="btn-secondary w-full mt-4 text-sm">
-                {t.companies.viewDetails}
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Create Modal */}
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title={t.companies.addCompany}>
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="block text-sm text-white/60 mb-1">{t.common.companyName} *</label>
+            <input className="input-glass w-full" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-white/60 mb-1">{t.common.industry} *</label>
+              <select className="select-glass w-full" required value={form.industry} onChange={e => setForm({ ...form, industry: e.target.value })}>
+                <option value="">{t.common.selectIndustry}</option>
+                {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-white/60 mb-1">{t.companies.employees}</label>
+              <select className="select-glass w-full" value={form.employee_count} onChange={e => setForm({ ...form, employee_count: e.target.value })}>
+                {EMPLOYEE_COUNTS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-white/60 mb-1">{t.common.website}</label>
+            <input className="input-glass w-full" value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
+          </div>
+          <div className="flex gap-3 justify-end pt-2">
+            <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary">{t.common.cancel}</button>
+            <button type="submit" disabled={saving} className="btn-primary">{saving ? t.common.creating : t.companies.addCompany}</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* View Details Modal */}
+      <Modal open={!!viewCompany} onClose={() => setViewCompany(null)} title={viewCompany?.name || ''}>
+        {viewCompany && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white/5 rounded-lg p-3">
+                <p className="text-xs text-white/50">{t.common.industry}</p>
+                <p className="text-sm font-medium text-white mt-1">{viewCompany.industry}</p>
+              </div>
+              <div className="bg-white/5 rounded-lg p-3">
+                <p className="text-xs text-white/50">{t.companies.employees}</p>
+                <p className="text-sm font-medium text-white mt-1">{viewCompany.employee_count}</p>
+              </div>
+              {viewCompany.website && (
+                <div className="bg-white/5 rounded-lg p-3 col-span-2">
+                  <p className="text-xs text-white/50">{t.common.website}</p>
+                  <p className="text-sm text-primary-electricBlue mt-1">{viewCompany.website}</p>
+                </div>
+              )}
+              <div className="bg-white/5 rounded-lg p-3 col-span-2">
+                <p className="text-xs text-white/50 mb-1">{t.companies.aiMaturityScore}</p>
+                <DotRating value={viewCompany.ai_maturity_score} />
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </DashboardLayout>
   );
 }
 
+const MOCK_COMPANIES: Company[] = [
+  { id: '1', name: 'ABC Plumbing LLC', industry: 'Plumbing', employee_count: '10-25', ai_maturity_score: 3, website: 'abcplumbing.com' },
+  { id: '2', name: 'XYZ Property Management', industry: 'Property Management', employee_count: '25-50', ai_maturity_score: 5, website: 'xyzproperties.com' },
+  { id: '3', name: 'Smith & Sons Construction', industry: 'Construction', employee_count: '25-50', ai_maturity_score: 2 },
+  { id: '4', name: 'Quick Fix HVAC', industry: 'HVAC', employee_count: '5-10', ai_maturity_score: 4, website: 'quickfixhvac.com' },
+];
