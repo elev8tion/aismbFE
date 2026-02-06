@@ -26,12 +26,14 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-electricBlue to-primary-cyan flex items-center justify-center">
-            <span className="text-white font-bold text-lg">AI</span>
-          </div>
+          <img
+            src="/logos/dark_mode_logo.svg"
+            alt="KRE8TION"
+            className="w-10 h-10"
+          />
           <div>
-            <span className="font-semibold text-white">SMB CRM</span>
-            <span className="text-xs text-white/50 block">Partners Platform</span>
+            <span className="font-semibold text-white">KRE8TION</span>
+            <span className="text-xs text-white/50 block">AI KRE8TION Partners</span>
           </div>
         </Link>
       </div>

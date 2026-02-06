@@ -48,10 +48,12 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-electricBlue to-primary-cyan mb-4">
-            <span className="text-white font-bold text-2xl">AI</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white">SMB CRM</h1>
+          <img
+            src="/logos/dark_mode_brand.svg"
+            alt="ELEV8TION"
+            className="h-20 mx-auto mb-4"
+          />
+          <h1 className="text-2xl font-bold text-white">KRE8TION</h1>
           <p className="text-white/60 mt-2">Create your account</p>
         </div>
 
@@ -150,7 +152,7 @@ export default function RegisterPage() {
             href="https://kre8tion.com"
             className="text-sm text-white/40 hover:text-white/60 transition-colors"
           >
-            ← Back to AI SMB Partners
+            ← Back to AI KRE8TION Partners
           </a>
         </div>
       </div>

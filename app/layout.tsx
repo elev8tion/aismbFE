@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AI SMB CRM | Manage Your Pipeline",
-  description: "Custom CRM for AI SMB Partners - Manage leads, pipeline, and partnerships",
+  title: "AI KRE8TION Partners | Manage Your Pipeline",
+  description: "Custom CRM for AI KRE8TION Partners - Manage leads, pipeline, and partnerships",
 };
 
 export default function RootLayout({
