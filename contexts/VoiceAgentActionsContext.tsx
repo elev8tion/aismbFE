@@ -47,9 +47,13 @@ export function VoiceAgentActionsProvider({ children }: { children: ReactNode })
   );
 }
 
+const noopCtx: Ctx = {
+  subscribe: () => () => {},
+  emit: () => {},
+};
+
 export function useVoiceAgentActions() {
   const ctx = useContext(VoiceAgentActionsContext);
-  if (!ctx) throw new Error('useVoiceAgentActions must be used within VoiceAgentActionsProvider');
-  return ctx;
+  return ctx ?? noopCtx;
 }
 
