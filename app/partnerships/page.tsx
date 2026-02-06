@@ -7,6 +7,7 @@ import { getTierClass, getPartnershipStatusClass, getHealthColor } from '@/lib/u
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StepProgress } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 interface Partnership {
   id: string;
@@ -47,6 +48,36 @@ export default function PartnershipsPage() {
   }, []);
 
   useEffect(() => { fetchPartnerships(); }, [fetchPartnerships]);
+
+  // Voice actions
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'partnerships') return;
+      const a = action.action;
+      const payload = (action.payload || {}) as any;
+      if (a === 'open_view') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Partnership | undefined;
+        if (id) match = partnerships.find(p => String(p.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = partnerships.find(p => (p.company_name || '').toLowerCase().includes(q));
+        }
+        if (match) setViewPartnership(match);
+      } else if (a === 'open_edit') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Partnership | undefined;
+        if (id) match = partnerships.find(p => String(p.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = partnerships.find(p => (p.company_name || '').toLowerCase().includes(q));
+        }
+        if (match) openUpdate(match);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, partnerships]);
 
   const phaseLabels: Record<string, string> = {
     'discover': t.partnerships.phases.discover,

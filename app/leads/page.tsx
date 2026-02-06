@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { FilterTabs } from '@/components/ui/FilterTabs';
 import { ScoreBar } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 interface Lead {
   id: string;
@@ -66,6 +67,55 @@ export default function LeadsPage() {
   }, []);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
+
+  // Voice UI actions: respond to client_action events scoped to 'leads'
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'leads') return;
+      const a = action.action;
+      const payload = action.payload || {} as any;
+      if (a === 'set_filter' && typeof payload.filter === 'string') {
+        setFilter(payload.filter);
+      } else if (a === 'search' && typeof payload.query === 'string') {
+        setSearch(payload.query);
+      } else if (a === 'open_new') {
+        setForm(emptyForm);
+        setShowCreate(true);
+      } else if (a === 'open_edit') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Lead | undefined;
+        if (id) {
+          match = leads.find(l => String(l.id) === String(id));
+        }
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = leads.find(l => (
+            `${l.first_name || ''} ${l.last_name || ''}`.toLowerCase().includes(q) ||
+            l.email?.toLowerCase().includes(q) ||
+            (l.company_name || '').toLowerCase().includes(q)
+          ));
+        }
+        if (match) openEdit(match);
+      } else if (a === 'open_view') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Lead | undefined;
+        if (id) {
+          match = leads.find(l => String(l.id) === String(id));
+        }
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = leads.find(l => (
+            `${l.first_name || ''} ${l.last_name || ''}`.toLowerCase().includes(q) ||
+            l.email?.toLowerCase().includes(q) ||
+            (l.company_name || '').toLowerCase().includes(q)
+          ));
+        }
+        if (match) setViewLead(match);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, leads]);
 
   const filtered = leads.filter(l => {
     if (filter !== 'all' && l.status !== filter) return false;

@@ -7,6 +7,7 @@ import { PlusIcon } from '@/components/icons';
 import { getTierClass } from '@/lib/utils/statusClasses';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 interface Opportunity {
   id: string;
@@ -85,6 +86,29 @@ export default function PipelinePage() {
   }, []);
 
   useEffect(() => { fetchOpportunities(); }, [fetchOpportunities]);
+
+  // Voice actions
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'pipeline') return;
+      const a = action.action;
+      const payload = (action.payload || {}) as any;
+      if (a === 'open_new') {
+        setShowCreate(true);
+      } else if (a === 'open_view') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Opportunity | undefined;
+        if (id) match = opportunities.find(o => String(o.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = opportunities.find(o => o.name.toLowerCase().includes(q));
+        }
+        if (match) setViewDeal(match);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, opportunities]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

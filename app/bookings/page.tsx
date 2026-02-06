@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 interface Booking {
   id: string;
@@ -49,6 +50,33 @@ export default function BookingsPage() {
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
+
+  // Voice actions
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'bookings') return;
+      const a = action.action;
+      const payload = (action.payload || {}) as any;
+      if (a === 'set_filter' && typeof payload.filter === 'string') {
+        setFilter(payload.filter);
+      } else if (a === 'search' && typeof payload.query === 'string') {
+        setSearch(payload.query);
+      } else if (a === 'open_view') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Booking | undefined;
+        if (id) match = bookings.find(b => String(b.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = bookings.find(b => (
+            b.guest_name.toLowerCase().includes(q) || b.guest_email.toLowerCase().includes(q)
+          ));
+        }
+        if (match) setExpandedId(match.id);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, bookings]);
 
   const updateBookingStatus = async (id: string, status: 'confirmed' | 'cancelled') => {
     setUpdatingId(id);

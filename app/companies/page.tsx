@@ -7,6 +7,7 @@ import { PlusIcon } from '@/components/icons';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DotRating } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 interface Company {
   id: string;
@@ -43,6 +44,29 @@ export default function CompaniesPage() {
   }, []);
 
   useEffect(() => { fetchCompanies(); }, [fetchCompanies]);
+
+  // Voice actions
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'companies') return;
+      const a = action.action;
+      const payload = (action.payload || {}) as any;
+      if (a === 'open_new') {
+        setShowCreate(true);
+      } else if (a === 'open_view') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Company | undefined;
+        if (id) match = companies.find(c => String(c.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = companies.find(c => c.name.toLowerCase().includes(q));
+        }
+        if (match) setViewCompany(match);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, companies]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

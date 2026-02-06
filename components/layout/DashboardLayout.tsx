@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import VoiceOperator from '@/components/VoiceOperator';
+import { VoiceAgentActionsProvider } from '@/contexts/VoiceAgentActionsContext';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -59,6 +60,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
+    <VoiceAgentActionsProvider>
     <div className="min-h-screen">
       {/* Mobile header bar */}
       <div className="mobile-header flex md:hidden">
@@ -108,5 +110,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Voice Operator FAB — visible on all authenticated pages */}
       <VoiceOperator />
     </div>
+    </VoiceAgentActionsProvider>
   );
 }

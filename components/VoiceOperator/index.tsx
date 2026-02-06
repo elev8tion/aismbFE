@@ -11,10 +11,14 @@ import {
 } from './utils/browserCompatibility';
 import { AudioURLManager } from './utils/audioProcessor';
 import { getIOSAudioPlayer } from './utils/iosAudioUnlock';
+import { useRouter } from 'next/navigation';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 type VoiceState = 'idle' | 'listening' | 'processing' | 'speaking';
 
 export default function VoiceOperator() {
+  const router = useRouter();
+  const { emit } = useVoiceAgentActions();
   const [isOpen, setIsOpen] = useState(false);
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [transcript, setTranscript] = useState('');
@@ -95,7 +99,7 @@ export default function VoiceOperator() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ question: transcribedText, sessionId }),
+        body: JSON.stringify({ question: transcribedText, sessionId, pagePath: window.location?.pathname || '/' }),
         signal: abortController.signal,
       });
 
@@ -104,7 +108,27 @@ export default function VoiceOperator() {
         throw new Error(`Failed to get response: ${errorData.error || 'Unknown error'}`);
       }
 
-      const data = await response.json() as { response: string };
+      const data = await response.json() as { response: string; clientActions?: Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: any }> };
+
+      // Perform client actions. If a navigate action exists, run it first and
+      // schedule remaining UI actions after navigation.
+      if (Array.isArray(data.clientActions) && data.clientActions.length > 0) {
+        const actions = data.clientActions;
+        const navigateAction = actions.find(a => a && a.type === 'navigate' && typeof a.route === 'string');
+        const otherActions = actions.filter(a => a !== navigateAction);
+
+        if (navigateAction && navigateAction.route) {
+          try { router.push(navigateAction.route); } catch { /* non-fatal */ }
+          // Defer other UI actions slightly so destination screens can mount
+          if (otherActions.length > 0) {
+            setTimeout(() => {
+              for (const a of otherActions) { try { emit(a as any); } catch { /* ignore */ } }
+            }, 350);
+          }
+        } else {
+          for (const a of actions) { try { emit(a as any); } catch { /* ignore */ } }
+        }
+      }
 
       setVoiceState('speaking');
 

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { PlusIcon, EmailIcon, PhoneIcon, EditIcon } from '@/components/icons';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 interface Contact {
   id: string;
@@ -47,6 +48,36 @@ export default function ContactsPage() {
   }, []);
 
   useEffect(() => { fetchContacts(); }, [fetchContacts]);
+
+  // Voice actions
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'contacts') return;
+      const a = action.action;
+      const payload = (action.payload || {}) as any;
+      if (a === 'search' && typeof payload.query === 'string') {
+        setSearch(payload.query);
+      } else if (a === 'open_new') {
+        setForm(emptyForm);
+        setShowCreate(true);
+      } else if (a === 'open_edit') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: Contact | undefined;
+        if (id) match = contacts.find(c => String(c.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = contacts.find(c => (
+            `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) ||
+            c.email.toLowerCase().includes(q) ||
+            (c.company_name || '').toLowerCase().includes(q)
+          ));
+        }
+        if (match) openEdit(match);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, contacts]);
 
   const filtered = contacts.filter(c => {
     if (!search) return true;

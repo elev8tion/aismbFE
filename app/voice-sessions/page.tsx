@@ -10,6 +10,7 @@ import { VoiceSession, ConversationMessage } from '@/types/voice';
 import { generateSessionInsights, AIInsight } from '@/lib/utils/aiInsights';
 import { scoreVoiceSession, LeadScore } from '@/lib/utils/leadScoring';
 import { createTaskFromSession } from '@/lib/utils/taskAutomation';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 const MOCK_VOICE_SESSIONS: VoiceSession[] = [
   {
@@ -276,6 +277,33 @@ export default function VoiceSessionsPage() {
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
+
+  // Voice actions
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'voice_sessions') return;
+      const a = action.action;
+      const payload = (action.payload || {}) as any;
+      if (a === 'set_filter' && typeof payload.filter === 'string') {
+        setFilter(payload.filter);
+      } else if (a === 'search' && typeof payload.query === 'string') {
+        setSearch(payload.query);
+      } else if (a === 'open_view') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: VoiceSession | undefined;
+        if (id) match = sessions.find(s => String(s.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = sessions.find(s => (
+            s.external_session_id.toLowerCase().includes(q)
+          ));
+        }
+        if (match) setExpandedId(match.id);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, sessions]);
 
   // Parse JSON fields safely
   const parseJSON = <T,>(str?: string): T | null => {

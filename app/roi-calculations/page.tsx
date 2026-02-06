@@ -14,6 +14,7 @@ import { Modal } from '@/components/ui/Modal';
 import { generatePDF } from '@/lib/utils/pdfGenerator';
 import { useEngagement } from '@/lib/hooks/useEngagement';
 import { PaybackTrend } from '@/components/dashboard/PaybackTrend';
+import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 
 const MOCK_ROI_CALCULATIONS: ROICalculation[] = [
   {
@@ -282,6 +283,35 @@ export default function ROICalculationsPage() {
   useEffect(() => {
     fetchCalculations();
   }, [fetchCalculations]);
+
+  // Voice actions
+  const { subscribe } = useVoiceAgentActions();
+  useEffect(() => {
+    const unsub = subscribe((action) => {
+      if (!action || action.type !== 'ui_action' || action.scope !== 'roi_calculations') return;
+      const a = action.action;
+      const payload = (action.payload || {}) as any;
+      if (a === 'set_filter' && typeof payload.filter === 'string') {
+        setFilter(payload.filter);
+      } else if (a === 'search' && typeof payload.query === 'string') {
+        setSearch(payload.query);
+      } else if (a === 'open_view') {
+        const { id, query } = payload as { id?: string; query?: string };
+        let match: ROICalculation | undefined;
+        if (id) match = calculations.find(c => String(c.id) === String(id));
+        if (!match && query) {
+          const q = String(query).toLowerCase();
+          match = calculations.find(c => (
+            c.industry.toLowerCase().includes(q) ||
+            (c.email || '').toLowerCase().includes(q) ||
+            c.employee_count.toLowerCase().includes(q)
+          ));
+        }
+        if (match) setExpandedId(match.id);
+      }
+    });
+    return () => { unsub(); };
+  }, [subscribe, calculations]);
 
   const parseCalcs = (str?: string): ROIMetrics | null => {
     if (!str) return null;
