@@ -315,13 +315,20 @@ export async function POST(request: NextRequest) {
     const clientActions: Array<Record<string, unknown>> = [];
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-      const completion = await openai.chat.completions.create({
-        model,
-        messages: currentMessages,
-        tools: ALL_CRM_FUNCTIONS,
-        temperature: 0.3,
-        max_tokens: 500,
-      });
+      let completion;
+      try {
+        completion = await openai.chat.completions.create({
+          model,
+          messages: currentMessages,
+          tools: ALL_CRM_FUNCTIONS,
+          temperature: 0.3,
+          max_tokens: 500,
+        });
+      } catch (openaiErr) {
+        console.error('OpenAI API error:', openaiErr);
+        response = 'Sorry, I had trouble processing that. Please try again.';
+        break;
+      }
 
       const choice = completion.choices[0];
 
@@ -336,7 +343,18 @@ export async function POST(request: NextRequest) {
 
       for (const toolCall of choice.message.tool_calls) {
         if (toolCall.type !== 'function') continue;
-        const params = JSON.parse(toolCall.function.arguments);
+        let params: Record<string, unknown> = {};
+        try {
+          params = JSON.parse(toolCall.function.arguments);
+        } catch {
+          // Malformed tool args from OpenAI — skip this tool call
+          currentMessages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify({ error: 'Invalid arguments' }),
+          });
+          continue;
+        }
         const result = await executeTool(
           toolCall.function.name,
           params,
@@ -363,15 +381,22 @@ export async function POST(request: NextRequest) {
 
       // If this is the last round, force a response
       if (round === MAX_TOOL_ROUNDS - 1) {
-        const finalCompletion = await openai.chat.completions.create({
-          model,
-          messages: currentMessages,
-          temperature: 0.3,
-          max_tokens: 500,
-        });
-        response = finalCompletion.choices[0]?.message?.content || 'Done.';
+        try {
+          const finalCompletion = await openai.chat.completions.create({
+            model,
+            messages: currentMessages,
+            temperature: 0.3,
+            max_tokens: 500,
+          });
+          response = finalCompletion.choices[0]?.message?.content || 'Done.';
+        } catch {
+          response = 'Done.';
+        }
       }
     }
+
+    // Ensure response is never empty
+    if (!response) response = 'I completed the operation.';
 
     // Save assistant response to session
     addMessage(sessionId, { role: 'assistant', content: response });

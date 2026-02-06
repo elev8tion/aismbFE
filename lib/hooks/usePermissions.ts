@@ -40,10 +40,15 @@ export function usePermissions() {
       const res = await fetch(`/api/data/read/user_profiles?user_id=${userId}`, {
         credentials: 'include',
       });
-      const data = await res.json();
 
-      if (data.data && data.data.length > 0) {
-        setProfile(data.data[0]);
+      let profiles: any[] = [];
+      if (res.ok) {
+        const data = await res.json();
+        profiles = data.data || [];
+      }
+
+      if (profiles.length > 0) {
+        setProfile(profiles[0]);
       } else {
         // Auto-create profile for first-time users
         const isFirstAdmin = email === ADMIN_EMAIL;

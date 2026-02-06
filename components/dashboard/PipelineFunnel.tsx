@@ -31,8 +31,8 @@ export function PipelineFunnel({ data }: PipelineFunnelProps) {
   // Sorting data by a logical funnel order might be needed if not provided sorted
   
   return (
-    <div className="h-[300px] w-full mt-4">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-[300px] w-full mt-4" style={{ minWidth: 0, minHeight: 200 }}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
         <BarChart
           data={data}
           layout="vertical"

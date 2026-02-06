@@ -88,9 +88,6 @@ export default function LoginPage() {
                 <input type="checkbox" className="w-4 h-4 rounded border-white/20 bg-transparent" />
                 <span className="text-sm text-white/60">{t.auth.rememberMe}</span>
               </label>
-              <Link href="/forgot-password" className="text-sm text-primary-electricBlue hover:underline">
-                {t.auth.forgotPassword}
-              </Link>
             </div>
 
             <button

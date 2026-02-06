@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   description: "Custom CRM for AI KRE8TION Partners - Manage leads, pipeline, and partnerships",
   manifest: "/manifest.json",
   themeColor: "#000000",
+  icons: {
+    icon: "/logos/dark_mode_logo.png",
+    apple: "/logos/dark_mode_logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

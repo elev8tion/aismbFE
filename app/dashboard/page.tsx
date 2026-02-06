@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState<any[]>([]);
 
   const fetchDashboardData = useCallback(async () => {
+    if (!user) return;
     try {
       // Parallel fetch for speed
       const [leadsRes, oppsRes, partnersRes, activitiesRes] = await Promise.all([
@@ -41,13 +42,15 @@ export default function DashboardPage() {
         fetch('/api/data/read/activities?limit=10', { credentials: 'include' }),
       ]);
 
-      const [leads, opps, partners, acts] = await Promise.all([
-        leadsRes.json(), oppsRes.json(), partnersRes.json(), activitiesRes.json()
-      ]);
+      // Only parse successful responses
+      const leads = leadsRes.ok ? await leadsRes.json() : { data: [] };
+      const opps = oppsRes.ok ? await oppsRes.json() : { data: [] };
+      const partners = partnersRes.ok ? await partnersRes.json() : { data: [] };
+      const acts = activitiesRes.ok ? await activitiesRes.json() : { data: [] };
 
       const activePartners = (partners.data || []).filter((p: any) => p.status === 'active');
-      const totalPipeline = (opps.data || []).reduce((sum: number, o: any) => sum + (o.value || 0), 0);
-      const totalMRR = activePartners.reduce((sum: number, p: any) => sum + (p.monthly_revenue || 0), 0);
+      const totalPipeline = (opps.data || []).reduce((sum: number, o: any) => sum + Number(o.value || 0), 0);
+      const totalMRR = activePartners.reduce((sum: number, p: any) => sum + Number(p.monthly_revenue || 0), 0);
 
       setStats({
         leads: (leads.data || []).length,
@@ -55,7 +58,7 @@ export default function DashboardPage() {
         activePartners: activePartners.length,
         mrr: totalMRR
       });
-      
+
       if (acts.data && acts.data.length > 0) {
         setActivities(acts.data);
       }
@@ -64,7 +67,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchDashboardData();
