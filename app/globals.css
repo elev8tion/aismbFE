@@ -153,6 +153,7 @@ body {
   font-size: 0.75rem;
   font-weight: 500;
   color: #0EA5E9;
+  white-space: nowrap;
 }
 
 .tag-success {
