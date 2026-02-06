@@ -23,6 +23,18 @@ export const MODELS = {
 
 export type ModelTier = 'fast' | 'standard' | 'reasoning';
 
+// o-series models (o1, o3, o4) reject `temperature` and use `max_completion_tokens`.
+// Build the correct params object based on the model name.
+export function buildChatParams(model: string, extra?: { temperature?: number; max_tokens?: number }) {
+  const isOSeries = /^o\d/.test(model);
+  return {
+    ...(isOSeries ? {} : { temperature: extra?.temperature ?? 0.3 }),
+    ...(isOSeries
+      ? { max_completion_tokens: extra?.max_tokens ?? 500 }
+      : { max_tokens: extra?.max_tokens ?? 500 }),
+  };
+}
+
 // Language → TTS voice mapping
 export const VOICE_MAP: Record<string, string> = {
   en: 'echo',

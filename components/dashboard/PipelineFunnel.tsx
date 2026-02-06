@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, LabelList } from 'recharts';
 
 interface PipelineData {
@@ -28,11 +29,18 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function PipelineFunnel({ data }: PipelineFunnelProps) {
-  // Sorting data by a logical funnel order might be needed if not provided sorted
-  
+  // Defer rendering until after mount — ResponsiveContainer measures the parent
+  // DOM node, which has zero/negative dimensions during SSR and initial hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted) {
+    return <div className="h-[300px] w-full mt-4" />;
+  }
+
   return (
-    <div className="h-[300px] w-full mt-4" style={{ minWidth: 0, minHeight: 200 }}>
-      <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+    <div className="h-[300px] w-full mt-4">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
           layout="vertical"
@@ -40,10 +48,10 @@ export function PipelineFunnel({ data }: PipelineFunnelProps) {
           barSize={40}
         >
           <XAxis type="number" hide />
-          <YAxis 
-            dataKey="stage" 
-            type="category" 
-            axisLine={false} 
+          <YAxis
+            dataKey="stage"
+            type="category"
+            axisLine={false}
             tickLine={false}
             tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
             width={100}
@@ -53,9 +61,9 @@ export function PipelineFunnel({ data }: PipelineFunnelProps) {
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.8} />
             ))}
-            <LabelList 
-              dataKey="value" 
-              position="right" 
+            <LabelList
+              dataKey="value"
+              position="right"
               formatter={(val: any) => typeof val === 'number' ? `$${val.toLocaleString()}` : val}
               style={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 500 }}
             />

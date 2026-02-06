@@ -76,6 +76,15 @@ async function proxyToNCB(req: NextRequest, path: string, body?: string) {
     body: body || undefined,
   });
 
+  // NCB returns 404 for empty result sets on reads. Normalize to 200 with empty data
+  // so the browser doesn't log "Failed to load resource" console errors.
+  if (res.status === 404 && path.startsWith("read/")) {
+    return new NextResponse(JSON.stringify({ data: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const data = await res.text();
 
   return new NextResponse(data, {

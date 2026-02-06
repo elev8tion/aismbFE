@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createOpenAI } from '@/lib/openai/config';
+import { createOpenAI, buildChatParams } from '@/lib/openai/config';
 import { validateQuestion, detectPromptInjection } from '@/lib/security/requestValidator';
 import { getSessionUser, extractAuthCookies, ncbCreate, ncbUpdate } from '@/lib/agent/ncbClient';
 import { selectModel } from '@/lib/agent/modelRouter';
@@ -309,9 +309,13 @@ export async function POST(request: NextRequest) {
 
     const authCookies = extractAuthCookies(cookieHeader);
 
+    // Model-aware params: o-series rejects temperature, uses max_completion_tokens
+    const chatParams = buildChatParams(model);
+
     // Tool call loop
     let currentMessages = messages;
     let response = '';
+    let apiError = '';
     const clientActions: Array<Record<string, unknown>> = [];
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -321,19 +325,22 @@ export async function POST(request: NextRequest) {
           model,
           messages: currentMessages,
           tools: ALL_CRM_FUNCTIONS,
-          temperature: 0.3,
-          max_tokens: 500,
+          ...chatParams,
         });
       } catch (openaiErr) {
-        console.error('OpenAI API error:', openaiErr);
-        response = 'Sorry, I had trouble processing that. Please try again.';
+        apiError = openaiErr instanceof Error ? openaiErr.message : String(openaiErr);
+        console.error(`OpenAI API error (model=${model}):`, apiError);
+        response = '';
         break;
       }
 
-      const choice = completion.choices[0];
+      const choice = completion.choices?.[0];
+      if (!choice?.message) {
+        response = 'I completed the operation.';
+        break;
+      }
 
       if (!choice.message.tool_calls || choice.message.tool_calls.length === 0) {
-        // No more tool calls — final response
         response = choice.message.content || 'I completed the operation.';
         break;
       }
@@ -347,7 +354,6 @@ export async function POST(request: NextRequest) {
         try {
           params = JSON.parse(toolCall.function.arguments);
         } catch {
-          // Malformed tool args from OpenAI — skip this tool call
           currentMessages.push({
             role: 'tool',
             tool_call_id: toolCall.id,
@@ -368,15 +374,12 @@ export async function POST(request: NextRequest) {
           content: JSON.stringify(result),
         });
 
-        // Collect client actions to return to the UI (e.g., navigate)
         try {
-          const r: any = result as any;
+          const r = result as any;
           if (r && typeof r === 'object' && r.client_action) {
             clientActions.push(r.client_action);
           }
-        } catch {
-          // non-fatal
-        }
+        } catch { /* non-fatal */ }
       }
 
       // If this is the last round, force a response
@@ -385,8 +388,7 @@ export async function POST(request: NextRequest) {
           const finalCompletion = await openai.chat.completions.create({
             model,
             messages: currentMessages,
-            temperature: 0.3,
-            max_tokens: 500,
+            ...chatParams,
           });
           response = finalCompletion.choices[0]?.message?.content || 'Done.';
         } catch {
@@ -396,7 +398,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure response is never empty
-    if (!response) response = 'I completed the operation.';
+    if (!response) response = apiError
+      ? `Sorry, there was an issue: ${apiError}`
+      : 'I completed the operation.';
 
     // Save assistant response to session
     addMessage(sessionId, { role: 'assistant', content: response });
