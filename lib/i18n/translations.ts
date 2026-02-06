@@ -268,6 +268,22 @@ export interface Translations {
       architect: string;
     };
   };
+  // Payments
+  payments: {
+    collectPayment: string;
+    payNow: string;
+    paymentSuccess: string;
+    paymentFailed: string;
+    thankYou: string;
+    paymentReceived: string;
+    amount: string;
+    receiptNote: string;
+    nextSteps: string;
+    backToPipeline: string;
+    backToPartnerships: string;
+    viewDashboard: string;
+    processing: string;
+  };
   // Common
   common: {
     search: string;
@@ -591,6 +607,21 @@ export const translations: Record<'en' | 'es', Translations> = {
         architect: 'Architect',
       },
     },
+    payments: {
+      collectPayment: 'Collect Payment',
+      payNow: 'Pay Now',
+      paymentSuccess: 'Payment Successful',
+      paymentFailed: 'Payment Failed',
+      thankYou: 'Thank you for your payment!',
+      paymentReceived: 'Your payment has been received and processed.',
+      amount: 'Amount',
+      receiptNote: 'A receipt has been sent to your email.',
+      nextSteps: 'Next Steps',
+      backToPipeline: 'Back to Pipeline',
+      backToPartnerships: 'Back to Partnerships',
+      viewDashboard: 'View Dashboard',
+      processing: 'Processing...',
+    },
     common: {
       search: 'Search...',
       filter: 'Filter',
@@ -909,6 +940,21 @@ export const translations: Record<'en' | 'es', Translations> = {
         foundation: 'Base',
         architect: 'Arquitecto',
       },
+    },
+    payments: {
+      collectPayment: 'Cobrar Pago',
+      payNow: 'Pagar Ahora',
+      paymentSuccess: 'Pago Exitoso',
+      paymentFailed: 'Pago Fallido',
+      thankYou: '¡Gracias por tu pago!',
+      paymentReceived: 'Tu pago ha sido recibido y procesado.',
+      amount: 'Monto',
+      receiptNote: 'Se ha enviado un recibo a tu correo electrónico.',
+      nextSteps: 'Próximos Pasos',
+      backToPipeline: 'Volver al Pipeline',
+      backToPartnerships: 'Volver a Asociaciones',
+      viewDashboard: 'Ver Panel',
+      processing: 'Procesando...',
     },
     common: {
       search: 'Buscar...',

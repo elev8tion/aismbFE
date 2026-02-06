@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import VoiceOperator from '@/components/VoiceOperator';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -103,6 +104,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         {children}
       </main>
+
+      {/* Voice Operator FAB — visible on all authenticated pages */}
+      <VoiceOperator />
     </div>
   );
 }

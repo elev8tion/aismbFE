@@ -29,14 +29,51 @@ export default function PipelinePage() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [createStage, setCreateStage] = useState('new-lead');
+  const [createError, setCreateError] = useState('');
   const [viewDeal, setViewDeal] = useState<Opportunity | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', tier: 'discovery', stage: 'new-lead', setup_fee: 4000, monthly_fee: 750 });
 
+  // Start Stripe Checkout for a deal
+  const startCheckout = async (deal: Opportunity) => {
+    try {
+      const amountDollars = Number(deal.total_contract_value || deal.setup_fee || 0);
+      const res = await fetch('/api/integrations/stripe/checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'payment',
+          amount: Math.round(amountDollars * 100), // cents
+          currency: 'usd',
+          metadata: { tier: deal.tier, stage: deal.stage },
+          opportunity_id: deal.id,
+          success_path: '/payment-success',
+          cancel_path: '/pipeline',
+          product_name: `${deal.name} — Setup`,
+          description: `Setup payment for ${deal.name}`,
+        }),
+      });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data?.error || 'Failed to start checkout');
+      }
+    } catch (e) {
+      console.error('Checkout error', e);
+      alert('Failed to start checkout');
+    }
+  };
+
   const fetchOpportunities = useCallback(async () => {
     try {
       const res = await fetch('/api/data/read/opportunities', { credentials: 'include' });
+      if (res.status === 401) {
+        // Not logged in — use mock data
+        setOpportunities(MOCK_OPPORTUNITIES);
+        setLoading(false);
+        return;
+      }
       const data: { data?: Opportunity[] } = await res.json();
       if (data.data && data.data.length > 0) {
         setOpportunities(data.data);
@@ -52,14 +89,29 @@ export default function PipelinePage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setCreateError('');
     try {
+      const totalContractValue = form.setup_fee + (form.monthly_fee * 12);
       const res = await fetch('/api/data/create/opportunities', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          total_contract_value: totalContractValue,
+        }),
       });
-      if (res.ok) { setShowCreate(false); fetchOpportunities(); }
-    } catch (err) { console.error('Failed to create opportunity:', err); }
+      if (res.ok) {
+        setShowCreate(false);
+        setCreateError('');
+        fetchOpportunities();
+      } else {
+        const errData = await res.json().catch(() => null);
+        setCreateError(errData?.error || `Failed to create (${res.status}). Make sure you are logged in.`);
+      }
+    } catch (err) {
+      console.error('Failed to create opportunity:', err);
+      setCreateError('Network error — check your connection.');
+    }
     finally { setSaving(false); }
   };
 
@@ -77,11 +129,11 @@ export default function PipelinePage() {
     'proposal-sent': 'stage-proposal', 'negotiation': 'stage-negotiation', 'closed-won': 'stage-won',
   };
 
-  const totalValue = opportunities.reduce((sum, o) => sum + (o.total_contract_value || o.setup_fee), 0);
+  const totalValue = opportunities.reduce((sum, o) => sum + Number(o.total_contract_value || o.setup_fee || 0), 0);
 
   const openCreateForStage = (stage: string) => {
     setForm({ name: '', tier: 'discovery', stage, setup_fee: 4000, monthly_fee: 750 });
-    setCreateStage(stage);
+    setCreateError('');
     setShowCreate(true);
   };
 
@@ -105,7 +157,7 @@ export default function PipelinePage() {
           <div className="flex gap-[var(--space-gap)] overflow-x-auto pb-4 -mx-[var(--space-page)] px-[var(--space-page)] md:mx-0 md:px-0">
             {STAGES.map((stageKey) => {
               const stageDeals = opportunities.filter(o => o.stage === stageKey);
-              const stageValue = stageDeals.reduce((sum, o) => sum + (o.total_contract_value || o.setup_fee), 0);
+              const stageValue = stageDeals.reduce((sum, o) => sum + Number(o.total_contract_value || o.setup_fee || 0), 0);
               return (
                 <div key={stageKey} className="flex-shrink-0 w-60 md:w-72">
                   <div className={`p-3 rounded-t-xl border-t-2 ${stageColors[stageKey]} bg-white/5`}>
@@ -120,9 +172,19 @@ export default function PipelinePage() {
                       <div key={deal.id} onClick={() => setViewDeal(deal)} className="card p-4 cursor-pointer hover:border-primary-electricBlue/50 transition-colors">
                         <h4 className="text-sm md:text-base font-medium text-white">{deal.name}</h4>
                         <div className="flex items-center justify-between mt-2 md:mt-3">
-                          <span className="text-base md:text-lg font-semibold text-white">${(deal.total_contract_value || deal.setup_fee).toLocaleString()}</span>
+                          <span className="text-base md:text-lg font-semibold text-white">${Number(deal.total_contract_value || deal.setup_fee || 0).toLocaleString()}</span>
                           <span className={`tag text-xs ${getTierClass(deal.tier)}`}>{deal.tier}</span>
                         </div>
+                        {deal.stage !== 'closed-won' && (
+                          <div className="mt-3 flex items-center gap-2">
+                            <button
+                              className="btn-primary text-xs px-3 py-1.5"
+                              onClick={(e) => { e.stopPropagation(); startCheckout(deal); }}
+                            >
+                              {t.payments.collectPayment}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                     <button onClick={() => openCreateForStage(stageKey)} className="w-full p-3 border border-dashed border-white/10 rounded-xl text-white/40 hover:border-white/20 hover:text-white/60 transition-colors">
@@ -139,6 +201,11 @@ export default function PipelinePage() {
       {/* Create Modal */}
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title={t.pipeline.newOpportunity}>
         <form onSubmit={handleCreate} className="space-y-4">
+          {createError && (
+            <div className="bg-functional-error/10 border border-functional-error/30 rounded-lg p-3">
+              <p className="text-sm text-functional-error">{createError}</p>
+            </div>
+          )}
           <div>
             <label className="block text-sm text-white/60 mb-1">{t.common.name} *</label>
             <input className="input-glass w-full" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. ABC Plumbing AI Package" />
@@ -189,13 +256,21 @@ export default function PipelinePage() {
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/50">Setup Fee</p>
-                <p className="text-sm font-medium text-white mt-1">${viewDeal.setup_fee.toLocaleString()}</p>
+                <p className="text-sm font-medium text-white mt-1">${Number(viewDeal.setup_fee || 0).toLocaleString()}</p>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/50">{t.pipeline.value}</p>
-                <p className="text-sm font-medium text-white mt-1">${(viewDeal.total_contract_value || viewDeal.setup_fee).toLocaleString()}</p>
+                <p className="text-sm font-medium text-white mt-1">${Number(viewDeal.total_contract_value || viewDeal.setup_fee || 0).toLocaleString()}</p>
               </div>
             </div>
+            {viewDeal.stage !== 'closed-won' && (
+              <button
+                onClick={() => { setViewDeal(null); startCheckout(viewDeal); }}
+                className="btn-primary w-full mt-4"
+              >
+                {t.payments.collectPayment} — ${Number(viewDeal.total_contract_value || viewDeal.setup_fee || 0).toLocaleString()}
+              </button>
+            )}
           </div>
         )}
       </Modal>

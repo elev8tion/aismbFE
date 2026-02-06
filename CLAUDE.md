@@ -48,7 +48,7 @@ All client fetches must include `credentials: 'include'` for cookie auth.
 
 ### Authentication
 
-Cookie-based via NCB's better-auth. `AuthContext` (`contexts/AuthContext.tsx`) provides `useAuth()` with `user`, `loading`, `signIn`, `signUp`, `signOut`, `refreshSession`. The `DashboardLayout` component wraps all protected pages and redirects to `/login` if unauthenticated.
+Cookie-based via NCB's built-in auth system. Cookies are prefixed `better-auth.` (this is an NCB internal detail — we do NOT use better-auth directly). `AuthContext` (`contexts/AuthContext.tsx`) provides `useAuth()` with `user`, `loading`, `signIn`, `signUp`, `signOut`, `refreshSession`. The `DashboardLayout` component wraps all protected pages and redirects to `/login` if unauthenticated. To manage users (create, reset passwords), use the NCB MCP tools (`execute_sql` against the `ncba_user` / `ncba_account` tables) — never try to hash passwords manually.
 
 ### Permissions / Roles
 

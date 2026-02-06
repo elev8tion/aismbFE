@@ -17,6 +17,7 @@ interface Partnership {
   health_score: number;
   systems_delivered: number;
   total_systems: number;
+  monthly_revenue?: number;
   start_date?: string;
   next_meeting?: string;
   notes?: string;
@@ -91,6 +92,36 @@ export default function PartnershipsPage() {
     window.open(`mailto:?subject=${subject}&body=${body}`, '_self');
   };
 
+  const startCheckout = async (p: Partnership) => {
+    try {
+      const amount = p.monthly_revenue || (p.tier === 'architect' ? 3000 : p.tier === 'foundation' ? 1500 : 750);
+      const res = await fetch('/api/integrations/stripe/checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'payment',
+          amount: Math.round(amount * 100),
+          currency: 'usd',
+          metadata: { tier: p.tier, phase: p.phase },
+          partnership_id: p.id,
+          success_path: '/payment-success',
+          cancel_path: '/partnerships',
+          product_name: `${p.company_name} — Monthly`,
+          description: `Monthly payment for ${p.company_name}`,
+        }),
+      });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data?.error || 'Failed to start checkout');
+      }
+    } catch (e) {
+      console.error('Checkout error', e);
+      alert('Failed to start checkout');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="page-content">
@@ -151,6 +182,9 @@ export default function PartnershipsPage() {
                   <div className="sm:col-span-2 flex flex-wrap items-center gap-2 md:gap-3 lg:justify-end">
                     <button onClick={() => setViewPartnership(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.viewDetails}</button>
                     <button onClick={() => handleScheduleMeeting(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.scheduleMeeting}</button>
+                    {(partnership.status === 'active' || partnership.status === 'onboarding') && (
+                      <button onClick={() => startCheckout(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.payments.payNow}</button>
+                    )}
                     <button onClick={() => openUpdate(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.partnerships.updateProgress}</button>
                   </div>
                 </div>

@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import {
   LeadsStatIcon, PipelineStatIcon, PartnersStatIcon, RevenueIcon,
-  VoiceIcon, CalculatorIcon, PhoneIcon, EmailIcon,
+  VoiceIcon, CalculatorIcon, PhoneIcon, EmailIcon, ChartIcon,
 } from '@/components/icons';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 import { useState, useEffect, useCallback } from 'react';
