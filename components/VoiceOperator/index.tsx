@@ -257,7 +257,7 @@ export default function VoiceOperator() {
 
   return (
     <>
-      {/* FAB Button — 100x100 matching landing page */}
+      {/* FAB Button */}
       <motion.button
         onClick={handleFABClick}
         className="fixed bottom-6 right-6 z-50"
@@ -265,8 +265,8 @@ export default function VoiceOperator() {
         whileTap={{ scale: browserSupported ? 0.95 : 1 }}
         disabled={!browserSupported}
         style={{
-          width: 100,
-          height: 100,
+          width: isOpen ? 100 : 100,
+          height: isOpen ? 100 : 100,
           opacity: browserSupported ? 1 : 0.5,
           cursor: browserSupported ? 'pointer' : 'not-allowed',
         }}
@@ -277,12 +277,11 @@ export default function VoiceOperator() {
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0 }}
-              className="rounded-full p-3 shadow-2xl"
+              className="glass rounded-full p-3 shadow-2xl"
               style={{
                 background: 'rgba(14, 165, 233, 0.1)',
                 backdropFilter: 'blur(24px)',
                 border: '2px solid rgba(14, 165, 233, 0.3)',
-                boxShadow: '0 8px 32px 0 rgba(0,0,0,0.37), inset 0 1px 0 0 rgba(255,255,255,0.1)',
               }}
             >
               <LiquidMorphLogo
@@ -297,28 +296,21 @@ export default function VoiceOperator() {
             <motion.div
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-full p-4 shadow-2xl flex items-center justify-center"
+              className="glass rounded-full p-4 shadow-2xl"
               style={{
-                width: 100,
-                height: 100,
                 background: voiceState === 'listening'
                   ? 'rgba(34, 197, 94, 0.15)'
                   : voiceState === 'speaking'
                   ? 'rgba(14, 165, 233, 0.15)'
-                  : voiceState === 'processing'
-                  ? 'rgba(249, 115, 22, 0.15)'
-                  : 'rgba(14, 165, 233, 0.1)',
+                  : 'rgba(249, 115, 22, 0.15)',
                 backdropFilter: 'blur(24px)',
                 border: `2px solid ${
                   voiceState === 'listening'
                     ? 'rgba(34, 197, 94, 0.4)'
                     : voiceState === 'speaking'
                     ? 'rgba(14, 165, 233, 0.4)'
-                    : voiceState === 'processing'
-                    ? 'rgba(249, 115, 22, 0.4)'
-                    : 'rgba(14, 165, 233, 0.3)'
+                    : 'rgba(249, 115, 22, 0.4)'
                 }`,
-                boxShadow: '0 8px 32px 0 rgba(0,0,0,0.37), inset 0 1px 0 0 rgba(255,255,255,0.1)',
               }}
             >
               {voiceState === 'listening' && (
@@ -344,17 +336,12 @@ export default function VoiceOperator() {
                   <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
                 </svg>
               )}
-              {voiceState === 'idle' && isOpen && (
-                <svg className="w-full h-full text-white/60" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                </svg>
-              )}
             </motion.div>
           )}
         </div>
       </motion.button>
 
-      {/* Voice Interface Panel */}
+      {/* Voice Interface Modal */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -363,15 +350,7 @@ export default function VoiceOperator() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-28 right-6 z-40 w-80"
           >
-            <div
-              className="rounded-2xl p-6 shadow-2xl"
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(12px) saturate(150%)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 8px 32px 0 rgba(0,0,0,0.37), inset 0 1px 0 0 rgba(255,255,255,0.1)',
-              }}
-            >
+            <div className="glass rounded-2xl p-6 shadow-2xl">
               {/* Status */}
               <div className="text-center mb-4">
                 <h3 className="text-lg font-bold text-white mb-2">
@@ -398,8 +377,8 @@ export default function VoiceOperator() {
 
               {/* Error */}
               {displayError && (
-                <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-                  <p className="text-sm" style={{ color: 'rgba(239, 68, 68, 0.8)' }}>{displayError}</p>
+                <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                  <p className="text-sm text-red-400">{displayError}</p>
                 </div>
               )}
 
@@ -410,27 +389,39 @@ export default function VoiceOperator() {
                     <motion.div
                       key={i}
                       className="w-2 bg-[#22C55E] rounded-full"
-                      animate={{ height: [20, 40, 20] }}
-                      transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1, ease: 'easeInOut' }}
+                      animate={{
+                        height: [20, 40, 20],
+                      }}
+                      transition={{
+                        duration: 0.8,
+                        repeat: Infinity,
+                        delay: i * 0.1,
+                        ease: 'easeInOut',
+                      }}
                     />
                   ))}
                 </div>
               )}
 
-              {/* Auto-Close Countdown */}
+              {/* Auto-Close Countdown Prompt */}
               {showAutoClosePrompt && countdown !== null && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mb-4 p-4 rounded-lg"
-                  style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}
+                  className="mb-4 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30"
                 >
                   <div className="text-center">
-                    <p className="text-sm text-white/80 mb-3">{t.voiceAgent.autoClose.prompt}</p>
+                    <p className="text-sm text-white/80 mb-3">
+                      {t.voiceAgent.autoClose.prompt}
+                    </p>
                     <div className="flex items-center justify-center gap-2 mb-3">
-                      <div className="text-2xl font-bold" style={{ color: 'rgb(96, 165, 250)' }}>{countdown}</div>
-                      <p className="text-xs text-white/60">{t.voiceAgent.autoClose.seconds}</p>
+                      <div className="text-2xl font-bold text-blue-400">
+                        {countdown}
+                      </div>
+                      <p className="text-xs text-white/60">
+                        {t.voiceAgent.autoClose.seconds}
+                      </p>
                     </div>
                     <div className="flex gap-2 justify-center">
                       <button
@@ -462,8 +453,7 @@ export default function VoiceOperator() {
                       iosAudioPlayerRef.current.unlock();
                       stopRecording();
                     }}
-                    className="flex-1 py-2 rounded-lg text-sm font-medium text-white"
-                    style={{ background: 'rgba(14, 165, 233, 0.3)', border: '1px solid rgba(14, 165, 233, 0.5)' }}
+                    className="flex-1 btn-primary py-2 rounded-lg text-sm"
                   >
                     {t.voiceAgent.buttons.stop}
                   </button>
@@ -480,8 +470,7 @@ export default function VoiceOperator() {
                     clearSessionId();
                     setSessionId(null);
                   }}
-                  className="flex-1 py-2 rounded-lg text-sm text-white/80"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  className="flex-1 btn-glass py-2 rounded-lg text-sm"
                 >
                   {t.voiceAgent.buttons.close}
                 </button>
