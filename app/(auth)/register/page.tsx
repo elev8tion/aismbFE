@@ -22,12 +22,12 @@ export default function RegisterPage() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t.auth.passwordsNoMatch);
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t.auth.passwordMinLength);
       return;
     }
 
@@ -37,7 +37,7 @@ export default function RegisterPage() {
       await signUp(email, password, name);
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      setError(err instanceof Error ? err.message : t.auth.failedCreateAccount);
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export default function RegisterPage() {
             className="h-28 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-white">KRE8TION</h1>
-          <p className="text-white/60 mt-2">Create your account</p>
+          <p className="text-white/60 mt-2">{t.auth.createAccount}</p>
         </div>
 
         {/* Form */}
@@ -68,7 +68,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-white/80 mb-2">
-                Full Name
+                {t.auth.fullName}
               </label>
               <input
                 type="text"
@@ -114,7 +114,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/80 mb-2">
-                Confirm Password
+                {t.auth.confirmPassword}
               </label>
               <input
                 type="password"
@@ -132,7 +132,7 @@ export default function RegisterPage() {
               disabled={loading}
               className="btn-primary w-full"
             >
-              {loading ? 'Creating account...' : t.auth.signUp}
+              {loading ? t.auth.creatingAccount : t.auth.signUp}
             </button>
           </form>
 
@@ -152,7 +152,7 @@ export default function RegisterPage() {
             href="https://kre8tion.com"
             className="text-sm text-white/40 hover:text-white/60 transition-colors"
           >
-            ← Back to AI KRE8TION Partners
+            ← {t.common.backTo}
           </a>
         </div>
       </div>

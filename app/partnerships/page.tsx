@@ -17,7 +17,7 @@ export default function PartnershipsPage() {
       <div className="page-content">
         <div className="mb-[var(--space-section)]">
           <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.partnerships}</h1>
-          <p className="text-sm md:text-base text-white/60 mt-1">{partnerships.length} active partnerships</p>
+          <p className="text-sm md:text-base text-white/60 mt-1">{partnerships.length} {t.partnerships.activePartnerships}</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-gap)' }}>
@@ -34,10 +34,10 @@ export default function PartnershipsPage() {
                       {partnership.status}
                     </span>
                   </div>
-                  <p className="text-xs md:text-sm text-white/50 mt-1">Started {partnership.startDate}</p>
+                  <p className="text-xs md:text-sm text-white/50 mt-1">{t.partnerships.started} {partnership.startDate}</p>
                 </div>
                 <div className="text-left sm:text-right shrink-0">
-                  <p className="text-xs md:text-sm text-white/50">Health Score</p>
+                  <p className="text-xs md:text-sm text-white/50">{t.partnerships.healthScore}</p>
                   <p className={`text-xl md:text-2xl font-bold ${getHealthColor(partnership.health)}`}>
                     {partnership.health}%
                   </p>
@@ -47,7 +47,7 @@ export default function PartnershipsPage() {
               <div className="mt-[var(--space-gap)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--space-gap)]">
                 {/* Phase Progress */}
                 <div>
-                  <p className="text-xs md:text-sm text-white/50 mb-2">Current Phase</p>
+                  <p className="text-xs md:text-sm text-white/50 mb-2">{t.partnerships.currentPhase}</p>
                   <div className="flex gap-2">
                     {['discover', 'co-create', 'deploy', 'independent'].map((phase, i) => (
                       <div
@@ -65,7 +65,7 @@ export default function PartnershipsPage() {
 
                 {/* Systems Progress */}
                 <div>
-                  <p className="text-xs md:text-sm text-white/50 mb-2">Systems Delivered</p>
+                  <p className="text-xs md:text-sm text-white/50 mb-2">{t.partnerships.systemsDelivered}</p>
                   <p className="text-lg md:text-xl font-semibold text-white">
                     {partnership.systems} / {partnership.totalSystems}
                   </p>
@@ -73,9 +73,9 @@ export default function PartnershipsPage() {
 
                 {/* Quick Actions */}
                 <div className="sm:col-span-2 flex flex-wrap items-center gap-2 md:gap-3 lg:justify-end">
-                  <button className="btn-secondary text-sm flex-1 sm:flex-none">View Details</button>
-                  <button className="btn-secondary text-sm flex-1 sm:flex-none">Schedule Meeting</button>
-                  <button className="btn-primary text-sm flex-1 sm:flex-none">Update Progress</button>
+                  <button className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.viewDetails}</button>
+                  <button className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.scheduleMeeting}</button>
+                  <button className="btn-primary text-sm flex-1 sm:flex-none">{t.partnerships.updateProgress}</button>
                 </div>
               </div>
             </div>

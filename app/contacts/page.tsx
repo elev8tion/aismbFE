@@ -20,11 +20,11 @@ export default function ContactsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.contacts}</h1>
-            <p className="text-sm md:text-base text-white/60 mt-1">{contacts.length} contacts</p>
+            <p className="text-sm md:text-base text-white/60 mt-1">{contacts.length} {t.contacts.contactsCount}</p>
           </div>
           <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
             <PlusIcon className="w-5 h-5" />
-            Add Contact
+            {t.contacts.addContact}
           </button>
         </div>
 
@@ -33,10 +33,10 @@ export default function ContactsPage() {
           <table className="table-glass min-w-[600px]">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Company</th>
-                <th>Role</th>
-                <th>Decision Maker</th>
+                <th>{t.contacts.name}</th>
+                <th>{t.contacts.company}</th>
+                <th>{t.contacts.role}</th>
+                <th>{t.contacts.decisionMaker}</th>
                 <th>{t.common.actions}</th>
               </tr>
             </thead>
@@ -60,9 +60,9 @@ export default function ContactsPage() {
                   <td className="text-white/80">{contact.role}</td>
                   <td>
                     {contact.decisionMaker ? (
-                      <span className="tag tag-success">Yes</span>
+                      <span className="tag tag-success">{t.contacts.yes}</span>
                     ) : (
-                      <span className="text-white/40">No</span>
+                      <span className="text-white/40">{t.contacts.no}</span>
                     )}
                   </td>
                   <td>

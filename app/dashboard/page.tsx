@@ -26,28 +26,28 @@ export default function DashboardPage() {
             label={t.dashboard.newLeads}
             value="127"
             change={23}
-            changeLabel="vs last month"
+            changeLabel={t.dashboard.vsLastMonth}
             icon={<LeadsIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.pipelineValue}
             value="$245,000"
             change={15}
-            changeLabel="vs last month"
+            changeLabel={t.dashboard.vsLastMonth}
             icon={<PipelineIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.activePartners}
             value="18"
             change={2}
-            changeLabel="new this month"
+            changeLabel={t.dashboard.newThisMonth}
             icon={<PartnersIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.mrr}
             value="$12,500"
             change={8}
-            changeLabel="vs last month"
+            changeLabel={t.dashboard.vsLastMonth}
             icon={<RevenueIcon className="w-6 h-6" />}
           />
         </div>
@@ -122,16 +122,16 @@ export default function DashboardPage() {
         {/* Pipeline Overview */}
         <div className="card mt-[var(--space-gap)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-[var(--space-gap)]">
-            <h2 className="text-base md:text-lg font-semibold text-white">Pipeline Overview</h2>
-            <button className="btn-secondary text-sm w-full sm:w-auto">View Pipeline</button>
+            <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.pipelineOverview}</h2>
+            <button className="btn-secondary text-sm w-full sm:w-auto">{t.dashboard.viewPipeline}</button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[var(--space-gap)]">
-            <PipelineStage label="New Lead" count={12} value="$48,000" color="stage-new" />
-            <PipelineStage label="Contacted" count={8} value="$32,000" color="stage-contacted" />
-            <PipelineStage label="Discovery" count={6} value="$54,000" color="stage-discovery" />
-            <PipelineStage label="Proposal" count={5} value="$47,500" color="stage-proposal" />
-            <PipelineStage label="Negotiation" count={3} value="$63,500" color="stage-negotiation" />
-            <PipelineStage label="Won" count={4} value="$38,000" color="stage-won" />
+            <PipelineStage label={t.pipeline.stages.newLead} count={12} value="$48,000" color="stage-new" />
+            <PipelineStage label={t.pipeline.stages.contacted} count={8} value="$32,000" color="stage-contacted" />
+            <PipelineStage label={t.pipeline.stages.discoveryCall} count={6} value="$54,000" color="stage-discovery" />
+            <PipelineStage label={t.pipeline.stages.proposalSent} count={5} value="$47,500" color="stage-proposal" />
+            <PipelineStage label={t.pipeline.stages.negotiation} count={3} value="$63,500" color="stage-negotiation" />
+            <PipelineStage label={t.pipeline.stages.closedWon} count={4} value="$38,000" color="stage-won" />
           </div>
         </div>
       </div>

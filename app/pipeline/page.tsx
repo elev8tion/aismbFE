@@ -39,7 +39,7 @@ export default function PipelinePage() {
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">{t.pipeline.title}</h1>
             <p className="text-sm md:text-base text-white/60 mt-1">
-              Total pipeline value: <span className="text-white font-semibold">${totalValue.toLocaleString()}</span>
+              {t.pipeline.totalPipelineValue}: <span className="text-white font-semibold">${totalValue.toLocaleString()}</span>
             </p>
           </div>
           <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
@@ -85,7 +85,7 @@ export default function PipelinePage() {
 
                   {/* Add Deal Button */}
                   <button className="w-full p-3 border border-dashed border-white/10 rounded-xl text-white/40 hover:border-white/20 hover:text-white/60 transition-colors">
-                    + Add deal
+                    {t.pipeline.addDeal}
                   </button>
                 </div>
               </div>

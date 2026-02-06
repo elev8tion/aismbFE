@@ -24,7 +24,7 @@ export default function LoginPage() {
       await signIn(email, password);
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in');
+      setError(err instanceof Error ? err.message : t.auth.failedSignIn);
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,7 @@ export default function LoginPage() {
             className="h-28 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-white">KRE8TION</h1>
-          <p className="text-white/60 mt-2">Sign in to your account</p>
+          <p className="text-white/60 mt-2">{t.auth.signInSubtitle}</p>
         </div>
 
         {/* Form */}
@@ -86,7 +86,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" className="w-4 h-4 rounded border-white/20 bg-transparent" />
-                <span className="text-sm text-white/60">Remember me</span>
+                <span className="text-sm text-white/60">{t.auth.rememberMe}</span>
               </label>
               <Link href="/forgot-password" className="text-sm text-primary-electricBlue hover:underline">
                 {t.auth.forgotPassword}
@@ -98,7 +98,7 @@ export default function LoginPage() {
               disabled={loading}
               className="btn-primary w-full"
             >
-              {loading ? 'Signing in...' : t.auth.signIn}
+              {loading ? t.auth.signingIn : t.auth.signIn}
             </button>
           </form>
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
             href="https://kre8tion.com"
             className="text-sm text-white/40 hover:text-white/60 transition-colors"
           >
-            ← Back to AI KRE8TION Partners
+            ← {t.common.backTo}
           </a>
         </div>
       </div>

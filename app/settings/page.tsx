@@ -15,10 +15,10 @@ export default function SettingsPage() {
 
         {/* Profile Section */}
         <div className="card mb-6">
-          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Profile</h2>
+          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">{t.settings.profile}</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-white/60 mb-2">Name</label>
+              <label className="block text-sm text-white/60 mb-2">{t.settings.name}</label>
               <input
                 type="text"
                 defaultValue={user?.name || ''}
@@ -26,7 +26,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-white/60 mb-2">Email</label>
+              <label className="block text-sm text-white/60 mb-2">{t.settings.email}</label>
               <input
                 type="email"
                 defaultValue={user?.email || ''}
@@ -39,7 +39,7 @@ export default function SettingsPage() {
 
         {/* Language Section */}
         <div className="card mb-6">
-          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Language</h2>
+          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">{t.settings.language}</h2>
           <div className="flex gap-3 md:gap-4">
             <button
               onClick={() => setLanguage('en')}
@@ -66,22 +66,22 @@ export default function SettingsPage() {
 
         {/* Notifications Section */}
         <div className="card mb-6">
-          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Notifications</h2>
+          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">{t.settings.notifications}</h2>
           <div className="space-y-4">
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm md:text-base text-white/80">Email notifications for new leads</span>
+              <span className="text-sm md:text-base text-white/80">{t.settings.emailNotifications}</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm md:text-base text-white/80">Daily pipeline summary</span>
+              <span className="text-sm md:text-base text-white/80">{t.settings.dailySummary}</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm md:text-base text-white/80">Voice session alerts</span>
+              <span className="text-sm md:text-base text-white/80">{t.settings.voiceAlerts}</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm md:text-base text-white/80">Partnership health warnings</span>
+              <span className="text-sm md:text-base text-white/80">{t.settings.healthWarnings}</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
           </div>
@@ -89,7 +89,7 @@ export default function SettingsPage() {
 
         {/* Save Button */}
         <button className="btn-primary">
-          {t.common.save} Changes
+          {t.settings.saveChanges}
         </button>
       </div>
     </DashboardLayout>

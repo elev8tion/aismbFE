@@ -19,11 +19,11 @@ export default function CompaniesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.companies}</h1>
-            <p className="text-sm md:text-base text-white/60 mt-1">{companies.length} companies</p>
+            <p className="text-sm md:text-base text-white/60 mt-1">{companies.length} {t.companies.companiesCount}</p>
           </div>
           <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
             <PlusIcon className="w-5 h-5" />
-            Add Company
+            {t.companies.addCompany}
           </button>
         </div>
 
@@ -35,12 +35,12 @@ export default function CompaniesPage() {
                   <h3 className="text-sm md:text-base font-semibold text-white truncate">{company.name}</h3>
                   <p className="text-xs md:text-sm text-white/50 mt-1">{company.industry}</p>
                 </div>
-                <span className="tag shrink-0">{company.employees} employees</span>
+                <span className="tag shrink-0">{company.employees} {t.companies.employees}</span>
               </div>
 
               <div className="mt-4 pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/50">AI Maturity Score</span>
+                  <span className="text-white/50">{t.companies.aiMaturityScore}</span>
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((n) => (
@@ -57,18 +57,18 @@ export default function CompaniesPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm mt-2">
-                  <span className="text-white/50">Contacts</span>
+                  <span className="text-white/50">{t.companies.contacts}</span>
                   <span className="text-white/80">{company.contacts}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm mt-2">
-                  <span className="text-white/50">Opportunities</span>
+                  <span className="text-white/50">{t.companies.opportunities}</span>
                   <span className="text-white/80">{company.opportunities}</span>
                 </div>
               </div>
 
               <button className="btn-secondary w-full mt-4 text-sm">
-                View Details
+                {t.companies.viewDetails}
               </button>
             </div>
           ))}
