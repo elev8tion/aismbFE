@@ -38,7 +38,7 @@ async function ncbFetch<T>(
     method: options.method || 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-Database-Instance': CONFIG.instance,
+      'X-Database-instance': CONFIG.instance,
       Cookie: options.cookies,
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -132,7 +132,7 @@ export async function getSessionUser(
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-Database-Instance': CONFIG.instance,
+      'X-Database-instance': CONFIG.instance,
       Cookie: authCookies,
     },
   });

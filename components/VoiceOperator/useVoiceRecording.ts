@@ -11,9 +11,10 @@ import {
 import { AudioURLManager, isValidAudioBlob } from './utils/audioProcessor';
 
 export interface VoiceRecordingOptions {
-  onTranscription?: (text: string, language?: string) => void;
+  onTranscription?: (text: string) => void;
   onError?: (error: Error) => void;
   maxDurationMs?: number;
+  language?: 'en' | 'es';
 }
 
 export interface VoiceRecordingState {
@@ -23,7 +24,12 @@ export interface VoiceRecordingState {
 }
 
 export function useVoiceRecording(options: VoiceRecordingOptions = {}) {
-  const { onTranscription, onError, maxDurationMs = 60000 } = options;
+  const {
+    onTranscription,
+    onError,
+    maxDurationMs = 60000,
+    language,
+  } = options;
 
   const [state, setState] = useState<VoiceRecordingState>({
     isRecording: false,
@@ -36,6 +42,12 @@ export function useVoiceRecording(options: VoiceRecordingOptions = {}) {
   const mediaRecorderRef = useRef<SafeMediaRecorder | null>(null);
   const isRecordingRef = useRef(false);
   const audioURLManagerRef = useRef<AudioURLManager>(new AudioURLManager());
+
+  // Use ref to always get latest language value (avoids stale closure issues)
+  const languageRef = useRef(language);
+  useEffect(() => {
+    languageRef.current = language;
+  }, [language]);
 
   const cleanup = useCallback(() => {
     if (abortControllerRef.current) {
@@ -60,7 +72,12 @@ export function useVoiceRecording(options: VoiceRecordingOptions = {}) {
 
   const handleError = useCallback(
     (error: Error) => {
-      setState((prev) => ({ ...prev, error, isRecording: false, isProcessing: false }));
+      setState((prev) => ({
+        ...prev,
+        error,
+        isRecording: false,
+        isProcessing: false,
+      }));
       if (onError) onError(error);
       cleanup();
     },
@@ -82,6 +99,11 @@ export function useVoiceRecording(options: VoiceRecordingOptions = {}) {
         const file = new File([audioBlob], `recording.${extension}`, { type: mimeType });
         formData.append('audio', file);
 
+        const currentLanguage = languageRef.current;
+        if (currentLanguage) {
+          formData.append('language', currentLanguage);
+        }
+
         const response = await fetch('/api/agent/transcribe', {
           method: 'POST',
           body: formData,
@@ -100,14 +122,18 @@ export function useVoiceRecording(options: VoiceRecordingOptions = {}) {
           throw new NetworkError(`Transcribe failed (${response.status}): ${errorDetail}`);
         }
 
-        const data = await response.json() as { text?: string; language?: string };
+        const data = await response.json() as { text?: string };
         if (!data || typeof data.text !== 'string') {
           throw new ValidationError('Invalid API response format');
         }
 
-        if (onTranscription) onTranscription(data.text, data.language);
+        if (onTranscription) onTranscription(data.text);
 
-        setState((prev) => ({ ...prev, isProcessing: false, error: null }));
+        setState((prev) => ({
+          ...prev,
+          isProcessing: false,
+          error: null,
+        }));
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           throw new UserCancelledError('Request cancelled by user');
@@ -131,7 +157,10 @@ export function useVoiceRecording(options: VoiceRecordingOptions = {}) {
       isRecordingRef.current = true;
       setState({ isRecording: true, error: null, isProcessing: false });
 
-      const recorder = new SafeMediaRecorder({ maxDurationMs, onError: handleError });
+      const recorder = new SafeMediaRecorder({
+        maxDurationMs,
+        onError: handleError,
+      });
       mediaRecorderRef.current = recorder;
       await recorder.start();
 

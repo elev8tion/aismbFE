@@ -5,8 +5,6 @@ export interface AgentSession {
   user_id: string;
   conversation: ChatCompletionMessageParam[];
   created_at: number;
-  language?: string;
-  voiceSessionDbId?: string;
 }
 
 const MAX_TURNS = 20;

@@ -29,8 +29,6 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function PipelineFunnel({ data }: PipelineFunnelProps) {
-  // Defer rendering until after mount — ResponsiveContainer measures the parent
-  // DOM node, which has zero/negative dimensions during SSR and initial hydration.
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -48,10 +46,10 @@ export function PipelineFunnel({ data }: PipelineFunnelProps) {
           barSize={40}
         >
           <XAxis type="number" hide />
-          <YAxis
-            dataKey="stage"
-            type="category"
-            axisLine={false}
+          <YAxis 
+            dataKey="stage" 
+            type="category" 
+            axisLine={false} 
             tickLine={false}
             tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
             width={100}
@@ -61,9 +59,9 @@ export function PipelineFunnel({ data }: PipelineFunnelProps) {
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.8} />
             ))}
-            <LabelList
-              dataKey="value"
-              position="right"
+            <LabelList 
+              dataKey="value" 
+              position="right" 
               formatter={(val: any) => typeof val === 'number' ? `$${val.toLocaleString()}` : val}
               style={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 500 }}
             />

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 interface PaybackTrendProps {
@@ -9,11 +8,6 @@ interface PaybackTrendProps {
 }
 
 export function PaybackTrend({ weeklySavings, investment }: PaybackTrendProps) {
-  // Defer rendering until after mount — ResponsiveContainer measures the parent
-  // DOM node, which can report 0/negative dimensions during SSR or when inside
-  // hidden containers. This avoids Recharts width/height -1 warnings.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
   // Generate 12 months (52 weeks) of data
   const data = Array.from({ length: 53 }, (_, week) => {
     const cumulativeSavings = weeklySavings * week;
@@ -41,12 +35,8 @@ export function PaybackTrend({ weeklySavings, investment }: PaybackTrendProps) {
     return null;
   };
 
-  if (!mounted) {
-    return <div className="h-[200px] w-full" />;
-  }
-
   return (
-    <div className="h-[200px] w-full min-w-[100px]">
+    <div className="h-[200px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>

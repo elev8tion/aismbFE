@@ -345,6 +345,29 @@ export interface Translations {
     failedSignIn: string;
     failedCreateAccount: string;
   };
+  // Voice Operator
+  voiceAgent: {
+    states: {
+      idle: { title: string; description: string };
+      listening: { title: string; description: string };
+      processing: { title: string; description: string };
+      speaking: { title: string; description: string };
+    };
+    transcript: string;
+    autoClose: {
+      prompt: string;
+      seconds: string;
+      askAnother: string;
+      stayOpen: string;
+    };
+    buttons: {
+      stop: string;
+      close: string;
+    };
+    errors: {
+      notSupported: string;
+    };
+  };
 }
 
 export const translations: Record<'en' | 'es', Translations> = {
@@ -681,6 +704,28 @@ export const translations: Record<'en' | 'es', Translations> = {
       failedSignIn: 'Failed to sign in',
       failedCreateAccount: 'Failed to create account',
     },
+    voiceAgent: {
+      states: {
+        idle: { title: 'Voice Operator', description: 'Tap to start speaking' },
+        listening: { title: 'Listening...', description: 'Speak your command' },
+        processing: { title: 'Processing...', description: 'Getting your answer' },
+        speaking: { title: 'Speaking...', description: 'Playing response' },
+      },
+      transcript: 'You said:',
+      autoClose: {
+        prompt: 'Need anything else?',
+        seconds: 'seconds',
+        askAnother: 'Ask another',
+        stayOpen: 'Stay open',
+      },
+      buttons: {
+        stop: 'Done speaking',
+        close: 'Close',
+      },
+      errors: {
+        notSupported: 'Voice not supported in this browser',
+      },
+    },
   },
   es: {
     nav: {
@@ -1014,6 +1059,28 @@ export const translations: Record<'en' | 'es', Translations> = {
       passwordMinLength: 'La contraseña debe tener al menos 8 caracteres',
       failedSignIn: 'Error al iniciar sesión',
       failedCreateAccount: 'Error al crear la cuenta',
+    },
+    voiceAgent: {
+      states: {
+        idle: { title: 'Operador de Voz', description: 'Toca para hablar' },
+        listening: { title: 'Escuchando...', description: 'Di tu comando' },
+        processing: { title: 'Procesando...', description: 'Obteniendo respuesta' },
+        speaking: { title: 'Hablando...', description: 'Reproduciendo respuesta' },
+      },
+      transcript: 'Dijiste:',
+      autoClose: {
+        prompt: 'Necesitas algo mas?',
+        seconds: 'segundos',
+        askAnother: 'Preguntar otra cosa',
+        stayOpen: 'Mantener abierto',
+      },
+      buttons: {
+        stop: 'Listo',
+        close: 'Cerrar',
+      },
+      errors: {
+        notSupported: 'Voz no soportada en este navegador',
+      },
     },
   },
 };

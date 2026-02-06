@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createOpenAI, MODELS, normalizeLanguageCode } from '@/lib/openai/config';
+import { createOpenAI, MODELS } from '@/lib/openai/config';
 import { validateAudioFile } from '@/lib/security/requestValidator';
-import { getSessionUser } from '@/lib/agent/ncbClient';
-import { rateLimiter, getClientIP } from '@/lib/security/rateLimiter';
+import { getSessionUser, extractAuthCookies } from '@/lib/agent/ncbClient';
 
 export const runtime = 'edge';
 
@@ -14,23 +13,6 @@ export async function POST(request: NextRequest) {
   const user = await getSessionUser(cookieHeader);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Rate limit per user+IP
-  const limiterKey = `transcribe:${user.id}:${getClientIP(request as unknown as Request)}`;
-  const limit = rateLimiter.check(limiterKey);
-  if (!limit.allowed) {
-    return new NextResponse(
-      JSON.stringify({ error: 'Rate limit exceeded', details: limit.reason }),
-      {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'Retry-After': Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000)).toString(),
-          'X-RateLimit-Remaining': String(limit.remaining),
-        },
-      }
-    );
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
@@ -68,14 +50,12 @@ export async function POST(request: NextRequest) {
     const transcription = await openai.audio.transcriptions.create({
       file,
       model: MODELS.transcription,
-      response_format: 'verbose_json',
+      response_format: 'json',
       ...(language === 'es' || language === 'en' ? { language } : {}),
     });
 
-    const rawLanguage = (transcription as any).language as string | undefined;
-    const detectedLanguage = normalizeLanguageCode(rawLanguage);
     const duration = Date.now() - startTime;
-    return NextResponse.json({ text: transcription.text, language: detectedLanguage, success: true, duration });
+    return NextResponse.json({ text: transcription.text, success: true, duration });
   } catch (error) {
     console.error('Transcription error:', error);
     return NextResponse.json(

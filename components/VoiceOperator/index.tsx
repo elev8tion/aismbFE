@@ -11,32 +11,36 @@ import {
 } from './utils/browserCompatibility';
 import { AudioURLManager } from './utils/audioProcessor';
 import { getIOSAudioPlayer } from './utils/iosAudioUnlock';
+import { getSessionId, clearSessionId } from '@/lib/utils/sessionId';
 import { useRouter } from 'next/navigation';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { useTranslations } from '@/contexts/LanguageContext';
 
 type VoiceState = 'idle' | 'listening' | 'processing' | 'speaking';
 
 export default function VoiceOperator() {
   const router = useRouter();
   const { emit } = useVoiceAgentActions();
+  const { t, language } = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [transcript, setTranscript] = useState('');
   const [displayError, setDisplayError] = useState<string | null>(null);
-  const [assistantText, setAssistantText] = useState<string>('');
   const [browserSupported, setBrowserSupported] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showAutoClosePrompt, setShowAutoClosePrompt] = useState(false);
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const audioURLManagerRef = useRef<AudioURLManager>(new AudioURLManager());
   const abortControllerRef = useRef<AbortController | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const iosAudioPlayerRef = useRef(getIOSAudioPlayer());
-  const detectedLanguageRef = useRef<string | undefined>(undefined);
-  // Throttle streaming UI updates
-  const streamBufferRef = useRef<string>('');
-  const streamFlushTimerRef = useRef<number | null>(null);
+
+  // Use ref to always get latest language value (avoids stale closure issues)
+  const languageRef = useRef(language);
+  useEffect(() => {
+    languageRef.current = language;
+  }, [language]);
 
   useEffect(() => {
     try {
@@ -47,10 +51,10 @@ export default function VoiceOperator() {
       if (error instanceof BrowserNotSupportedError) {
         setDisplayError(error.message);
       } else {
-        setDisplayError('Voice not supported in this browser');
+        setDisplayError(t.voiceAgent.errors.notSupported);
       }
     }
-  }, []);
+  }, [t.voiceAgent.errors.notSupported]);
 
   useEffect(() => {
     return () => {
@@ -58,10 +62,6 @@ export default function VoiceOperator() {
       if (abortControllerRef.current) abortControllerRef.current.abort();
       if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
       iosAudioPlayerRef.current.stop();
-      if (streamFlushTimerRef.current) {
-        clearTimeout(streamFlushTimerRef.current);
-        streamFlushTimerRef.current = null;
-      }
     };
   }, []);
 
@@ -80,6 +80,8 @@ export default function VoiceOperator() {
           setDisplayError(null);
           setShowAutoClosePrompt(false);
           setCountdown(null);
+          clearSessionId();
+          setSessionId(null);
           return null;
         }
         return prev - 1;
@@ -97,185 +99,90 @@ export default function VoiceOperator() {
   }, []);
 
   const processVoiceInteraction = useCallback(async (transcribedText: string) => {
+    const currentLanguage = languageRef.current;
     setTranscript(transcribedText);
     setVoiceState('processing');
-    setAssistantText('');
 
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
-    const language = detectedLanguageRef.current;
 
     try {
-      // Prefer streaming endpoint for immediate text
-      const response = await fetch('/api/agent/chat/stream', {
+      // Ensure we have a session ID
+      const currentSessionId = sessionId || getSessionId();
+      if (!sessionId) {
+        setSessionId(currentSessionId);
+      }
+
+      const response = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ question: transcribedText, sessionId, pagePath: window.location?.pathname || '/', language }),
+        body: JSON.stringify({
+          question: transcribedText,
+          sessionId: currentSessionId,
+          pagePath: window.location?.pathname || '/',
+          language: currentLanguage,
+        }),
         signal: abortController.signal,
       });
 
-      if (!response.ok || !response.body) {
-        // Fallback to non-streaming JSON endpoint
-        const fallback = await fetch('/api/agent/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ question: transcribedText, sessionId, pagePath: window.location?.pathname || '/', language }),
-          signal: abortController.signal,
-        });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({})) as { error?: string };
+        throw new Error(`Failed to get response: ${errorData.error || 'Unknown error'}`);
+      }
 
-        if (!fallback.ok) {
-          const status = fallback.status;
-          const errorData = await fallback.json().catch(() => ({})) as { error?: string; details?: string };
-          const core = errorData.error || errorData.details || fallback.statusText;
-          const friendly = status === 401
-            ? 'Please sign in to use the voice assistant.'
-            : status === 429
-            ? 'You hit the rate limit. Please wait a bit and try again.'
-            : core || 'Unknown error';
-          throw new Error(`Failed to get response: ${friendly}`);
-        }
+      const data = await response.json() as { response: string; clientActions?: Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: Record<string, unknown> }> };
 
-        const data = await fallback.json() as { response: string; clientActions?: Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: any }> };
-        // Perform client actions
-        if (Array.isArray(data.clientActions) && data.clientActions.length > 0) {
-          const actions = data.clientActions;
-          const navigateAction = actions.find(a => a && a.type === 'navigate' && typeof a.route === 'string');
-          const otherActions = actions.filter(a => a !== navigateAction);
-          if (navigateAction && navigateAction.route) {
-            try { router.push(navigateAction.route); } catch { /* non-fatal */ }
-            if (otherActions.length > 0) {
-              setTimeout(() => { for (const a of otherActions) { try { emit(a as any); } catch { /* ignore */ } } }, 350);
-            }
-          } else {
-            for (const a of actions) { try { emit(a as any); } catch { /* ignore */ } }
+      // Perform client actions. If a navigate action exists, run it first and
+      // schedule remaining UI actions after navigation.
+      if (Array.isArray(data.clientActions) && data.clientActions.length > 0) {
+        const actions = data.clientActions;
+        const navigateAction = actions.find(a => a && a.type === 'navigate' && typeof a.route === 'string');
+        const otherActions = actions.filter(a => a !== navigateAction);
+
+        if (navigateAction && navigateAction.route) {
+          try { router.push(navigateAction.route); } catch { /* non-fatal */ }
+          if (otherActions.length > 0) {
+            setTimeout(() => {
+              for (const a of otherActions) { try { emit(a as Parameters<typeof emit>[0]); } catch { /* ignore */ } }
+            }, 350);
           }
-        }
-        const finalText = data.response || '';
-        if (finalText) setAssistantText(finalText);
-        setVoiceState('speaking');
-        const speechResponse = await fetch('/api/agent/speak', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-          body: JSON.stringify({ text: finalText, language }), signal: abortController.signal,
-        });
-        if (!speechResponse.ok) {
-          const status = speechResponse.status;
-          try {
-            const err = await speechResponse.json();
-            const friendly = status === 429 ? 'You hit the rate limit for speech. Please wait a bit and try again.' : err?.error || 'Failed to generate speech';
-            throw new Error(friendly);
-          } catch { throw new Error('Failed to generate speech'); }
-        }
-        const audioBlob = await speechResponse.blob();
-        const audioUrl = audioURLManagerRef.current.createURL(audioBlob);
-        await iosAudioPlayerRef.current.play(
-          audioUrl,
-          () => { setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); startAutoCloseCountdown(); },
-          (error) => { console.error('Audio playback error:', error); setDisplayError(`Audio error: ${error.message}`); setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); }
-        );
-        return;
-      }
-
-      // Parse SSE stream
-      const decoder = new TextDecoder();
-      const reader = response.body.getReader();
-      let buffer = '';
-      let finalText = '';
-
-      const flushSpeak = async () => {
-        if (!finalText) return;
-        setVoiceState('speaking');
-        const speechResponse = await fetch('/api/agent/speak', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-          body: JSON.stringify({ text: finalText, language }), signal: abortController.signal,
-        });
-        if (!speechResponse.ok) {
-          const status = speechResponse.status;
-          try {
-            const err = await speechResponse.json();
-            const friendly = status === 429 ? 'You hit the rate limit for speech. Please wait a bit and try again.' : err?.error || 'Failed to generate speech';
-            throw new Error(friendly);
-          } catch { throw new Error('Failed to generate speech'); }
-        }
-        const audioBlob = await speechResponse.blob();
-        const audioUrl = audioURLManagerRef.current.createURL(audioBlob);
-        await iosAudioPlayerRef.current.play(
-          audioUrl,
-          () => { setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); startAutoCloseCountdown(); },
-          (error) => { console.error('Audio playback error:', error); setDisplayError(`Audio error: ${error.message}`); setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); }
-        );
-      };
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buffer.indexOf('\n\n')) !== -1) {
-          const raw = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 2);
-          let event = 'message';
-          let dataStr = '';
-          for (const line of raw.split('\n')) {
-            if (line.startsWith('event:')) event = line.slice(6).trim();
-            else if (line.startsWith('data:')) dataStr += line.slice(5).trim();
-          }
-          if (!dataStr) continue;
-          try {
-            const payload = JSON.parse(dataStr);
-            if (event === 'meta') {
-              const actions = payload.clientActions as Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: any }> | undefined;
-              if (Array.isArray(actions) && actions.length > 0) {
-                const navigateAction = actions.find(a => a && a.type === 'navigate' && typeof a.route === 'string');
-                const otherActions = actions.filter(a => a !== navigateAction);
-                if (navigateAction && navigateAction.route) {
-                  try { router.push(navigateAction.route); } catch { /* non-fatal */ }
-                  if (otherActions.length > 0) {
-                    setTimeout(() => { for (const a of otherActions) { try { emit(a as any); } catch { /* ignore */ } } }, 350);
-                  }
-                } else {
-                  for (const a of actions) { try { emit(a as any); } catch { /* ignore */ } }
-                }
-              }
-            } else if (event === 'delta') {
-              const part = typeof payload.text === 'string' ? payload.text : '';
-              if (part) {
-                finalText += part;
-                streamBufferRef.current += part;
-                if (!streamFlushTimerRef.current) {
-                  streamFlushTimerRef.current = window.setTimeout(() => {
-                    if (streamBufferRef.current) {
-                      setAssistantText(prev => prev + streamBufferRef.current);
-                      streamBufferRef.current = '';
-                    }
-                    streamFlushTimerRef.current = null;
-                  }, 60);
-                }
-              }
-            } else if (event === 'error') {
-              const msg = payload.error || 'Stream error';
-              throw new Error(msg);
-            } else if (event === 'done') {
-              // done — response will finish
-            }
-          } catch {
-            // ignore parse errors for individual frames
-          }
+        } else {
+          for (const a of actions) { try { emit(a as Parameters<typeof emit>[0]); } catch { /* ignore */ } }
         }
       }
 
-      // Flush any pending buffer before speaking
-      if (streamFlushTimerRef.current) {
-        clearTimeout(streamFlushTimerRef.current);
-        streamFlushTimerRef.current = null;
-      }
-      if (streamBufferRef.current) {
-        setAssistantText(prev => prev + streamBufferRef.current);
-        streamBufferRef.current = '';
+      setVoiceState('speaking');
+
+      const speechResponse = await fetch('/api/agent/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ text: data.response, language: currentLanguage }),
+        signal: abortController.signal,
+      });
+
+      if (!speechResponse.ok) {
+        throw new Error('Failed to generate speech');
       }
 
-      await flushSpeak();
+      const audioBlob = await speechResponse.blob();
+      const audioUrl = audioURLManagerRef.current.createURL(audioBlob);
+
+      await iosAudioPlayerRef.current.play(
+        audioUrl,
+        () => {
+          setVoiceState('idle');
+          audioURLManagerRef.current.revokeURL(audioUrl);
+          startAutoCloseCountdown();
+        },
+        (error) => {
+          console.error('Audio playback error:', error);
+          setDisplayError(`Audio error: ${error.message}`);
+          setVoiceState('idle');
+          audioURLManagerRef.current.revokeURL(audioUrl);
+        }
+      );
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         setVoiceState('idle');
@@ -287,13 +194,10 @@ export default function VoiceOperator() {
     } finally {
       abortControllerRef.current = null;
     }
-  }, [sessionId, startAutoCloseCountdown]);
+  }, [sessionId, startAutoCloseCountdown, router, emit]);
 
   const handleTranscription = useCallback(
-    async (text: string, language?: string) => {
-      detectedLanguageRef.current = language;
-      await processVoiceInteraction(text);
-    },
+    async (text: string) => { await processVoiceInteraction(text); },
     [processVoiceInteraction]
   );
 
@@ -308,6 +212,7 @@ export default function VoiceOperator() {
       onTranscription: handleTranscription,
       onError: handleRecordingError,
       maxDurationMs: 60000,
+      language,
     });
 
   useEffect(() => {
@@ -330,11 +235,11 @@ export default function VoiceOperator() {
       setIsOpen(true);
       setDisplayError(null);
       setTranscript('');
-      setAssistantText('');
       iosAudioPlayerRef.current.unlock();
       setTimeout(() => startRecording(), 500);
     } else {
       if (voiceState === 'listening') {
+        // CRITICAL: Unlock iOS audio during user tap BEFORE async operations
         iosAudioPlayerRef.current.unlock();
         stopRecording();
       } else {
@@ -343,20 +248,12 @@ export default function VoiceOperator() {
         setIsOpen(false);
         setVoiceState('idle');
         setTranscript('');
-        setAssistantText('');
         setDisplayError(null);
+        clearSessionId();
+        setSessionId(null);
       }
     }
   };
-
-  const stateLabels = {
-    idle: { title: 'Voice Operator', desc: 'Tap to start speaking' },
-    listening: { title: 'Listening...', desc: 'Speak your command' },
-    processing: { title: 'Processing...', desc: 'Getting your answer' },
-    speaking: { title: 'Speaking...', desc: 'Playing response' },
-  };
-
-  const labels = stateLabels[voiceState];
 
   return (
     <>
@@ -477,22 +374,25 @@ export default function VoiceOperator() {
             >
               {/* Status */}
               <div className="text-center mb-4">
-                <h3 className="text-lg font-bold text-white mb-2">{labels.title}</h3>
-                <p className="text-sm text-white/60">{labels.desc}</p>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  {voiceState === 'idle' && t.voiceAgent.states.idle.title}
+                  {voiceState === 'listening' && t.voiceAgent.states.listening.title}
+                  {voiceState === 'processing' && t.voiceAgent.states.processing.title}
+                  {voiceState === 'speaking' && t.voiceAgent.states.speaking.title}
+                </h3>
+                <p className="text-sm text-white/60">
+                  {voiceState === 'idle' && t.voiceAgent.states.idle.description}
+                  {voiceState === 'listening' && t.voiceAgent.states.listening.description}
+                  {voiceState === 'processing' && t.voiceAgent.states.processing.description}
+                  {voiceState === 'speaking' && t.voiceAgent.states.speaking.description}
+                </p>
               </div>
 
               {/* Transcript */}
               {transcript && (
                 <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-white/50 mb-1">You said:</p>
+                  <p className="text-xs text-white/50 mb-1">{t.voiceAgent.transcript}</p>
                   <p className="text-sm text-white">{transcript}</p>
-                </div>
-              )}
-
-              {assistantText && (
-                <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-white/50 mb-1">Assistant:</p>
-                  <p className="text-sm text-white/90">{assistantText}</p>
                 </div>
               )}
 
@@ -527,10 +427,10 @@ export default function VoiceOperator() {
                   style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}
                 >
                   <div className="text-center">
-                    <p className="text-sm text-white/80 mb-3">Need anything else?</p>
+                    <p className="text-sm text-white/80 mb-3">{t.voiceAgent.autoClose.prompt}</p>
                     <div className="flex items-center justify-center gap-2 mb-3">
                       <div className="text-2xl font-bold" style={{ color: 'rgb(96, 165, 250)' }}>{countdown}</div>
-                      <p className="text-xs text-white/60">seconds</p>
+                      <p className="text-xs text-white/60">{t.voiceAgent.autoClose.seconds}</p>
                     </div>
                     <div className="flex gap-2 justify-center">
                       <button
@@ -541,13 +441,13 @@ export default function VoiceOperator() {
                         }}
                         className="px-3 py-1.5 text-xs bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
                       >
-                        Ask another
+                        {t.voiceAgent.autoClose.askAnother}
                       </button>
                       <button
                         onClick={clearAutoCloseCountdown}
                         className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 text-white/80 rounded-lg transition-colors"
                       >
-                        Stay open
+                        {t.voiceAgent.autoClose.stayOpen}
                       </button>
                     </div>
                   </div>
@@ -565,7 +465,7 @@ export default function VoiceOperator() {
                     className="flex-1 py-2 rounded-lg text-sm font-medium text-white"
                     style={{ background: 'rgba(14, 165, 233, 0.3)', border: '1px solid rgba(14, 165, 233, 0.5)' }}
                   >
-                    Done speaking
+                    {t.voiceAgent.buttons.stop}
                   </button>
                 )}
                 <button
@@ -576,13 +476,14 @@ export default function VoiceOperator() {
                     setIsOpen(false);
                     setVoiceState('idle');
                     setTranscript('');
-                    setAssistantText('');
                     setDisplayError(null);
+                    clearSessionId();
+                    setSessionId(null);
                   }}
                   className="flex-1 py-2 rounded-lg text-sm text-white/80"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                 >
-                  Close
+                  {t.voiceAgent.buttons.close}
                 </button>
               </div>
             </div>

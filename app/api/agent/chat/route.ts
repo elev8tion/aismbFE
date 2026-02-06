@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOpenAI, buildChatParams } from '@/lib/openai/config';
 import { validateQuestion, detectPromptInjection } from '@/lib/security/requestValidator';
-import { getSessionUser, extractAuthCookies, ncbCreate, ncbUpdate } from '@/lib/agent/ncbClient';
+import { getSessionUser, extractAuthCookies } from '@/lib/agent/ncbClient';
 import { selectModel } from '@/lib/agent/modelRouter';
 import { getSession, addMessage } from '@/lib/agent/session';
 import { ALL_CRM_FUNCTIONS } from '@/lib/agent/functions';
 import { executeTool } from '@/lib/agent/tools';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import { rateLimiter, getClientIP } from '@/lib/security/rateLimiter';
 
 export const runtime = 'edge';
 
@@ -22,7 +21,6 @@ Guidelines:
 - When presenting numbers, round to whole numbers and use plain language ("about fifty leads" not "49.7 leads").
 - Never expose raw IDs to the user. Refer to records by name.
 - If a tool returns an error, explain the issue simply and suggest what to do.
-- Always respond in the same language as the user. If the detected language is Spanish, respond entirely in Spanish. If English, respond in English.
 
 Navigation:
 - When the user asks to open, go to, show, or take me to a section (English or Spanish), call the navigate tool with a target from the allowed list.
@@ -254,23 +252,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Rate limit per user+IP
-  const limiterKey = `chat:${user.id}:${getClientIP(request as unknown as Request)}`;
-  const limit = rateLimiter.check(limiterKey);
-  if (!limit.allowed) {
-    return new NextResponse(
-      JSON.stringify({ error: 'Rate limit exceeded', details: limit.reason }),
-      {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'Retry-After': Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000)).toString(),
-          'X-RateLimit-Remaining': String(limit.remaining),
-        },
-      }
-    );
-  }
-
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'OpenAI not configured' }, { status: 500 });
@@ -282,7 +263,7 @@ export async function POST(request: NextRequest) {
       question: string;
       sessionId: string;
       pagePath?: string;
-      language?: string;
+      language?: 'en' | 'es';
     };
 
     if (!sessionId) {
@@ -307,16 +288,15 @@ export async function POST(request: NextRequest) {
     // Select model based on complexity
     const model = selectModel(sanitizedQuestion);
 
-    // Update session language when provided
-    if (language) {
-      session.language = language;
-    }
-
     // Build messages
+    const languageInstruction: ChatCompletionMessageParam[] = language === 'es'
+      ? [{ role: 'system' as const, content: 'INSTRUCCIÓN OBLIGATORIA DE IDIOMA: Eres un asistente que SOLO responde en español. Toda tu comunicación debe ser en español natural.' }]
+      : [];
+
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_PROMPT },
+      ...languageInstruction,
       { role: 'system', content: pagePath ? `Current page route: ${pagePath}` : 'Current page route: unknown' },
-      { role: 'system', content: `User language: ${language || 'en'}` },
       ...NAV_FEWSHOTS,
       ...session.conversation,
       { role: 'user', content: sanitizedQuestion },
@@ -327,38 +307,24 @@ export async function POST(request: NextRequest) {
 
     const authCookies = extractAuthCookies(cookieHeader);
 
-    // Model-aware params: o-series rejects temperature, uses max_completion_tokens
-    const chatParams = buildChatParams(model);
-
     // Tool call loop
     let currentMessages = messages;
     let response = '';
-    let apiError = '';
     const clientActions: Array<Record<string, unknown>> = [];
+    const chatParams = buildChatParams(model);
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-      let completion;
-      try {
-        completion = await openai.chat.completions.create({
-          model,
-          messages: currentMessages,
-          tools: ALL_CRM_FUNCTIONS,
-          ...chatParams,
-        });
-      } catch (openaiErr) {
-        apiError = openaiErr instanceof Error ? openaiErr.message : String(openaiErr);
-        console.error(`OpenAI API error (model=${model}):`, apiError);
-        response = '';
-        break;
-      }
+      const completion = await openai.chat.completions.create({
+        model,
+        messages: currentMessages,
+        tools: ALL_CRM_FUNCTIONS,
+        ...chatParams,
+      });
 
-      const choice = completion.choices?.[0];
-      if (!choice?.message) {
-        response = 'I completed the operation.';
-        break;
-      }
+      const choice = completion.choices[0];
 
       if (!choice.message.tool_calls || choice.message.tool_calls.length === 0) {
+        // No more tool calls — final response
         response = choice.message.content || 'I completed the operation.';
         break;
       }
@@ -368,38 +334,13 @@ export async function POST(request: NextRequest) {
 
       for (const toolCall of choice.message.tool_calls) {
         if (toolCall.type !== 'function') continue;
-        let params: Record<string, unknown> = {};
-        try {
-          params = JSON.parse(toolCall.function.arguments);
-        } catch {
-          currentMessages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify({ error: 'Invalid arguments' }),
-          });
-          continue;
-        }
-        const toolName = toolCall.function.name;
-        const startedAt = Date.now();
-        try {
-          console.log('agent.tool.start', {
-            tool: toolName,
-            user: user.id,
-            keys: Object.keys(params || {}).slice(0, 5),
-          });
-        } catch { /* logging best-effort */ }
+        const params = JSON.parse(toolCall.function.arguments);
         const result = await executeTool(
-          toolName,
+          toolCall.function.name,
           params,
           user.id,
           authCookies
         );
-        try {
-          console.log('agent.tool.end', {
-            tool: toolName,
-            ms: Date.now() - startedAt,
-          });
-        } catch { /* logging best-effort */ }
 
         currentMessages.push({
           role: 'tool',
@@ -407,67 +348,30 @@ export async function POST(request: NextRequest) {
           content: JSON.stringify(result),
         });
 
+        // Collect client actions to return to the UI (e.g., navigate)
         try {
-          const r = result as any;
+          const r: any = result as any;
           if (r && typeof r === 'object' && r.client_action) {
             clientActions.push(r.client_action);
           }
-        } catch { /* non-fatal */ }
+        } catch {
+          // non-fatal
+        }
       }
 
       // If this is the last round, force a response
       if (round === MAX_TOOL_ROUNDS - 1) {
-        try {
-          const finalCompletion = await openai.chat.completions.create({
-            model,
-            messages: currentMessages,
-            ...chatParams,
-          });
-          response = finalCompletion.choices[0]?.message?.content || 'Done.';
-        } catch {
-          response = 'Done.';
-        }
+        const finalCompletion = await openai.chat.completions.create({
+          model,
+          messages: currentMessages,
+          ...chatParams,
+        });
+        response = finalCompletion.choices[0]?.message?.content || 'Done.';
       }
     }
-
-    // Ensure response is never empty
-    if (!response) response = apiError
-      ? `Sorry, there was an issue: ${apiError}`
-      : 'I completed the operation.';
 
     // Save assistant response to session
     addMessage(sessionId, { role: 'assistant', content: response });
-
-    // Persist to voice_sessions NCB table — truly fire-and-forget, never block the response
-    {
-      const userMessages = session.conversation.filter(m => m.role === 'user');
-      const langCode = session.language || language || 'en';
-      const sessionData: Record<string, unknown> = {
-        external_session_id: sessionId,
-        start_time: new Date(session.created_at).toISOString(),
-        language: langCode === 'en' || langCode === 'es' ? langCode : 'en',
-        messages: JSON.stringify(session.conversation.filter(m => m.role === 'user' || m.role === 'assistant')),
-        total_questions: userMessages.length,
-        referrer_page: pagePath || '/',
-        actions_taken: JSON.stringify(clientActions),
-        duration: Math.round((Date.now() - session.created_at) / 1000),
-      };
-
-      if (!session.voiceSessionDbId) {
-        ncbCreate<{ data?: { id?: string }; id?: string }>(
-          'voice_sessions',
-          sessionData,
-          user.id,
-          authCookies
-        ).then(result => {
-          const dbId = (result as any)?.data?.id || (result as any)?.id;
-          if (dbId) session.voiceSessionDbId = String(dbId);
-        }).catch(err => console.error('Voice session create error (non-fatal):', err));
-      } else {
-        ncbUpdate('voice_sessions', session.voiceSessionDbId, sessionData, authCookies)
-          .catch(err => console.error('Voice session update error (non-fatal):', err));
-      }
-    }
 
     const duration = Date.now() - startTime;
     return NextResponse.json({ response, success: true, duration, model, clientActions });
