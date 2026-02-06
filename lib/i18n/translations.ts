@@ -10,6 +10,7 @@ export interface Translations {
     partnerships: string;
     voiceSessions: string;
     roiCalculations: string;
+    helpCenter: string;
     settings: string;
     signOut: string;
   };
@@ -341,6 +342,7 @@ export const translations: Record<'en' | 'es', Translations> = {
       partnerships: 'Partnerships',
       voiceSessions: 'Voice Sessions',
       roiCalculations: 'ROI Calculations',
+      helpCenter: 'Help Center',
       settings: 'Settings',
       signOut: 'Sign Out',
     },
@@ -658,6 +660,7 @@ export const translations: Record<'en' | 'es', Translations> = {
       partnerships: 'Asociaciones',
       voiceSessions: 'Sesiones de Voz',
       roiCalculations: 'Cálculos de ROI',
+      helpCenter: 'Centro de Ayuda',
       settings: 'Configuración',
       signOut: 'Cerrar Sesión',
     },

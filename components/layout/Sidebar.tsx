@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   DashboardIcon, BookingsIcon, LeadsIcon, PipelineIcon,
   CompaniesIcon, ContactsIcon, PartnershipsIcon, VoiceIcon,
-  CalculatorIcon, SettingsIcon, ChevronIcon,
+  CalculatorIcon, SettingsIcon, HelpIcon, ChevronIcon,
 } from '@/components/icons';
 
 interface SidebarProps {
@@ -29,6 +29,7 @@ const navItems = [
   { key: 'partnerships', href: '/partnerships', icon: PartnershipsIcon },
   { key: 'voiceSessions', href: '/voice-sessions', icon: VoiceIcon },
   { key: 'roiCalculations', href: '/roi-calculations', icon: CalculatorIcon },
+  { key: 'helpCenter', href: '/help', icon: HelpIcon },
 ];
 
 export function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onMobileClose }: SidebarProps) {

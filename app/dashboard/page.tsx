@@ -13,6 +13,7 @@ import {
   LeadsStatIcon, PipelineStatIcon, PartnersStatIcon, RevenueIcon,
   VoiceIcon, CalculatorIcon, PhoneIcon, EmailIcon,
 } from '@/components/icons';
+import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 
 export default function DashboardPage() {
   const { t } = useTranslations();
@@ -25,6 +26,8 @@ export default function DashboardPage() {
           title={t.dashboard.title}
           subtitle={<>{t.dashboard.welcome}, {user?.name || 'User'}</>}
         />
+
+        <OnboardingChecklist />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-[var(--space-gap)] mb-[var(--space-section)]">
@@ -72,12 +75,14 @@ export default function DashboardPage() {
                 title="Voice session - ABC Plumbing"
                 subtitle="5 questions, Spanish"
                 time="2m ago"
+                statusIcon={<span title="Hot Lead" className="text-lg">🔥</span>}
               />
               <ActivityItem
                 icon={<CalculatorIcon className="w-4 h-4" />}
                 title="ROI calc completed - XYZ HVAC"
                 subtitle="$45K projected value"
                 time="15m ago"
+                statusIcon={<span title="Warm Lead" className="text-lg">☀️</span>}
               />
               <ActivityItem
                 icon={<PhoneIcon className="w-4 h-4" />}
@@ -90,6 +95,7 @@ export default function DashboardPage() {
                 title="Email opened - Smith Property Mgmt"
                 subtitle="ROI report email"
                 time="1h ago"
+                statusIcon={<span title="Engaged" className="text-lg">👀</span>}
               />
             </div>
           </div>

@@ -6,33 +6,10 @@ import { StatCard } from '@/components/ui/StatCard';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
 import { CalculatorIcon } from '@/components/icons';
-
-interface ROIMetrics {
-  timeSaved?: number;
-  weeklyValue?: number;
-  totalValue?: number;
-  investment?: number;
-  roi?: number;
-  paybackWeeks?: number;
-}
-
-interface ROICalculation {
-  id: string;
-  contact_id?: number;
-  industry: string;
-  employee_count: string;
-  hourly_rate: number;
-  weekly_admin_hours: number;
-  calculations?: string;
-  selected_tier?: 'discovery' | 'foundation' | 'architect';
-  email_captured: number;
-  email?: string;
-  report_requested: number;
-  report_sent_at?: string;
-  time_on_calculator: number;
-  adjustments_count: number;
-  created_at?: string;
-}
+import { ROICalculation, ROIMetrics } from '@/types/roi';
+import { scoreROICalculation, LeadScore } from '@/lib/utils/leadScoring';
+import { getBenchmarkComparison } from '@/lib/utils/benchmarks';
+import { Modal } from '@/components/ui/Modal';
 
 const MOCK_ROI_CALCULATIONS: ROICalculation[] = [
   {
@@ -269,6 +246,10 @@ export default function ROICalculationsPage() {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Proposal Modal State
+  const [proposalModalOpen, setProposalModalOpen] = useState(false);
+  const [selectedProposalCalc, setSelectedProposalCalc] = useState<ROICalculation | null>(null);
+
   const fetchCalculations = useCallback(async () => {
     try {
       const res = await fetch('/api/data/read/roi_calculations', { credentials: 'include' });
@@ -355,6 +336,15 @@ export default function ROICalculationsPage() {
     }
   };
 
+  const getScoreIcon = (level: LeadScore['level']) => {
+    switch (level) {
+      case 'fire': return <span className="text-xl">🔥</span>;
+      case 'hot': return <span className="text-xl">🌡️</span>;
+      case 'warm': return <span className="text-xl">☀️</span>;
+      case 'cold': return <span className="text-xl">❄️</span>;
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
   };
@@ -382,6 +372,11 @@ export default function ROICalculationsPage() {
     { key: 'foundation', label: t.roiCalculations.tiers.foundation },
     { key: 'architect', label: t.roiCalculations.tiers.architect },
   ];
+
+  const handleOpenProposal = (calc: ROICalculation) => {
+    setSelectedProposalCalc(calc);
+    setProposalModalOpen(true);
+  };
 
   return (
     <DashboardLayout>
@@ -464,6 +459,7 @@ export default function ROICalculationsPage() {
                     <th>{t.roiCalculations.selectedTier}</th>
                     <th>{t.roiCalculations.projectedROI}</th>
                     <th>{t.roiCalculations.email}</th>
+                    <th>Score</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -471,6 +467,8 @@ export default function ROICalculationsPage() {
                   {filtered.map((calc) => {
                     const metrics = parseCalcs(calc.calculations);
                     const isExpanded = expandedId === calc.id;
+                    const leadScore = scoreROICalculation(calc);
+                    const benchmarks = getBenchmarkComparison(calc.industry, calc.employee_count, calc.weekly_admin_hours);
 
                     return (
                       <>
@@ -522,32 +520,70 @@ export default function ROICalculationsPage() {
                             )}
                           </td>
                           <td>
+                            <div className="flex items-center gap-2" title={leadScore.reasons.join(', ')}>
+                              {getScoreIcon(leadScore.level)}
+                              <span className={`text-sm font-bold ${
+                                leadScore.level === 'fire' ? 'text-orange-500' :
+                                leadScore.level === 'hot' ? 'text-red-400' :
+                                leadScore.level === 'warm' ? 'text-yellow-400' :
+                                'text-blue-300'
+                              }`}>
+                                {leadScore.score}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
                             <ChevronDownIcon className={`w-4 h-4 text-white/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </td>
                         </tr>
                         {isExpanded && (
                           <tr key={`${calc.id}-details`}>
-                            <td colSpan={7}>
+                            <td colSpan={8}>
                               <div className="p-4 mx-2 mb-2 space-y-4">
-                                {/* Input Parameters */}
-                                <div>
-                                  <p className="text-xs text-white/50 mb-2 uppercase tracking-wide">{t.roiCalculations.inputParameters}</p>
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    <div className="bg-white/5 rounded-lg p-3">
-                                      <p className="text-xs text-white/50">{t.roiCalculations.industry}</p>
-                                      <p className="text-sm font-medium text-white mt-1">{calc.industry}</p>
+                                
+                                {/* Top Row: Parameters & Benchmarks */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {/* User Parameters */}
+                                  <div className="bg-white/5 rounded-lg p-3">
+                                    <p className="text-xs text-white/50 mb-2 uppercase tracking-wide">{t.roiCalculations.inputParameters}</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <p className="text-xs text-white/50">{t.roiCalculations.industry}</p>
+                                        <p className="text-sm font-medium text-white">{calc.industry}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-white/50">{t.roiCalculations.employees}</p>
+                                        <p className="text-sm font-medium text-white">{calc.employee_count}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-white/50">{t.roiCalculations.hourlyRate}</p>
+                                        <p className="text-sm font-medium text-white">{formatCurrency(calc.hourly_rate)}/hr</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-white/50">{t.roiCalculations.weeklyHours}</p>
+                                        <p className="text-sm font-medium text-white">{calc.weekly_admin_hours}h{t.roiCalculations.perWeek}</p>
+                                      </div>
                                     </div>
-                                    <div className="bg-white/5 rounded-lg p-3">
-                                      <p className="text-xs text-white/50">{t.roiCalculations.employees}</p>
-                                      <p className="text-sm font-medium text-white mt-1">{calc.employee_count}</p>
-                                    </div>
-                                    <div className="bg-white/5 rounded-lg p-3">
-                                      <p className="text-xs text-white/50">{t.roiCalculations.hourlyRate}</p>
-                                      <p className="text-sm font-medium text-white mt-1">{formatCurrency(calc.hourly_rate)}/hr</p>
-                                    </div>
-                                    <div className="bg-white/5 rounded-lg p-3">
-                                      <p className="text-xs text-white/50">{t.roiCalculations.weeklyHours}</p>
-                                      <p className="text-sm font-medium text-white mt-1">{calc.weekly_admin_hours}h{t.roiCalculations.perWeek}</p>
+                                  </div>
+
+                                  {/* Industry Benchmarking */}
+                                  <div className={`bg-gradient-to-br from-white/5 to-white/10 rounded-lg p-3 border-l-4 ${benchmarks.isOverheadHigh ? 'border-functional-error' : 'border-functional-success'}`}>
+                                    <p className="text-xs text-white/50 mb-2 uppercase tracking-wide">Industry Efficiency Benchmark</p>
+                                    <div className="flex items-start gap-4">
+                                      <div className="flex-1">
+                                        <p className="text-sm text-white mb-1">
+                                          {benchmarks.isOverheadHigh 
+                                            ? `Admin overhead is ${benchmarks.percentage}% higher than average.` 
+                                            : `Efficiency is ${benchmarks.percentage}% better than average.`
+                                          }
+                                        </p>
+                                        <p className="text-xs text-white/60">
+                                          Industry avg: {benchmarks.benchmarkHours}h/week vs User: {calc.weekly_admin_hours}h/week
+                                        </p>
+                                      </div>
+                                      <div className={`text-2xl font-bold ${benchmarks.isOverheadHigh ? 'text-functional-error' : 'text-functional-success'}`}>
+                                        {benchmarks.isOverheadHigh ? 'High' : 'Good'}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -555,7 +591,15 @@ export default function ROICalculationsPage() {
                                 {/* Projected Results */}
                                 {metrics && (
                                   <div>
-                                    <p className="text-xs text-white/50 mb-2 uppercase tracking-wide">{t.roiCalculations.projectedResults}</p>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <p className="text-xs text-white/50 uppercase tracking-wide">{t.roiCalculations.projectedResults}</p>
+                                      <button 
+                                        onClick={() => handleOpenProposal(calc)}
+                                        className="text-xs bg-primary-electricBlue hover:bg-primary-deepBlue text-white px-3 py-1 rounded-full transition-colors"
+                                      >
+                                        Preview Proposal PDF
+                                      </button>
+                                    </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                                       {metrics.timeSaved !== undefined && (
                                         <div className="bg-primary-electricBlue/5 border border-primary-electricBlue/20 rounded-lg p-3">
@@ -632,6 +676,88 @@ export default function ROICalculationsPage() {
               </table>
             </div>
           </div>
+        )}
+        
+        {/* Proposal Preview Modal */}
+        {selectedProposalCalc && (
+          <Modal
+            open={proposalModalOpen}
+            onClose={() => setProposalModalOpen(false)}
+            title={`Proposal Preview: ${selectedProposalCalc.industry} Automation`}
+            wide
+          >
+            <div className="p-6 bg-white text-gray-900 rounded-lg shadow-lg font-serif">
+              {/* Header */}
+              <div className="border-b-2 border-gray-200 pb-4 mb-6 flex justify-between items-center">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Automation Proposal</h1>
+                  <p className="text-sm text-gray-500">Prepared for {selectedProposalCalc.email || 'Client'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-primary-electricBlue">KRE8TION</p>
+                  <p className="text-xs text-gray-500">{new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              {/* Executive Summary */}
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Executive Summary</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Based on our analysis of your {selectedProposalCalc.industry} operations (approx. {selectedProposalCalc.employee_count} employees), 
+                  we have identified significant opportunity to reduce administrative overhead. Your team is currently spending roughly 
+                  <span className="font-bold"> {selectedProposalCalc.weekly_admin_hours} hours/week</span> on non-billable tasks.
+                </p>
+              </div>
+
+              {/* Financial Impact */}
+              {(() => {
+                const metrics = parseCalcs(selectedProposalCalc.calculations);
+                if (!metrics) return null;
+                return (
+                  <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100">
+                    <h3 className="text-md font-bold text-gray-800 mb-3">Projected Financial Impact</h3>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase">Weekly Savings</p>
+                        <p className="text-xl font-bold text-green-600">{formatCurrency(metrics.weeklyValue || 0)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase">Annual Value</p>
+                        <p className="text-xl font-bold text-green-600">{formatCurrency((metrics.weeklyValue || 0) * 52)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase">Payback Period</p>
+                        <p className="text-xl font-bold text-blue-600">{metrics.paybackWeeks} Weeks</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Proposed Solution */}
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Recommended Solution: {getTierLabel(selectedProposalCalc.selected_tier)}</h3>
+                <p className="text-sm text-gray-700 mb-2">
+                  We recommend the <strong>{getTierLabel(selectedProposalCalc.selected_tier)}</strong> tier to address your primary bottlenecks. 
+                  This implementation includes:
+                </p>
+                <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                  <li>Custom Workflow Automation Systems</li>
+                  <li>Lead Response & Scheduling Bot</li>
+                  <li>Automated Invoice Follow-up</li>
+                  <li>Dedicated Support & Training</li>
+                </ul>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-8 pt-4 border-t border-gray-200 flex justify-between items-center">
+                <p className="text-xs text-gray-400">Valid for 30 days</p>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+                  Download PDF
+                </button>
+              </div>
+            </div>
+          </Modal>
         )}
       </div>
     </DashboardLayout>

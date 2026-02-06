@@ -5,9 +5,10 @@ interface ActivityItemProps {
   title: string;
   subtitle: string;
   time: string;
+  statusIcon?: ReactNode;
 }
 
-export function ActivityItem({ icon, title, subtitle, time }: ActivityItemProps) {
+export function ActivityItem({ icon, title, subtitle, time, statusIcon }: ActivityItemProps) {
   return (
     <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
       <div className="p-2 rounded-lg bg-primary-electricBlue/10 text-primary-electricBlue">
@@ -17,7 +18,10 @@ export function ActivityItem({ icon, title, subtitle, time }: ActivityItemProps)
         <p className="text-sm font-medium text-white truncate">{title}</p>
         <p className="text-xs text-white/50">{subtitle}</p>
       </div>
-      <span className="text-xs text-white/40">{time}</span>
+      <div className="flex flex-col items-end gap-1">
+        <span className="text-xs text-white/40">{time}</span>
+        {statusIcon}
+      </div>
     </div>
   );
 }

@@ -6,34 +6,9 @@ import { StatCard } from '@/components/ui/StatCard';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
 import { VoiceIcon } from '@/components/icons';
-
-interface ConversationMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-interface VoiceSession {
-  id: string;
-  external_session_id: string;
-  contact_id?: number;
-  start_time: string;
-  end_time?: string;
-  duration: number;
-  language: 'en' | 'es';
-  user_agent?: string;
-  device?: 'desktop' | 'mobile' | 'tablet';
-  referrer_page?: string;
-  messages?: string;
-  total_questions: number;
-  actions_taken?: string;
-  topics?: string;
-  sentiment?: 'positive' | 'neutral' | 'negative' | 'mixed';
-  intents?: string;
-  pain_points?: string;
-  objections?: string;
-  outcome?: 'continued_browsing' | 'roi_calculator' | 'booking_scheduled' | 'left_site';
-  created_at?: string;
-}
+import { VoiceSession, ConversationMessage } from '@/types/voice';
+import { generateSessionInsights, AIInsight } from '@/lib/utils/aiInsights';
+import { scoreVoiceSession, LeadScore } from '@/lib/utils/leadScoring';
 
 const MOCK_VOICE_SESSIONS: VoiceSession[] = [
   {
@@ -395,6 +370,16 @@ export default function VoiceSessionsPage() {
     }
   };
 
+  // Helper for Lead Score Icon
+  const getScoreIcon = (level: LeadScore['level']) => {
+    switch (level) {
+      case 'fire': return <span className="text-xl">🔥</span>;
+      case 'hot': return <span className="text-xl">🌡️</span>;
+      case 'warm': return <span className="text-xl">☀️</span>;
+      case 'cold': return <span className="text-xl">❄️</span>;
+    }
+  };
+
   const filterTabs = [
     { key: 'all', label: t.voiceSessions.all },
     { key: 'positive', label: t.voiceSessions.positive },
@@ -485,6 +470,7 @@ export default function VoiceSessionsPage() {
                     <th>{t.voiceSessions.questions}</th>
                     <th>{t.voiceSessions.sentiment}</th>
                     <th>{t.voiceSessions.outcome}</th>
+                    <th>Score</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -496,6 +482,8 @@ export default function VoiceSessionsPage() {
                     const objections = parseJSON<string[]>(session.objections);
                     const actions = parseJSON<string[]>(session.actions_taken);
                     const isExpanded = expandedId === session.id;
+                    const leadScore = scoreVoiceSession(session);
+                    const aiInsight = isExpanded ? generateSessionInsights(session) : null;
 
                     return (
                       <>
@@ -536,28 +524,47 @@ export default function VoiceSessionsPage() {
                             </span>
                           </td>
                           <td>
+                            <div className="flex items-center gap-2" title={leadScore.reasons.join(', ')}>
+                              {getScoreIcon(leadScore.level)}
+                              <span className={`text-sm font-bold ${
+                                leadScore.level === 'fire' ? 'text-orange-500' :
+                                leadScore.level === 'hot' ? 'text-red-400' :
+                                leadScore.level === 'warm' ? 'text-yellow-400' :
+                                'text-blue-300'
+                              }`}>
+                                {leadScore.score}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
                             <ChevronDownIcon className={`w-4 h-4 text-white/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           </td>
                         </tr>
-                        {isExpanded && (
+                        {isExpanded && aiInsight && (
                           <tr key={`${session.id}-details`}>
-                            <td colSpan={7}>
-                              <div className="p-4 mx-2 mb-2 space-y-4">
-                                {/* Meta row */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                  <div className="bg-white/5 rounded-lg p-3">
-                                    <p className="text-xs text-white/50 mb-1">{t.voiceSessions.device}</p>
-                                    <p className="text-sm text-white">{getDeviceLabel(session.device)}</p>
-                                  </div>
-                                  {session.referrer_page && (
+                            <td colSpan={8}>
+                              <div className="p-4 mx-2 mb-2 bg-black/20 rounded-lg border border-white/5 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                
+                                {/* Left Column: Meta & Tags */}
+                                <div className="space-y-4">
+                                  {/* Meta Grid */}
+                                  <div className="grid grid-cols-2 gap-3">
                                     <div className="bg-white/5 rounded-lg p-3">
-                                      <p className="text-xs text-white/50 mb-1">{t.voiceSessions.referrer}</p>
-                                      <p className="text-sm text-white truncate">{session.referrer_page}</p>
+                                      <p className="text-xs text-white/50 mb-1">{t.voiceSessions.device}</p>
+                                      <p className="text-sm text-white">{getDeviceLabel(session.device)}</p>
                                     </div>
-                                  )}
+                                    {session.referrer_page && (
+                                      <div className="bg-white/5 rounded-lg p-3">
+                                        <p className="text-xs text-white/50 mb-1">{t.voiceSessions.referrer}</p>
+                                        <p className="text-sm text-white truncate">{session.referrer_page}</p>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Topics */}
                                   {topics && topics.length > 0 && (
-                                    <div className="bg-white/5 rounded-lg p-3 md:col-span-2">
-                                      <p className="text-xs text-white/50 mb-1">{t.voiceSessions.topics}</p>
+                                    <div className="bg-white/5 rounded-lg p-3">
+                                      <p className="text-xs text-white/50 mb-2">{t.voiceSessions.topics}</p>
                                       <div className="flex flex-wrap gap-1">
                                         {topics.map((topic, i) => (
                                           <span key={i} className="tag text-xs">{topic}</span>
@@ -565,66 +572,52 @@ export default function VoiceSessionsPage() {
                                       </div>
                                     </div>
                                   )}
+
+                                  {/* Pain Points & Objections */}
+                                  {((painPoints && painPoints.length > 0) || (objections && objections.length > 0)) && (
+                                    <div className="bg-white/5 rounded-lg p-3 space-y-3">
+                                      {painPoints && painPoints.length > 0 && (
+                                        <div>
+                                          <p className="text-xs text-white/50 mb-1">{t.voiceSessions.painPoints}</p>
+                                          <div className="flex flex-wrap gap-1">
+                                            {painPoints.map((pp, i) => (
+                                              <span key={i} className="tag tag-warning text-xs">{pp}</span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                      {objections && objections.length > 0 && (
+                                        <div>
+                                          <p className="text-xs text-white/50 mb-1">{t.voiceSessions.objections}</p>
+                                          <div className="flex flex-wrap gap-1">
+                                            {objections.map((obj, i) => (
+                                              <span key={i} className="tag tag-error text-xs">{obj}</span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
 
-                                {/* Pain points & Objections */}
-                                {((painPoints && painPoints.length > 0) || (objections && objections.length > 0)) && (
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {painPoints && painPoints.length > 0 && (
-                                      <div className="bg-white/5 rounded-lg p-3">
-                                        <p className="text-xs text-white/50 mb-2">{t.voiceSessions.painPoints}</p>
-                                        <div className="flex flex-wrap gap-1">
-                                          {painPoints.map((pp, i) => (
-                                            <span key={i} className="tag tag-warning text-xs">{pp}</span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                    {objections && objections.length > 0 && (
-                                      <div className="bg-white/5 rounded-lg p-3">
-                                        <p className="text-xs text-white/50 mb-2">{t.voiceSessions.objections}</p>
-                                        <div className="flex flex-wrap gap-1">
-                                          {objections.map((obj, i) => (
-                                            <span key={i} className="tag tag-error text-xs">{obj}</span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Actions taken */}
-                                {actions && actions.length > 0 && (
-                                  <div className="bg-white/5 rounded-lg p-3">
-                                    <p className="text-xs text-white/50 mb-2">{t.voiceSessions.actions}</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {actions.map((action, i) => (
-                                        <span key={i} className="tag tag-success text-xs">
-                                          {action.replace(/_/g, ' ').toLowerCase()}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Transcript */}
-                                {messages && messages.length > 0 && (
-                                  <div className="bg-white/5 rounded-lg p-3">
-                                    <p className="text-xs text-white/50 mb-3">{t.voiceSessions.transcript}</p>
-                                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
-                                      {messages.map((msg, i) => (
+                                {/* Middle Column: Transcript */}
+                                <div className="lg:col-span-1 flex flex-col h-full max-h-[500px]">
+                                  <div className="bg-white/5 rounded-lg p-3 flex-1 overflow-hidden flex flex-col">
+                                    <p className="text-xs text-white/50 mb-3 uppercase tracking-wide">{t.voiceSessions.transcript}</p>
+                                    <div className="space-y-3 overflow-y-auto pr-2 flex-1">
+                                      {messages && messages.map((msg, i) => (
                                         <div
                                           key={i}
                                           className={`flex gap-3 ${msg.role === 'user' ? '' : 'flex-row-reverse'}`}
                                         >
-                                          <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                             msg.role === 'user'
                                               ? 'bg-primary-electricBlue/20 text-primary-electricBlue'
                                               : 'bg-functional-success/20 text-functional-success'
                                           }`}>
                                             {msg.role === 'user' ? 'V' : 'AI'}
                                           </div>
-                                          <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
+                                          <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
                                             msg.role === 'user'
                                               ? 'bg-primary-electricBlue/10 text-white/90'
                                               : 'bg-white/5 text-white/80'
@@ -635,7 +628,71 @@ export default function VoiceSessionsPage() {
                                       ))}
                                     </div>
                                   </div>
-                                )}
+                                </div>
+
+                                {/* Right Column: AI Insights Panel */}
+                                <div className="space-y-4">
+                                  {/* AI Summary */}
+                                  <div className="bg-gradient-to-br from-primary-electricBlue/10 to-primary-purple/10 border border-primary-electricBlue/20 rounded-lg p-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className="text-lg">✨</span>
+                                      <h3 className="text-sm font-semibold text-white">AI Executive Summary</h3>
+                                    </div>
+                                    <p className="text-sm text-white/80 leading-relaxed">
+                                      {aiInsight.summary}
+                                    </p>
+                                  </div>
+
+                                  {/* Next Best Action */}
+                                  <div className="bg-white/5 border-l-4 border-functional-success rounded-r-lg p-4">
+                                    <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Recommended Action</p>
+                                    <p className="text-base font-bold text-white mb-1">{aiInsight.nextBestAction.action}</p>
+                                    <p className="text-xs text-white/60">{aiInsight.nextBestAction.reason}</p>
+                                  </div>
+
+                                  {/* Intent Analysis */}
+                                  <div className="bg-white/5 rounded-lg p-4">
+                                    <p className="text-xs text-white/50 uppercase tracking-wide mb-3">Detected Intents</p>
+                                    <div className="space-y-2">
+                                      {aiInsight.topIntents.map((intent, i) => (
+                                        <div key={i} className="flex items-center justify-between">
+                                          <span className="text-sm text-white/90">{intent.label}</span>
+                                          <div className="flex items-center gap-2">
+                                            <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                              <div 
+                                                className="h-full bg-primary-electricBlue rounded-full" 
+                                                style={{ width: `${intent.confidence * 100}%` }} 
+                                              />
+                                            </div>
+                                            <span className="text-xs text-white/50">{Math.round(intent.confidence * 100)}%</span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Emotional Arc Visualization */}
+                                  <div className="bg-white/5 rounded-lg p-4">
+                                    <p className="text-xs text-white/50 uppercase tracking-wide mb-3">Emotional Arc</p>
+                                    <div className="flex items-end justify-between h-24 px-2">
+                                      {aiInsight.emotionalArc.map((point, i) => (
+                                        <div key={i} className="flex flex-col items-center gap-1 w-1/4">
+                                          <div 
+                                            className={`w-full mx-1 rounded-t-sm transition-all ${
+                                              point.sentiment > 0.6 ? 'bg-functional-success/60' : 
+                                              point.sentiment < 0.4 ? 'bg-functional-error/60' : 
+                                              'bg-white/20'
+                                            }`}
+                                            style={{ height: `${point.sentiment * 100}%` }}
+                                          />
+                                          <span className="text-[10px] text-white/40">{point.label}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                </div>
+
                               </div>
                             </td>
                           </tr>
