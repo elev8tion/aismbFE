@@ -60,7 +60,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen">
       {/* Mobile header bar */}
-      <div className="mobile-header md:hidden">
+      <div className="mobile-header flex md:hidden">
         <button
           onClick={() => setIsMobileOpen((prev) => !prev)}
           className="relative w-10 h-10 flex flex-col items-center justify-center gap-1.5"

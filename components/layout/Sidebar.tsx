@@ -41,12 +41,12 @@ export function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onMobileC
     return (
       <>
         {/* Logo */}
-        <div className={`border-b border-white/10 ${expanded ? 'p-6' : 'p-4'}`}>
+        <div className={`border-b border-white/10 ${expanded ? 'p-5' : 'p-2'}`}>
           <Link href="/dashboard" className={`flex items-center ${expanded ? 'gap-3' : 'justify-center'}`}>
             <img
               src="/logos/dark_mode_logo.svg"
               alt="KRE8TION"
-              className="w-12 h-12 shrink-0"
+              className={`shrink-0 ${expanded ? 'w-10 h-10' : 'w-8 h-8'}`}
             />
             {expanded && (
               <div className="overflow-hidden">
