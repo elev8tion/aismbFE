@@ -584,13 +584,10 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
         type: 'object',
         properties: {
           scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','voice_sessions','roi_calculations','reports_weekly','settings'] },
-          id: { type: 'string' },
-          query: { type: 'string' },
+          id: { type: 'string', description: 'Record ID to edit. Provide id or query, not both.' },
+          query: { type: 'string', description: 'Fuzzy search query to find the record. Provide query or id, not both.' },
         },
-        oneOf: [
-          { required: ['scope','id'] },
-          { required: ['scope','query'] },
-        ],
+        required: ['scope'],
       },
     },
   },
@@ -603,13 +600,10 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
         type: 'object',
         properties: {
           scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','voice_sessions','roi_calculations','reports_weekly','settings'] },
-          id: { type: 'string' },
-          query: { type: 'string' },
+          id: { type: 'string', description: 'Record ID to view. Provide id or query, not both.' },
+          query: { type: 'string', description: 'Fuzzy search query to find the record. Provide query or id, not both.' },
         },
-        oneOf: [
-          { required: ['scope','id'] },
-          { required: ['scope','query'] },
-        ],
+        required: ['scope'],
       },
     },
   },

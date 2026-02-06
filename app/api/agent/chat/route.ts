@@ -150,18 +150,6 @@ const NAV_FEWSHOTS = [
   { role: 'tool', tool_call_id: 'ui8', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'roi_calculations', action: 'search', payload: { query: 'HVAC' } } }) },
   { role: 'assistant', content: 'Buscando HVAC.' },
 
-  // Leads filtering (EN) — stay on page and adjust UI
-  { role: 'user', content: 'Filter leads to qualified' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui1', type: 'function', function: { name: 'ui_set_filter', arguments: JSON.stringify({ scope: 'leads', filter: 'qualified' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui1', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'leads', action: 'set_filter', payload: { filter: 'qualified' } } }) },
-  { role: 'assistant', content: 'Showing qualified leads.' },
-
-  // Leads search (ES)
-  { role: 'user', content: 'Buscar Maria' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui2', type: 'function', function: { name: 'ui_search', arguments: JSON.stringify({ scope: 'leads', query: 'maria' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui2', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'leads', action: 'search', payload: { query: 'maria' } } }) },
-  { role: 'assistant', content: 'Buscando Maria.' },
-  
   // Leads (EN)
   { role: 'user', content: 'Open leads' },
   { role: 'assistant', content: null, tool_calls: [ { id: 'nav3', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'leads' }) } } ] },

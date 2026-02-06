@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 interface PaybackTrendProps {
@@ -8,6 +9,12 @@ interface PaybackTrendProps {
 }
 
 export function PaybackTrend({ weeklySavings, investment }: PaybackTrendProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted) {
+    return <div className="h-[200px] w-full" />;
+  }
   // Generate 12 months (52 weeks) of data
   const data = Array.from({ length: 53 }, (_, week) => {
     const cumulativeSavings = weeklySavings * week;

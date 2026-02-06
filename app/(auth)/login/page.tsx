@@ -83,14 +83,11 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" className="w-4 h-4 rounded border-white/20 bg-transparent" />
                 <span className="text-sm text-white/60">{t.auth.rememberMe}</span>
               </label>
-              <Link href="/forgot-password" className="text-sm text-primary-electricBlue hover:underline">
-                {t.auth.forgotPassword}
-              </Link>
             </div>
 
             <button

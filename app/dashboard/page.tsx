@@ -67,11 +67,12 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
     fetchDashboardData();
     // Poll every 30 seconds for live updates
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
-  }, [fetchDashboardData]);
+  }, [user, fetchDashboardData]);
 
   const funnelData = [
     { stage: t.pipeline.stages.newLead, count: 12, value: 48000, color: '#00E5FF' },
