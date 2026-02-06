@@ -33,47 +33,47 @@ export default function PipelinePage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">{t.pipeline.title}</h1>
-            <p className="text-white/60 mt-1">
+            <h1 className="text-xl md:text-2xl font-bold text-white">{t.pipeline.title}</h1>
+            <p className="text-sm md:text-base text-white/60 mt-1">
               Total pipeline value: <span className="text-white font-semibold">${totalValue.toLocaleString()}</span>
             </p>
           </div>
-          <button className="btn-primary flex items-center gap-2">
+          <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
             <PlusIcon className="w-5 h-5" />
             {t.pipeline.newOpportunity}
           </button>
         </div>
 
         {/* Pipeline Board */}
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0">
           {stages.map((stage) => {
             const stageValue = stage.deals.reduce((sum, deal) => sum + deal.value, 0);
             return (
-              <div key={stage.key} className="flex-shrink-0 w-72">
+              <div key={stage.key} className="flex-shrink-0 w-60 md:w-72">
                 {/* Stage Header */}
                 <div className={`p-3 rounded-t-xl border-t-2 ${stage.color} bg-white/5`}>
                   <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-white">{stage.label}</h3>
-                    <span className="text-sm text-white/50">{stage.deals.length}</span>
+                    <h3 className="text-sm md:text-base font-medium text-white">{stage.label}</h3>
+                    <span className="text-xs md:text-sm text-white/50">{stage.deals.length}</span>
                   </div>
-                  <p className="text-sm text-white/40 mt-1">${stageValue.toLocaleString()}</p>
+                  <p className="text-xs md:text-sm text-white/40 mt-1">${stageValue.toLocaleString()}</p>
                 </div>
 
                 {/* Stage Cards */}
-                <div className="space-y-3 p-3 bg-white/[0.02] rounded-b-xl min-h-[400px]">
+                <div className="space-y-3 p-2 md:p-3 bg-white/[0.02] rounded-b-xl min-h-[300px] md:min-h-[400px]">
                   {stage.deals.map((deal) => (
                     <div
                       key={deal.id}
                       className="card p-4 cursor-pointer hover:border-primary-electricBlue/50 transition-colors"
                     >
-                      <h4 className="font-medium text-white">{deal.name}</h4>
-                      <p className="text-sm text-white/50 mt-1">{deal.company}</p>
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="text-lg font-semibold text-white">
+                      <h4 className="text-sm md:text-base font-medium text-white">{deal.name}</h4>
+                      <p className="text-xs md:text-sm text-white/50 mt-1">{deal.company}</p>
+                      <div className="flex items-center justify-between mt-2 md:mt-3">
+                        <span className="text-base md:text-lg font-semibold text-white">
                           ${deal.value.toLocaleString()}
                         </span>
                         <span className={`tag text-xs ${getTierClass(deal.tier)}`}>

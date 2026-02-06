@@ -2,8 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+
+interface SidebarProps {
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  isMobileOpen: boolean;
+  onMobileClose: () => void;
+}
 
 const navItems = [
   { key: 'dashboard', href: '/dashboard', icon: DashboardIcon },
@@ -16,77 +25,156 @@ const navItems = [
   { key: 'roiCalculations', href: '/roi-calculations', icon: CalculatorIcon },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const { t } = useTranslations();
   const { user, signOut } = useAuth();
 
-  return (
-    <aside className="sidebar fixed left-0 top-0 bottom-0 w-64 flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-white/10">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <img
-            src="/logos/dark_mode_logo.svg"
-            alt="KRE8TION"
-            className="w-10 h-10"
-          />
-          <div>
-            <span className="font-semibold text-white">KRE8TION</span>
-            <span className="text-xs text-white/50 block">AI KRE8TION Partners</span>
-          </div>
-        </Link>
-      </div>
+  // Auto-close mobile drawer on route change
+  useEffect(() => {
+    onMobileClose();
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+  const sidebarContent = (isMobile: boolean) => {
+    const expanded = isMobile || !isCollapsed;
 
-          return (
-            <Link
-              key={item.key}
-              href={item.href}
-              className={`sidebar-item ${isActive ? 'active' : ''}`}
+    return (
+      <>
+        {/* Logo */}
+        <div className={`border-b border-white/10 ${expanded ? 'p-6' : 'p-4'}`}>
+          <Link href="/dashboard" className={`flex items-center ${expanded ? 'gap-3' : 'justify-center'}`}>
+            <img
+              src="/logos/dark_mode_logo.svg"
+              alt="KRE8TION"
+              className="w-10 h-10 shrink-0"
+            />
+            {expanded && (
+              <div className="overflow-hidden">
+                <span className="font-semibold text-white">KRE8TION</span>
+                <span className="text-xs text-white/50 block">AI KRE8TION Partners</span>
+              </div>
+            )}
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={`sidebar-item ${isActive ? 'active' : ''} ${expanded ? '' : 'justify-center'}`}
+                title={!expanded ? (t.nav[item.key as keyof typeof t.nav] as string) : undefined}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                {expanded && (
+                  <span className="whitespace-nowrap">{t.nav[item.key as keyof typeof t.nav]}</span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Settings & User */}
+        <div className="p-4 border-t border-white/10 space-y-1">
+          <Link
+            href="/settings"
+            className={`sidebar-item ${expanded ? '' : 'justify-center'}`}
+            title={!expanded ? (t.nav.settings as string) : undefined}
+          >
+            <SettingsIcon className="w-5 h-5 shrink-0" />
+            {expanded && <span>{t.nav.settings}</span>}
+          </Link>
+
+          {/* Collapse toggle — desktop only */}
+          {!isMobile && (
+            <button
+              onClick={onToggleCollapse}
+              className="sidebar-item w-full hidden lg:flex justify-center"
+              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              <Icon className="w-5 h-5" />
-              <span>{t.nav[item.key as keyof typeof t.nav]}</span>
-            </Link>
-          );
-        })}
-      </nav>
+              <ChevronIcon className={`w-5 h-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+            </button>
+          )}
 
-      {/* Settings & User */}
-      <div className="p-4 border-t border-white/10 space-y-1">
-        <Link href="/settings" className="sidebar-item">
-          <SettingsIcon className="w-5 h-5" />
-          <span>{t.nav.settings}</span>
-        </Link>
+          {user && expanded && (
+            <div className="mt-4 p-3 rounded-xl bg-white/5">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary-electricBlue/20 flex items-center justify-center shrink-0">
+                  <span className="text-primary-electricBlue text-sm font-medium">
+                    {user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{user.name || 'User'}</p>
+                  <p className="text-xs text-white/50 truncate">{user.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={signOut}
+                className="mt-3 w-full btn-ghost text-sm text-white/60 hover:text-white"
+              >
+                {t.nav.signOut}
+              </button>
+            </div>
+          )}
 
-        {user && (
-          <div className="mt-4 p-3 rounded-xl bg-white/5">
-            <div className="flex items-center gap-3">
+          {user && !expanded && (
+            <div className="flex justify-center mt-4">
               <div className="w-8 h-8 rounded-full bg-primary-electricBlue/20 flex items-center justify-center">
                 <span className="text-primary-electricBlue text-sm font-medium">
                   {user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{user.name || 'User'}</p>
-                <p className="text-xs text-white/50 truncate">{user.email}</p>
-              </div>
             </div>
-            <button
-              onClick={signOut}
-              className="mt-3 w-full btn-ghost text-sm text-white/60 hover:text-white"
+          )}
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <>
+      {/* Desktop/Tablet sidebar */}
+      <aside
+        className={`sidebar fixed left-0 top-0 bottom-0 z-30 hidden md:flex flex-col transition-[width] duration-300 ${
+          isCollapsed ? 'w-16' : 'w-16 lg:w-64'
+        }`}
+      >
+        {sidebarContent(false)}
+      </aside>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/60 z-40 md:hidden"
+              onClick={onMobileClose}
+            />
+            {/* Drawer */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="sidebar fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col md:hidden"
             >
-              {t.nav.signOut}
-            </button>
-          </div>
+              {sidebarContent(true)}
+            </motion.aside>
+          </>
         )}
-      </div>
-    </aside>
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -160,6 +248,14 @@ function SettingsIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
     </svg>
   );
 }

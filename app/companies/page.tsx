@@ -15,27 +15,27 @@ export default function CompaniesPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="p-4 md:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">{t.nav.companies}</h1>
-            <p className="text-white/60 mt-1">{companies.length} companies</p>
+            <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.companies}</h1>
+            <p className="text-sm md:text-base text-white/60 mt-1">{companies.length} companies</p>
           </div>
-          <button className="btn-primary flex items-center gap-2">
+          <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
             <PlusIcon className="w-5 h-5" />
             Add Company
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {companies.map((company) => (
             <div key={company.id} className="card card-interactive">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-white">{company.name}</h3>
-                  <p className="text-sm text-white/50 mt-1">{company.industry}</p>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="text-sm md:text-base font-semibold text-white truncate">{company.name}</h3>
+                  <p className="text-xs md:text-sm text-white/50 mt-1">{company.industry}</p>
                 </div>
-                <span className="tag">{company.employees} employees</span>
+                <span className="tag shrink-0">{company.employees} employees</span>
               </div>
 
               <div className="mt-4 pt-4 border-t border-white/10">

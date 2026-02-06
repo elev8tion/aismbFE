@@ -16,19 +16,20 @@ export default function ContactsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="p-4 md:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">{t.nav.contacts}</h1>
-            <p className="text-white/60 mt-1">{contacts.length} contacts</p>
+            <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.contacts}</h1>
+            <p className="text-sm md:text-base text-white/60 mt-1">{contacts.length} contacts</p>
           </div>
-          <button className="btn-primary flex items-center gap-2">
+          <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
             <PlusIcon className="w-5 h-5" />
             Add Contact
           </button>
         </div>
 
-        <div className="card overflow-hidden">
+        <div className="card overflow-hidden -mx-4 md:mx-0 rounded-none md:rounded-2xl">
+          <div className="overflow-x-auto">
           <table className="table-glass">
             <thead>
               <tr>
@@ -81,6 +82,7 @@ export default function ContactsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </DashboardLayout>

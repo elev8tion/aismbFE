@@ -57,25 +57,13 @@ NCB_DATA_API_URL=https://app.nocodebackend.com/api/data
 
 ---
 
-## Deployment Methods
+## Deployment
 
-### Method 1: GitHub Auto-Deploy (Recommended)
-
-Once connected to GitHub:
+There is NO auto-deploy from GitHub. Every deployment is manual via CLI:
 
 ```bash
-git add .
-git commit -m "your message"
-git push origin main
-```
-
-### Method 2: Manual CLI Deploy
-
-```bash
-# Build for Cloudflare
+# Build and deploy
 npm run pages:build
-
-# Deploy
 npx wrangler pages deploy .vercel/output/static --project-name=ai-smb-crm --commit-dirty=true --no-bundle
 ```
 

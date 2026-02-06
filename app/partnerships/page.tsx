@@ -14,21 +14,19 @@ export default function PartnershipsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-white">{t.nav.partnerships}</h1>
-            <p className="text-white/60 mt-1">{partnerships.length} active partnerships</p>
-          </div>
+      <div className="p-4 md:p-6 lg:p-8">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-white">{t.nav.partnerships}</h1>
+          <p className="text-sm md:text-base text-white/60 mt-1">{partnerships.length} active partnerships</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {partnerships.map((partnership) => (
             <div key={partnership.id} className="card">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold text-white">{partnership.company}</h3>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                    <h3 className="text-base md:text-lg font-semibold text-white">{partnership.company}</h3>
                     <span className={`tag ${getTierClass(partnership.tier)}`}>
                       {partnership.tier}
                     </span>
@@ -36,20 +34,20 @@ export default function PartnershipsPage() {
                       {partnership.status}
                     </span>
                   </div>
-                  <p className="text-sm text-white/50 mt-1">Started {partnership.startDate}</p>
+                  <p className="text-xs md:text-sm text-white/50 mt-1">Started {partnership.startDate}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-white/50">Health Score</p>
-                  <p className={`text-2xl font-bold ${getHealthColor(partnership.health)}`}>
+                <div className="text-left sm:text-right shrink-0">
+                  <p className="text-xs md:text-sm text-white/50">Health Score</p>
+                  <p className={`text-xl md:text-2xl font-bold ${getHealthColor(partnership.health)}`}>
                     {partnership.health}%
                   </p>
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-4 gap-6">
+              <div className="mt-4 md:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {/* Phase Progress */}
                 <div>
-                  <p className="text-sm text-white/50 mb-2">Current Phase</p>
+                  <p className="text-xs md:text-sm text-white/50 mb-2">Current Phase</p>
                   <div className="flex gap-2">
                     {['discover', 'co-create', 'deploy', 'independent'].map((phase, i) => (
                       <div
@@ -62,22 +60,22 @@ export default function PartnershipsPage() {
                       />
                     ))}
                   </div>
-                  <p className="text-sm text-white mt-1 capitalize">{partnership.phase.replace('-', ' ')}</p>
+                  <p className="text-xs md:text-sm text-white mt-1 capitalize">{partnership.phase.replace('-', ' ')}</p>
                 </div>
 
                 {/* Systems Progress */}
                 <div>
-                  <p className="text-sm text-white/50 mb-2">Systems Delivered</p>
-                  <p className="text-xl font-semibold text-white">
+                  <p className="text-xs md:text-sm text-white/50 mb-2">Systems Delivered</p>
+                  <p className="text-lg md:text-xl font-semibold text-white">
                     {partnership.systems} / {partnership.totalSystems}
                   </p>
                 </div>
 
                 {/* Quick Actions */}
-                <div className="col-span-2 flex items-center justify-end gap-3">
-                  <button className="btn-secondary text-sm">View Details</button>
-                  <button className="btn-secondary text-sm">Schedule Meeting</button>
-                  <button className="btn-primary text-sm">Update Progress</button>
+                <div className="sm:col-span-2 flex flex-wrap items-center gap-2 md:gap-3 lg:justify-end">
+                  <button className="btn-secondary text-sm flex-1 sm:flex-none">View Details</button>
+                  <button className="btn-secondary text-sm flex-1 sm:flex-none">Schedule Meeting</button>
+                  <button className="btn-primary text-sm flex-1 sm:flex-none">Update Progress</button>
                 </div>
               </div>
             </div>

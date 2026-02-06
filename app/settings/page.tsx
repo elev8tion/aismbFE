@@ -10,12 +10,12 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8 max-w-4xl">
-        <h1 className="text-2xl font-bold text-white mb-8">{t.nav.settings}</h1>
+      <div className="p-4 md:p-6 lg:p-8 max-w-4xl">
+        <h1 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">{t.nav.settings}</h1>
 
         {/* Profile Section */}
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Profile</h2>
+          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Profile</h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-white/60 mb-2">Name</label>
@@ -39,11 +39,11 @@ export default function SettingsPage() {
 
         {/* Language Section */}
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Language</h2>
-          <div className="flex gap-4">
+          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Language</h2>
+          <div className="flex gap-3 md:gap-4">
             <button
               onClick={() => setLanguage('en')}
-              className={`px-6 py-3 rounded-xl border transition-colors ${
+              className={`flex-1 sm:flex-none px-4 md:px-6 py-2.5 md:py-3 rounded-xl border text-sm md:text-base transition-colors ${
                 language === 'en'
                   ? 'bg-primary-electricBlue/20 border-primary-electricBlue text-white'
                   : 'border-white/10 text-white/60 hover:border-white/20'
@@ -53,7 +53,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setLanguage('es')}
-              className={`px-6 py-3 rounded-xl border transition-colors ${
+              className={`flex-1 sm:flex-none px-4 md:px-6 py-2.5 md:py-3 rounded-xl border text-sm md:text-base transition-colors ${
                 language === 'es'
                   ? 'bg-primary-electricBlue/20 border-primary-electricBlue text-white'
                   : 'border-white/10 text-white/60 hover:border-white/20'
@@ -66,22 +66,22 @@ export default function SettingsPage() {
 
         {/* Notifications Section */}
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Notifications</h2>
+          <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Notifications</h2>
           <div className="space-y-4">
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-white/80">Email notifications for new leads</span>
+              <span className="text-sm md:text-base text-white/80">Email notifications for new leads</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-white/80">Daily pipeline summary</span>
+              <span className="text-sm md:text-base text-white/80">Daily pipeline summary</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-white/80">Voice session alerts</span>
+              <span className="text-sm md:text-base text-white/80">Voice session alerts</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-white/80">Partnership health warnings</span>
+              <span className="text-sm md:text-base text-white/80">Partnership health warnings</span>
               <input type="checkbox" defaultChecked className="w-5 h-5 rounded" />
             </label>
           </div>

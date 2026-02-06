@@ -11,17 +11,17 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">{t.dashboard.title}</h1>
-          <p className="text-white/60 mt-1">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-white">{t.dashboard.title}</h1>
+          <p className="text-sm md:text-base text-white/60 mt-1">
             {t.dashboard.welcome}, {user?.name || 'User'}
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6 mb-6 md:mb-8">
           <StatCard
             label={t.dashboard.newLeads}
             value="127"
@@ -53,11 +53,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Recent Activity */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">{t.dashboard.recentActivity}</h2>
+              <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.recentActivity}</h2>
               <button className="btn-ghost text-sm">{t.dashboard.viewAll}</button>
             </div>
             <div className="space-y-4">
@@ -91,7 +91,7 @@ export default function DashboardPage() {
           {/* Tasks Due Today */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">{t.dashboard.tasksDueToday}</h2>
+              <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.tasksDueToday}</h2>
               <button className="btn-ghost text-sm">{t.dashboard.viewAll}</button>
             </div>
             <div className="space-y-3">
@@ -120,12 +120,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Pipeline Overview */}
-        <div className="card mt-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-white">Pipeline Overview</h2>
-            <button className="btn-secondary text-sm">View Pipeline</button>
+        <div className="card mt-4 md:mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6">
+            <h2 className="text-base md:text-lg font-semibold text-white">Pipeline Overview</h2>
+            <button className="btn-secondary text-sm w-full sm:w-auto">View Pipeline</button>
           </div>
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
             <PipelineStage label="New Lead" count={12} value="$48,000" color="stage-new" />
             <PipelineStage label="Contacted" count={8} value="$32,000" color="stage-contacted" />
             <PipelineStage label="Discovery" count={6} value="$54,000" color="stage-discovery" />
@@ -174,10 +174,10 @@ function TaskItem({ title, type, priority }: { title: string; type: string; prio
 
 function PipelineStage({ label, count, value, color }: { label: string; count: number; value: string; color: string }) {
   return (
-    <div className={`p-4 rounded-xl border ${color}`}>
-      <p className="text-xs text-white/60 uppercase tracking-wide">{label}</p>
-      <p className="text-2xl font-bold text-white mt-1">{count}</p>
-      <p className="text-sm text-white/50 mt-1">{value}</p>
+    <div className={`p-3 md:p-4 rounded-xl border ${color}`}>
+      <p className="text-xs text-white/60 uppercase tracking-wide truncate">{label}</p>
+      <p className="text-xl md:text-2xl font-bold text-white mt-1">{count}</p>
+      <p className="text-xs md:text-sm text-white/50 mt-1">{value}</p>
     </div>
   );
 }

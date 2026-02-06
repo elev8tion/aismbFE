@@ -172,11 +172,19 @@ body {
   background: var(--brand-primary);
   color: white;
   font-weight: 600;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5rem 1rem;
   border-radius: 12px;
   transition: all 0.2s ease;
   border: none;
   cursor: pointer;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .btn-primary {
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+  }
 }
 
 .btn-primary:hover {
@@ -195,11 +203,19 @@ body {
   background: transparent;
   color: var(--text-primary);
   font-weight: 500;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5rem 1rem;
   border-radius: 12px;
   transition: all 0.2s ease;
   border: 1px solid var(--glass-border);
   cursor: pointer;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .btn-secondary {
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+  }
 }
 
 .btn-secondary:hover {
@@ -267,9 +283,22 @@ body {
 .card {
   background: var(--card-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 12px;
+  padding: 1rem;
   transition: all 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .card {
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card {
+    padding: 1.5rem;
+  }
 }
 
 .card:hover {
@@ -297,6 +326,7 @@ body {
   color: var(--text-secondary);
   transition: all 0.2s ease;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .sidebar-item:hover {
@@ -309,6 +339,22 @@ body {
   color: var(--brand-primary);
 }
 
+/* Mobile Header */
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  z-index: 40;
+}
+
 /* Table Styles */
 .table-glass {
   width: 100%;
@@ -318,18 +364,28 @@ body {
 
 .table-glass th {
   text-align: left;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   font-weight: 500;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-tertiary);
   border-bottom: 1px solid var(--glass-border);
+  white-space: nowrap;
 }
 
 .table-glass td {
-  padding: 1rem;
+  padding: 0.75rem;
   border-bottom: 1px solid var(--glass-border);
+}
+
+@media (min-width: 768px) {
+  .table-glass th {
+    padding: 0.75rem 1rem;
+  }
+  .table-glass td {
+    padding: 1rem;
+  }
 }
 
 .table-glass tr:hover td {
@@ -357,20 +413,45 @@ body {
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .stat-card {
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stat-card {
+    padding: 1.5rem;
+  }
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1;
 }
 
+@media (min-width: 768px) {
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .stat-label {
+    font-size: 0.875rem;
+  }
 }
 
 .stat-change {

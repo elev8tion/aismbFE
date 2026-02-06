@@ -10,17 +10,20 @@ AI SMB CRM frontend — a Next.js 15 app deployed to Cloudflare Pages at `app.kr
 
 ```bash
 npm run dev              # Dev server on port 3001 (3000 is used by landing page)
-npm run build            # Next.js production build
 npm run lint             # ESLint
-npm run pages:build      # Cloudflare Pages build (uses @cloudflare/next-on-pages)
 ```
 
-Deploy to Cloudflare:
+No test framework is configured.
+
+## Deployment (MUST DO after every change)
+
+There is NO auto-deploy from GitHub. You must manually build and deploy:
+
 ```bash
 npm run pages:build && npx wrangler pages deploy .vercel/output/static --project-name=ai-smb-crm --commit-dirty=true --no-bundle
 ```
 
-No test framework is configured.
+Always run this after pushing changes so they appear on `app.kre8tion.com`.
 
 ## Architecture
 

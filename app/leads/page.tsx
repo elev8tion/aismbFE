@@ -18,27 +18,27 @@ export default function LeadsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">{t.leads.title}</h1>
-            <p className="text-white/60 mt-1">{leads.length} total leads</p>
+            <h1 className="text-xl md:text-2xl font-bold text-white">{t.leads.title}</h1>
+            <p className="text-sm md:text-base text-white/60 mt-1">{leads.length} total leads</p>
           </div>
-          <button className="btn-primary flex items-center gap-2">
+          <button className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
             <PlusIcon className="w-5 h-5" />
             {t.leads.newLead}
           </button>
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex bg-white/5 rounded-xl p-1">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-4 md:mb-6">
+          <div className="flex bg-white/5 rounded-xl p-1 overflow-x-auto">
             {['all', 'new', 'contacted', 'qualified', 'converted'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                   filter === f
                     ? 'bg-primary-electricBlue text-white'
                     : 'text-white/60 hover:text-white'
@@ -48,16 +48,17 @@ export default function LeadsPage() {
               </button>
             ))}
           </div>
-          <div className="flex-1" />
+          <div className="hidden md:block flex-1" />
           <input
             type="text"
             placeholder={t.common.search}
-            className="input-glass w-64"
+            className="input-glass w-full md:w-64"
           />
         </div>
 
         {/* Table */}
-        <div className="card overflow-hidden">
+        <div className="card overflow-hidden -mx-4 md:mx-0 rounded-none md:rounded-2xl">
+          <div className="overflow-x-auto">
           <table className="table-glass">
             <thead>
               <tr>
@@ -114,6 +115,7 @@ export default function LeadsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </DashboardLayout>
