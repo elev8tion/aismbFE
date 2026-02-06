@@ -16,6 +16,7 @@ import {
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 
 import { PipelineFunnel } from '@/components/dashboard/PipelineFunnel';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function DashboardPage() {
   const { t } = useTranslations();
@@ -155,7 +156,9 @@ export default function DashboardPage() {
             <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.pipelineOverview}</h2>
             <Link href="/pipeline" className="btn-secondary text-sm w-full sm:w-auto">{t.dashboard.viewPipeline}</Link>
           </div>
-          <PipelineFunnel data={funnelData} />
+          <ErrorBoundary>
+            <PipelineFunnel data={funnelData} />
+          </ErrorBoundary>
         </div>
       </div>
     </DashboardLayout>

@@ -9,8 +9,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   DashboardIcon, BookingsIcon, LeadsIcon, PipelineIcon,
   CompaniesIcon, ContactsIcon, PartnershipsIcon, VoiceIcon,
-  CalculatorIcon, SettingsIcon, HelpIcon, ChevronIcon,
+  CalculatorIcon, SettingsIcon, HelpIcon, ChevronIcon, ChartIcon,
 } from '@/components/icons';
+
+interface SidebarProps {
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -29,6 +31,7 @@ const navItems = [
   { key: 'partnerships', href: '/partnerships', icon: PartnershipsIcon },
   { key: 'voiceSessions', href: '/voice-sessions', icon: VoiceIcon },
   { key: 'roiCalculations', href: '/roi-calculations', icon: CalculatorIcon },
+  { key: 'reports', href: '/reports/weekly', icon: ChartIcon },
   { key: 'helpCenter', href: '/help', icon: HelpIcon },
 ];
 

@@ -11,6 +11,8 @@ import { scoreROICalculation, LeadScore } from '@/lib/utils/leadScoring';
 import { getBenchmarkComparison } from '@/lib/utils/benchmarks';
 import { Modal } from '@/components/ui/Modal';
 
+import { generatePDF } from '@/lib/utils/pdfGenerator';
+import { useEngagement } from '@/lib/hooks/useEngagement';
 import { PaybackTrend } from '@/components/dashboard/PaybackTrend';
 
 const MOCK_ROI_CALCULATIONS: ROICalculation[] = [
@@ -251,6 +253,9 @@ export default function ROICalculationsPage() {
   // Proposal Modal State
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
   const [selectedProposalCalc, setSelectedProposalCalc] = useState<ROICalculation | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  useEngagement('ROICalculationsPage', { totalCalculations: calculations.length });
 
   const fetchCalculations = useCallback(async () => {
     try {
@@ -378,6 +383,19 @@ export default function ROICalculationsPage() {
   const handleOpenProposal = (calc: ROICalculation) => {
     setSelectedProposalCalc(calc);
     setProposalModalOpen(true);
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!selectedProposalCalc) return;
+    setIsGeneratingPDF(true);
+    try {
+      await generatePDF('proposal-content', `Proposal_${selectedProposalCalc.industry}_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Failed to generate PDF', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   return (
@@ -694,7 +712,7 @@ export default function ROICalculationsPage() {
             title={`Proposal Preview: ${selectedProposalCalc.industry} Automation`}
             wide
           >
-            <div className="p-6 bg-white text-gray-900 rounded-lg shadow-lg font-serif">
+            <div id="proposal-content" className="p-6 bg-white text-gray-900 rounded-lg shadow-lg font-serif">
               {/* Header */}
               <div className="border-b-2 border-gray-200 pb-4 mb-6 flex justify-between items-center">
                 <div>
@@ -760,8 +778,19 @@ export default function ROICalculationsPage() {
               {/* Footer */}
               <div className="mt-8 pt-4 border-t border-gray-200 flex justify-between items-center">
                 <p className="text-xs text-gray-400">Valid for 30 days</p>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
-                  Download PDF
+                <button 
+                  onClick={handleDownloadPDF}
+                  disabled={isGeneratingPDF}
+                  className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isGeneratingPDF ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                      Generating...
+                    </>
+                  ) : (
+                    <>Download PDF</>
+                  )}
                 </button>
               </div>
             </div>

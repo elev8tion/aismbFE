@@ -56,7 +56,7 @@ export function PipelineFunnel({ data }: PipelineFunnelProps) {
             <LabelList 
               dataKey="value" 
               position="right" 
-              formatter={(val: number) => `$${val.toLocaleString()}`}
+              formatter={(val: any) => typeof val === 'number' ? `$${val.toLocaleString()}` : val}
               style={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 500 }}
             />
           </Bar>
