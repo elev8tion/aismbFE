@@ -26,18 +26,18 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260203.0",
     "@tailwindcss/postcss": "^4",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.0.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
-    "happy-dom": "^16.5.2",
+    "happy-dom": "16.5.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.0.5",
-    "vitest": "^2.1.5"
+    "vitest": "2.1.5"
   },
   "overrides": {
     "esbuild": "0.21.5"
