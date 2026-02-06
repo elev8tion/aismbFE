@@ -9,6 +9,7 @@ import { VoiceIcon } from '@/components/icons';
 import { VoiceSession, ConversationMessage } from '@/types/voice';
 import { generateSessionInsights, AIInsight } from '@/lib/utils/aiInsights';
 import { scoreVoiceSession, LeadScore } from '@/lib/utils/leadScoring';
+import { createTaskFromSession } from '@/lib/utils/taskAutomation';
 
 const MOCK_VOICE_SESSIONS: VoiceSession[] = [
   {
@@ -644,10 +645,20 @@ export default function VoiceSessionsPage() {
                                   </div>
 
                                   {/* Next Best Action */}
-                                  <div className="bg-white/5 border-l-4 border-functional-success rounded-r-lg p-4">
+                                  <div className="bg-white/5 border-l-4 border-functional-success rounded-r-lg p-4 relative group">
                                     <p className="text-xs text-white/50 uppercase tracking-wide mb-1">Recommended Action</p>
                                     <p className="text-base font-bold text-white mb-1">{aiInsight.nextBestAction.action}</p>
-                                    <p className="text-xs text-white/60">{aiInsight.nextBestAction.reason}</p>
+                                    <p className="text-xs text-white/60 mb-3">{aiInsight.nextBestAction.reason}</p>
+                                    <button 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const task = createTaskFromSession(session);
+                                        alert(`Task Created: ${task.title}\nDue: ${new Date(task.dueDate).toLocaleDateString()}`);
+                                      }}
+                                      className="text-[10px] bg-functional-success/20 hover:bg-functional-success/40 text-functional-success px-2 py-1 rounded transition-colors uppercase font-bold tracking-wider"
+                                    >
+                                      Add to Tasks
+                                    </button>
                                   </div>
 
                                   {/* Intent Analysis */}

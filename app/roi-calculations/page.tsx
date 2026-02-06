@@ -11,6 +11,8 @@ import { scoreROICalculation, LeadScore } from '@/lib/utils/leadScoring';
 import { getBenchmarkComparison } from '@/lib/utils/benchmarks';
 import { Modal } from '@/components/ui/Modal';
 
+import { PaybackTrend } from '@/components/dashboard/PaybackTrend';
+
 const MOCK_ROI_CALCULATIONS: ROICalculation[] = [
   {
     id: 'roi-1',
@@ -590,56 +592,62 @@ export default function ROICalculationsPage() {
 
                                 {/* Projected Results */}
                                 {metrics && (
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <p className="text-xs text-white/50 uppercase tracking-wide">{t.roiCalculations.projectedResults}</p>
-                                      <button 
-                                        onClick={() => handleOpenProposal(calc)}
-                                        className="text-xs bg-primary-electricBlue hover:bg-primary-deepBlue text-white px-3 py-1 rounded-full transition-colors"
-                                      >
-                                        Preview Proposal PDF
-                                      </button>
+                                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    <div className="lg:col-span-2">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <p className="text-xs text-white/50 uppercase tracking-wide">{t.roiCalculations.projectedResults}</p>
+                                        <button 
+                                          onClick={() => handleOpenProposal(calc)}
+                                          className="text-xs bg-primary-electricBlue hover:bg-primary-deepBlue text-white px-3 py-1 rounded-full transition-colors"
+                                        >
+                                          Preview Proposal PDF
+                                        </button>
+                                      </div>
+                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        {metrics.timeSaved !== undefined && (
+                                          <div className="bg-primary-electricBlue/5 border border-primary-electricBlue/20 rounded-lg p-3">
+                                            <p className="text-xs text-white/50">{t.roiCalculations.timeSaved}</p>
+                                            <p className="text-lg font-bold text-primary-electricBlue mt-1">{metrics.timeSaved}h</p>
+                                            <p className="text-[10px] text-white/40">{t.roiCalculations.perWeek}</p>
+                                          </div>
+                                        )}
+                                        {metrics.weeklyValue !== undefined && (
+                                          <div className="bg-primary-electricBlue/5 border border-primary-electricBlue/20 rounded-lg p-3">
+                                            <p className="text-xs text-white/50">{t.roiCalculations.weeklyValue}</p>
+                                            <p className="text-lg font-bold text-primary-electricBlue mt-1">{formatCurrency(metrics.weeklyValue)}</p>
+                                            <p className="text-[10px] text-white/40">{t.roiCalculations.perWeek}</p>
+                                          </div>
+                                        )}
+                                        {metrics.totalValue !== undefined && (
+                                          <div className="bg-functional-success/5 border border-functional-success/20 rounded-lg p-3">
+                                            <p className="text-xs text-white/50">{t.roiCalculations.totalValue}</p>
+                                            <p className="text-lg font-bold text-functional-success mt-1">{formatCurrency(metrics.totalValue)}</p>
+                                          </div>
+                                        )}
+                                        {metrics.investment !== undefined && (
+                                          <div className="bg-white/5 rounded-lg p-3">
+                                            <p className="text-xs text-white/50">{t.roiCalculations.investment}</p>
+                                            <p className="text-lg font-bold text-white mt-1">{formatCurrency(metrics.investment)}</p>
+                                          </div>
+                                        )}
+                                        {metrics.roi !== undefined && (
+                                          <div className="bg-functional-success/5 border border-functional-success/20 rounded-lg p-3">
+                                            <p className="text-xs text-white/50">{t.roiCalculations.projectedROI}</p>
+                                            <p className="text-lg font-bold text-functional-success mt-1">{metrics.roi}%</p>
+                                          </div>
+                                        )}
+                                        {metrics.paybackWeeks !== undefined && (
+                                          <div className="bg-accent-amber/5 border border-accent-amber/20 rounded-lg p-3">
+                                            <p className="text-xs text-white/50">{t.roiCalculations.paybackWeeks}</p>
+                                            <p className="text-lg font-bold text-accent-amber mt-1">{metrics.paybackWeeks}</p>
+                                            <p className="text-[10px] text-white/40">{t.roiCalculations.weeks}</p>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                                      {metrics.timeSaved !== undefined && (
-                                        <div className="bg-primary-electricBlue/5 border border-primary-electricBlue/20 rounded-lg p-3">
-                                          <p className="text-xs text-white/50">{t.roiCalculations.timeSaved}</p>
-                                          <p className="text-lg font-bold text-primary-electricBlue mt-1">{metrics.timeSaved}h</p>
-                                          <p className="text-[10px] text-white/40">{t.roiCalculations.perWeek}</p>
-                                        </div>
-                                      )}
-                                      {metrics.weeklyValue !== undefined && (
-                                        <div className="bg-primary-electricBlue/5 border border-primary-electricBlue/20 rounded-lg p-3">
-                                          <p className="text-xs text-white/50">{t.roiCalculations.weeklyValue}</p>
-                                          <p className="text-lg font-bold text-primary-electricBlue mt-1">{formatCurrency(metrics.weeklyValue)}</p>
-                                          <p className="text-[10px] text-white/40">{t.roiCalculations.perWeek}</p>
-                                        </div>
-                                      )}
-                                      {metrics.totalValue !== undefined && (
-                                        <div className="bg-functional-success/5 border border-functional-success/20 rounded-lg p-3">
-                                          <p className="text-xs text-white/50">{t.roiCalculations.totalValue}</p>
-                                          <p className="text-lg font-bold text-functional-success mt-1">{formatCurrency(metrics.totalValue)}</p>
-                                        </div>
-                                      )}
-                                      {metrics.investment !== undefined && (
-                                        <div className="bg-white/5 rounded-lg p-3">
-                                          <p className="text-xs text-white/50">{t.roiCalculations.investment}</p>
-                                          <p className="text-lg font-bold text-white mt-1">{formatCurrency(metrics.investment)}</p>
-                                        </div>
-                                      )}
-                                      {metrics.roi !== undefined && (
-                                        <div className="bg-functional-success/5 border border-functional-success/20 rounded-lg p-3">
-                                          <p className="text-xs text-white/50">{t.roiCalculations.projectedROI}</p>
-                                          <p className="text-lg font-bold text-functional-success mt-1">{metrics.roi}%</p>
-                                        </div>
-                                      )}
-                                      {metrics.paybackWeeks !== undefined && (
-                                        <div className="bg-accent-amber/5 border border-accent-amber/20 rounded-lg p-3">
-                                          <p className="text-xs text-white/50">{t.roiCalculations.paybackWeeks}</p>
-                                          <p className="text-lg font-bold text-accent-amber mt-1">{metrics.paybackWeeks}</p>
-                                          <p className="text-[10px] text-white/40">{t.roiCalculations.weeks}</p>
-                                        </div>
-                                      )}
+                                    <div className="bg-white/5 rounded-lg p-3">
+                                      <p className="text-xs text-white/50 mb-4 uppercase tracking-wide">Net Value Projection (52 Weeks)</p>
+                                      <PaybackTrend weeklySavings={metrics.weeklyValue || 0} investment={metrics.investment || 0} />
                                     </div>
                                   </div>
                                 )}

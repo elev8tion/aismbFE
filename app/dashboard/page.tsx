@@ -15,9 +15,20 @@ import {
 } from '@/components/icons';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 
+import { PipelineFunnel } from '@/components/dashboard/PipelineFunnel';
+
 export default function DashboardPage() {
   const { t } = useTranslations();
   const { user } = useAuth();
+
+  const funnelData = [
+    { stage: t.pipeline.stages.newLead, count: 12, value: 48000, color: '#00E5FF' },
+    { stage: t.pipeline.stages.contacted, count: 8, value: 32000, color: '#00B0FF' },
+    { stage: t.pipeline.stages.discoveryCall, count: 6, value: 54000, color: '#2979FF' },
+    { stage: t.pipeline.stages.proposalSent, count: 5, value: 47500, color: '#651FFF' },
+    { stage: t.pipeline.stages.negotiation, count: 3, value: 63500, color: '#7C4DFF' },
+    { stage: t.pipeline.stages.closedWon, count: 4, value: 38000, color: '#00C853' },
+  ];
 
   return (
     <DashboardLayout>
@@ -70,6 +81,13 @@ export default function DashboardPage() {
               <Link href="/voice-sessions" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
             </div>
             <div className="space-y-4">
+              <ActivityItem
+                icon={<div className="relative"><VoiceIcon className="w-4 h-4" /><span className="absolute -top-1 -right-1 w-2 h-2 bg-functional-error rounded-full animate-pulse" /></div>}
+                title="LIVE: Voice session - Miami Plumbing"
+                subtitle="Customer asking about emergency rates"
+                time="Just now"
+                statusIcon={<span className="text-[10px] bg-functional-error/20 text-functional-error px-1.5 py-0.5 rounded font-bold animate-pulse">LIVE</span>}
+              />
               <ActivityItem
                 icon={<VoiceIcon className="w-4 h-4" />}
                 title="Voice session - ABC Plumbing"
@@ -137,14 +155,7 @@ export default function DashboardPage() {
             <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.pipelineOverview}</h2>
             <Link href="/pipeline" className="btn-secondary text-sm w-full sm:w-auto">{t.dashboard.viewPipeline}</Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[var(--space-gap)]">
-            <PipelineStage label={t.pipeline.stages.newLead} count={12} value="$48,000" color="stage-new" />
-            <PipelineStage label={t.pipeline.stages.contacted} count={8} value="$32,000" color="stage-contacted" />
-            <PipelineStage label={t.pipeline.stages.discoveryCall} count={6} value="$54,000" color="stage-discovery" />
-            <PipelineStage label={t.pipeline.stages.proposalSent} count={5} value="$47,500" color="stage-proposal" />
-            <PipelineStage label={t.pipeline.stages.negotiation} count={3} value="$63,500" color="stage-negotiation" />
-            <PipelineStage label={t.pipeline.stages.closedWon} count={4} value="$38,000" color="stage-won" />
-          </div>
+          <PipelineFunnel data={funnelData} />
         </div>
       </div>
     </DashboardLayout>
