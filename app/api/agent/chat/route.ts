@@ -7,6 +7,7 @@ import { getSession, addMessage } from '@/lib/agent/session';
 import { ALL_CRM_FUNCTIONS } from '@/lib/agent/functions';
 import { executeTool } from '@/lib/agent/tools';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import { rateLimiter, getClientIP } from '@/lib/security/rateLimiter';
 
 export const runtime = 'edge';
 
@@ -253,6 +254,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Rate limit per user+IP
+  const limiterKey = `chat:${user.id}:${getClientIP(request as unknown as Request)}`;
+  const limit = rateLimiter.check(limiterKey);
+  if (!limit.allowed) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Rate limit exceeded', details: limit.reason }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000)).toString(),
+          'X-RateLimit-Remaining': String(limit.remaining),
+        },
+      }
+    );
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'OpenAI not configured' }, { status: 500 });
@@ -361,12 +379,27 @@ export async function POST(request: NextRequest) {
           });
           continue;
         }
+        const toolName = toolCall.function.name;
+        const startedAt = Date.now();
+        try {
+          console.log('agent.tool.start', {
+            tool: toolName,
+            user: user.id,
+            keys: Object.keys(params || {}).slice(0, 5),
+          });
+        } catch { /* logging best-effort */ }
         const result = await executeTool(
-          toolCall.function.name,
+          toolName,
           params,
           user.id,
           authCookies
         );
+        try {
+          console.log('agent.tool.end', {
+            tool: toolName,
+            ms: Date.now() - startedAt,
+          });
+        } catch { /* logging best-effort */ }
 
         currentMessages.push({
           role: 'tool',

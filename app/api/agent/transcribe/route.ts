@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOpenAI, MODELS, normalizeLanguageCode } from '@/lib/openai/config';
 import { validateAudioFile } from '@/lib/security/requestValidator';
-import { getSessionUser, extractAuthCookies } from '@/lib/agent/ncbClient';
+import { getSessionUser } from '@/lib/agent/ncbClient';
+import { rateLimiter, getClientIP } from '@/lib/security/rateLimiter';
 
 export const runtime = 'edge';
 
@@ -13,6 +14,23 @@ export async function POST(request: NextRequest) {
   const user = await getSessionUser(cookieHeader);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limit per user+IP
+  const limiterKey = `transcribe:${user.id}:${getClientIP(request as unknown as Request)}`;
+  const limit = rateLimiter.check(limiterKey);
+  if (!limit.allowed) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Rate limit exceeded', details: limit.reason }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': Math.max(1, Math.ceil((limit.resetTime - Date.now()) / 1000)).toString(),
+          'X-RateLimit-Remaining': String(limit.remaining),
+        },
+      }
+    );
   }
 
   const apiKey = process.env.OPENAI_API_KEY;

@@ -33,7 +33,7 @@ async function getSessionUser(
   const authCookies = extractAuthCookies(cookieHeader);
   if (!authCookies) return null;
 
-  const url = `${CONFIG.authApiUrl}/get-session?Instance=${CONFIG.instance}`;
+  const url = `${CONFIG.authApiUrl}/get-session?instance=${CONFIG.instance}`;
 
   const res = await fetch(url, {
     method: "GET",
@@ -53,7 +53,7 @@ async function getSessionUser(
 
 async function proxyToNCB(req: NextRequest, path: string, body?: string) {
   const searchParams = new URLSearchParams();
-  searchParams.set("Instance", CONFIG.instance);
+  searchParams.set("instance", CONFIG.instance);
 
   req.nextUrl.searchParams.forEach((val, key) => {
     if (key !== "Instance" && key !== "instance" && key !== "path") searchParams.append(key, val);

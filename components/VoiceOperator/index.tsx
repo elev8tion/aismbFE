@@ -23,6 +23,7 @@ export default function VoiceOperator() {
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [transcript, setTranscript] = useState('');
   const [displayError, setDisplayError] = useState<string | null>(null);
+  const [assistantText, setAssistantText] = useState<string>('');
   const [browserSupported, setBrowserSupported] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showAutoClosePrompt, setShowAutoClosePrompt] = useState(false);
@@ -91,13 +92,15 @@ export default function VoiceOperator() {
   const processVoiceInteraction = useCallback(async (transcribedText: string) => {
     setTranscript(transcribedText);
     setVoiceState('processing');
+    setAssistantText('');
 
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
     const language = detectedLanguageRef.current;
 
     try {
-      const response = await fetch('/api/agent/chat', {
+      // Prefer streaming endpoint for immediate text
+      const response = await fetch('/api/agent/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -105,64 +108,148 @@ export default function VoiceOperator() {
         signal: abortController.signal,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({})) as { error?: string };
-        throw new Error(`Failed to get response: ${errorData.error || 'Unknown error'}`);
-      }
+      if (!response.ok || !response.body) {
+        // Fallback to non-streaming JSON endpoint
+        const fallback = await fetch('/api/agent/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ question: transcribedText, sessionId, pagePath: window.location?.pathname || '/', language }),
+          signal: abortController.signal,
+        });
 
-      const data = await response.json() as { response: string; clientActions?: Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: any }> };
+        if (!fallback.ok) {
+          const status = fallback.status;
+          const errorData = await fallback.json().catch(() => ({})) as { error?: string; details?: string };
+          const core = errorData.error || errorData.details || fallback.statusText;
+          const friendly = status === 401
+            ? 'Please sign in to use the voice assistant.'
+            : status === 429
+            ? 'You hit the rate limit. Please wait a bit and try again.'
+            : core || 'Unknown error';
+          throw new Error(`Failed to get response: ${friendly}`);
+        }
 
-      // Perform client actions. If a navigate action exists, run it first and
-      // schedule remaining UI actions after navigation.
-      if (Array.isArray(data.clientActions) && data.clientActions.length > 0) {
-        const actions = data.clientActions;
-        const navigateAction = actions.find(a => a && a.type === 'navigate' && typeof a.route === 'string');
-        const otherActions = actions.filter(a => a !== navigateAction);
-
-        if (navigateAction && navigateAction.route) {
-          try { router.push(navigateAction.route); } catch { /* non-fatal */ }
-          // Defer other UI actions slightly so destination screens can mount
-          if (otherActions.length > 0) {
-            setTimeout(() => {
-              for (const a of otherActions) { try { emit(a as any); } catch { /* ignore */ } }
-            }, 350);
+        const data = await fallback.json() as { response: string; clientActions?: Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: any }> };
+        // Perform client actions
+        if (Array.isArray(data.clientActions) && data.clientActions.length > 0) {
+          const actions = data.clientActions;
+          const navigateAction = actions.find(a => a && a.type === 'navigate' && typeof a.route === 'string');
+          const otherActions = actions.filter(a => a !== navigateAction);
+          if (navigateAction && navigateAction.route) {
+            try { router.push(navigateAction.route); } catch { /* non-fatal */ }
+            if (otherActions.length > 0) {
+              setTimeout(() => { for (const a of otherActions) { try { emit(a as any); } catch { /* ignore */ } } }, 350);
+            }
+          } else {
+            for (const a of actions) { try { emit(a as any); } catch { /* ignore */ } }
           }
-        } else {
-          for (const a of actions) { try { emit(a as any); } catch { /* ignore */ } }
+        }
+        const finalText = data.response || '';
+        if (finalText) setAssistantText(finalText);
+        setVoiceState('speaking');
+        const speechResponse = await fetch('/api/agent/speak', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ text: finalText, language }), signal: abortController.signal,
+        });
+        if (!speechResponse.ok) {
+          const status = speechResponse.status;
+          try {
+            const err = await speechResponse.json();
+            const friendly = status === 429 ? 'You hit the rate limit for speech. Please wait a bit and try again.' : err?.error || 'Failed to generate speech';
+            throw new Error(friendly);
+          } catch { throw new Error('Failed to generate speech'); }
+        }
+        const audioBlob = await speechResponse.blob();
+        const audioUrl = audioURLManagerRef.current.createURL(audioBlob);
+        await iosAudioPlayerRef.current.play(
+          audioUrl,
+          () => { setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); startAutoCloseCountdown(); },
+          (error) => { console.error('Audio playback error:', error); setDisplayError(`Audio error: ${error.message}`); setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); }
+        );
+        return;
+      }
+
+      // Parse SSE stream
+      const decoder = new TextDecoder();
+      const reader = response.body.getReader();
+      let buffer = '';
+      let finalText = '';
+
+      const flushSpeak = async () => {
+        if (!finalText) return;
+        setVoiceState('speaking');
+        const speechResponse = await fetch('/api/agent/speak', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ text: finalText, language }), signal: abortController.signal,
+        });
+        if (!speechResponse.ok) {
+          const status = speechResponse.status;
+          try {
+            const err = await speechResponse.json();
+            const friendly = status === 429 ? 'You hit the rate limit for speech. Please wait a bit and try again.' : err?.error || 'Failed to generate speech';
+            throw new Error(friendly);
+          } catch { throw new Error('Failed to generate speech'); }
+        }
+        const audioBlob = await speechResponse.blob();
+        const audioUrl = audioURLManagerRef.current.createURL(audioBlob);
+        await iosAudioPlayerRef.current.play(
+          audioUrl,
+          () => { setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); startAutoCloseCountdown(); },
+          (error) => { console.error('Audio playback error:', error); setDisplayError(`Audio error: ${error.message}`); setVoiceState('idle'); audioURLManagerRef.current.revokeURL(audioUrl); }
+        );
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buffer.indexOf('\n\n')) !== -1) {
+          const raw = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          let event = 'message';
+          let dataStr = '';
+          for (const line of raw.split('\n')) {
+            if (line.startsWith('event:')) event = line.slice(6).trim();
+            else if (line.startsWith('data:')) dataStr += line.slice(5).trim();
+          }
+          if (!dataStr) continue;
+          try {
+            const payload = JSON.parse(dataStr);
+            if (event === 'meta') {
+              const actions = payload.clientActions as Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: any }> | undefined;
+              if (Array.isArray(actions) && actions.length > 0) {
+                const navigateAction = actions.find(a => a && a.type === 'navigate' && typeof a.route === 'string');
+                const otherActions = actions.filter(a => a !== navigateAction);
+                if (navigateAction && navigateAction.route) {
+                  try { router.push(navigateAction.route); } catch { /* non-fatal */ }
+                  if (otherActions.length > 0) {
+                    setTimeout(() => { for (const a of otherActions) { try { emit(a as any); } catch { /* ignore */ } } }, 350);
+                  }
+                } else {
+                  for (const a of actions) { try { emit(a as any); } catch { /* ignore */ } }
+                }
+              }
+            } else if (event === 'delta') {
+              const part = typeof payload.text === 'string' ? payload.text : '';
+              if (part) {
+                finalText += part;
+                setAssistantText(prev => prev + part);
+              }
+            } else if (event === 'error') {
+              const msg = payload.error || 'Stream error';
+              throw new Error(msg);
+            } else if (event === 'done') {
+              // done — response will finish
+            }
+          } catch {
+            // ignore parse errors for individual frames
+          }
         }
       }
 
-      setVoiceState('speaking');
-
-      const speechResponse = await fetch('/api/agent/speak', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ text: data.response, language }),
-        signal: abortController.signal,
-      });
-
-      if (!speechResponse.ok) {
-        throw new Error('Failed to generate speech');
-      }
-
-      const audioBlob = await speechResponse.blob();
-      const audioUrl = audioURLManagerRef.current.createURL(audioBlob);
-
-      await iosAudioPlayerRef.current.play(
-        audioUrl,
-        () => {
-          setVoiceState('idle');
-          audioURLManagerRef.current.revokeURL(audioUrl);
-          startAutoCloseCountdown();
-        },
-        (error) => {
-          console.error('Audio playback error:', error);
-          setDisplayError(`Audio error: ${error.message}`);
-          setVoiceState('idle');
-          audioURLManagerRef.current.revokeURL(audioUrl);
-        }
-      );
+      await flushSpeak();
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         setVoiceState('idle');
@@ -217,6 +304,7 @@ export default function VoiceOperator() {
       setIsOpen(true);
       setDisplayError(null);
       setTranscript('');
+      setAssistantText('');
       iosAudioPlayerRef.current.unlock();
       setTimeout(() => startRecording(), 500);
     } else {
@@ -229,6 +317,7 @@ export default function VoiceOperator() {
         setIsOpen(false);
         setVoiceState('idle');
         setTranscript('');
+        setAssistantText('');
         setDisplayError(null);
       }
     }
@@ -374,6 +463,13 @@ export default function VoiceOperator() {
                 </div>
               )}
 
+              {assistantText && (
+                <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
+                  <p className="text-xs text-white/50 mb-1">Assistant:</p>
+                  <p className="text-sm text-white/90">{assistantText}</p>
+                </div>
+              )}
+
               {/* Error */}
               {displayError && (
                 <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
@@ -454,6 +550,7 @@ export default function VoiceOperator() {
                     setIsOpen(false);
                     setVoiceState('idle');
                     setTranscript('');
+                    setAssistantText('');
                     setDisplayError(null);
                   }}
                   className="flex-1 py-2 rounded-lg text-sm text-white/80"
