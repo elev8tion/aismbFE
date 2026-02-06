@@ -46,7 +46,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onMobileC
             <img
               src="/logos/dark_mode_logo.svg"
               alt="KRE8TION"
-              className="w-10 h-10 shrink-0"
+              className="w-12 h-12 shrink-0"
             />
             {expanded && (
               <div className="overflow-hidden">

@@ -85,7 +85,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <img
           src="/logos/dark_mode_brand.svg"
           alt="ELEV8TION"
-          className="h-8 ml-3"
+          className="h-10 ml-3"
         />
       </div>
 

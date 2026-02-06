@@ -51,7 +51,7 @@ export default function RegisterPage() {
           <img
             src="/logos/dark_mode_brand.svg"
             alt="ELEV8TION"
-            className="h-20 mx-auto mb-4"
+            className="h-28 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-white">KRE8TION</h1>
           <p className="text-white/60 mt-2">Create your account</p>
