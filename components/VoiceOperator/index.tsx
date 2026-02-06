@@ -34,6 +34,9 @@ export default function VoiceOperator() {
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const iosAudioPlayerRef = useRef(getIOSAudioPlayer());
   const detectedLanguageRef = useRef<string | undefined>(undefined);
+  // Throttle streaming UI updates
+  const streamBufferRef = useRef<string>('');
+  const streamFlushTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     try {
@@ -55,6 +58,10 @@ export default function VoiceOperator() {
       if (abortControllerRef.current) abortControllerRef.current.abort();
       if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
       iosAudioPlayerRef.current.stop();
+      if (streamFlushTimerRef.current) {
+        clearTimeout(streamFlushTimerRef.current);
+        streamFlushTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -235,7 +242,16 @@ export default function VoiceOperator() {
               const part = typeof payload.text === 'string' ? payload.text : '';
               if (part) {
                 finalText += part;
-                setAssistantText(prev => prev + part);
+                streamBufferRef.current += part;
+                if (!streamFlushTimerRef.current) {
+                  streamFlushTimerRef.current = window.setTimeout(() => {
+                    if (streamBufferRef.current) {
+                      setAssistantText(prev => prev + streamBufferRef.current);
+                      streamBufferRef.current = '';
+                    }
+                    streamFlushTimerRef.current = null;
+                  }, 60);
+                }
               }
             } else if (event === 'error') {
               const msg = payload.error || 'Stream error';
@@ -247,6 +263,16 @@ export default function VoiceOperator() {
             // ignore parse errors for individual frames
           }
         }
+      }
+
+      // Flush any pending buffer before speaking
+      if (streamFlushTimerRef.current) {
+        clearTimeout(streamFlushTimerRef.current);
+        streamFlushTimerRef.current = null;
+      }
+      if (streamBufferRef.current) {
+        setAssistantText(prev => prev + streamBufferRef.current);
+        streamBufferRef.current = '';
       }
 
       await flushSpeak();
