@@ -376,13 +376,14 @@ export async function POST(request: NextRequest) {
     // Save assistant response to session
     addMessage(sessionId, { role: 'assistant', content: response });
 
-    // Persist to voice_sessions NCB table (fire-and-forget, never block response)
-    try {
+    // Persist to voice_sessions NCB table — truly fire-and-forget, never block the response
+    {
       const userMessages = session.conversation.filter(m => m.role === 'user');
+      const langCode = session.language || language || 'en';
       const sessionData: Record<string, unknown> = {
         external_session_id: sessionId,
         start_time: new Date(session.created_at).toISOString(),
-        language: session.language || language || 'en',
+        language: langCode === 'en' || langCode === 'es' ? langCode : 'en',
         messages: JSON.stringify(session.conversation.filter(m => m.role === 'user' || m.role === 'assistant')),
         total_questions: userMessages.length,
         referrer_page: pagePath || '/',
@@ -391,21 +392,19 @@ export async function POST(request: NextRequest) {
       };
 
       if (!session.voiceSessionDbId) {
-        // First turn — create
-        const result = await ncbCreate<{ data?: { id?: string }; id?: string }>(
+        ncbCreate<{ data?: { id?: string }; id?: string }>(
           'voice_sessions',
           sessionData,
           user.id,
           authCookies
-        );
-        const dbId = (result as any)?.data?.id || (result as any)?.id;
-        if (dbId) session.voiceSessionDbId = String(dbId);
+        ).then(result => {
+          const dbId = (result as any)?.data?.id || (result as any)?.id;
+          if (dbId) session.voiceSessionDbId = String(dbId);
+        }).catch(err => console.error('Voice session create error (non-fatal):', err));
       } else {
-        // Subsequent turns — update
-        await ncbUpdate('voice_sessions', session.voiceSessionDbId, sessionData, authCookies);
+        ncbUpdate('voice_sessions', session.voiceSessionDbId, sessionData, authCookies)
+          .catch(err => console.error('Voice session update error (non-fatal):', err));
       }
-    } catch (persistErr) {
-      console.error('Voice session persistence error (non-fatal):', persistErr);
     }
 
     const duration = Date.now() - startTime;

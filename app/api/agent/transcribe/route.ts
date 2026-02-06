@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createOpenAI, MODELS } from '@/lib/openai/config';
+import { createOpenAI, MODELS, normalizeLanguageCode } from '@/lib/openai/config';
 import { validateAudioFile } from '@/lib/security/requestValidator';
 import { getSessionUser, extractAuthCookies } from '@/lib/agent/ncbClient';
 
@@ -54,7 +54,8 @@ export async function POST(request: NextRequest) {
       ...(language === 'es' || language === 'en' ? { language } : {}),
     });
 
-    const detectedLanguage = (transcription as any).language as string | undefined;
+    const rawLanguage = (transcription as any).language as string | undefined;
+    const detectedLanguage = normalizeLanguageCode(rawLanguage);
     const duration = Date.now() - startTime;
     return NextResponse.json({ text: transcription.text, language: detectedLanguage, success: true, duration });
   } catch (error) {

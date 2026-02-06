@@ -29,3 +29,17 @@ export const VOICE_MAP: Record<string, string> = {
   es: 'coral',
   default: 'echo',
 };
+
+// Whisper verbose_json returns full language names (e.g. "english", "spanish").
+// Normalize to ISO 639-1 codes so they match VOICE_MAP keys and NCB enum values.
+const LANGUAGE_NORMALIZE: Record<string, string> = {
+  english: 'en',
+  spanish: 'es',
+  en: 'en',
+  es: 'es',
+};
+
+export function normalizeLanguageCode(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  return LANGUAGE_NORMALIZE[raw.toLowerCase()] || raw.toLowerCase();
+}
