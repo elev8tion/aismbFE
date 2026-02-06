@@ -10,6 +10,7 @@ export interface Translations {
     partnerships: string;
     voiceSessions: string;
     roiCalculations: string;
+    reports: string;
     helpCenter: string;
     settings: string;
     signOut: string;

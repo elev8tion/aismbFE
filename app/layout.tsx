@@ -13,6 +13,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "AI KRE8TION Partners | Manage Your Pipeline",
   description: "Custom CRM for AI KRE8TION Partners - Manage leads, pipeline, and partnerships",
+  manifest: "/manifest.json",
+  themeColor: "#000000",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AI CRM",
+  },
 };
 
 export default function RootLayout({

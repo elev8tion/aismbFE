@@ -13,8 +13,6 @@ import {
 } from '@/components/icons';
 
 interface SidebarProps {
-
-interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   isMobileOpen: boolean;

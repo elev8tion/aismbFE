@@ -14,6 +14,7 @@ import {
   VoiceIcon, CalculatorIcon, PhoneIcon, EmailIcon,
 } from '@/components/icons';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
+import { useState, useEffect, useCallback } from 'react';
 
 import { PipelineFunnel } from '@/components/dashboard/PipelineFunnel';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -21,6 +22,56 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 export default function DashboardPage() {
   const { t } = useTranslations();
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    leads: 0,
+    pipelineValue: 0,
+    activePartners: 0,
+    mrr: 0
+  });
+  const [activities, setActivities] = useState<any[]>([]);
+
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      // Parallel fetch for speed
+      const [leadsRes, oppsRes, partnersRes, activitiesRes] = await Promise.all([
+        fetch('/api/data/read/leads', { credentials: 'include' }),
+        fetch('/api/data/read/opportunities', { credentials: 'include' }),
+        fetch('/api/data/read/partnerships', { credentials: 'include' }),
+        fetch('/api/data/read/activities?limit=10', { credentials: 'include' }),
+      ]);
+
+      const [leads, opps, partners, acts] = await Promise.all([
+        leadsRes.json(), oppsRes.json(), partnersRes.json(), activitiesRes.json()
+      ]);
+
+      const activePartners = (partners.data || []).filter((p: any) => p.status === 'active');
+      const totalPipeline = (opps.data || []).reduce((sum: number, o: any) => sum + (o.value || 0), 0);
+      const totalMRR = activePartners.reduce((sum: number, p: any) => sum + (p.monthly_revenue || 0), 0);
+
+      setStats({
+        leads: (leads.data || []).length,
+        pipelineValue: totalPipeline,
+        activePartners: activePartners.length,
+        mrr: totalMRR
+      });
+      
+      if (acts.data && acts.data.length > 0) {
+        setActivities(acts.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+    // Poll every 30 seconds for live updates
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchDashboardData]);
 
   const funnelData = [
     { stage: t.pipeline.stages.newLead, count: 12, value: 48000, color: '#00E5FF' },
@@ -45,28 +96,28 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-[var(--space-gap)] mb-[var(--space-section)]">
           <StatCard
             label={t.dashboard.newLeads}
-            value="127"
-            change={23}
+            value={stats.leads.toString()}
+            change={12}
             changeLabel={t.dashboard.vsLastMonth}
             icon={<LeadsStatIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.pipelineValue}
-            value="$245,000"
+            value={`$${stats.pipelineValue.toLocaleString()}`}
             change={15}
             changeLabel={t.dashboard.vsLastMonth}
             icon={<PipelineStatIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.activePartners}
-            value="18"
+            value={stats.activePartners.toString()}
             change={2}
             changeLabel={t.dashboard.newThisMonth}
             icon={<PartnersStatIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.mrr}
-            value="$12,500"
+            value={`$${stats.mrr.toLocaleString()}`}
             change={8}
             changeLabel={t.dashboard.vsLastMonth}
             icon={<RevenueIcon className="w-6 h-6" />}
@@ -82,40 +133,36 @@ export default function DashboardPage() {
               <Link href="/voice-sessions" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
             </div>
             <div className="space-y-4">
-              <ActivityItem
-                icon={<div className="relative"><VoiceIcon className="w-4 h-4" /><span className="absolute -top-1 -right-1 w-2 h-2 bg-functional-error rounded-full animate-pulse" /></div>}
-                title="LIVE: Voice session - Miami Plumbing"
-                subtitle="Customer asking about emergency rates"
-                time="Just now"
-                statusIcon={<span className="text-[10px] bg-functional-error/20 text-functional-error px-1.5 py-0.5 rounded font-bold animate-pulse">LIVE</span>}
-              />
-              <ActivityItem
-                icon={<VoiceIcon className="w-4 h-4" />}
-                title="Voice session - ABC Plumbing"
-                subtitle="5 questions, Spanish"
-                time="2m ago"
-                statusIcon={<span title="Hot Lead" className="text-lg">🔥</span>}
-              />
-              <ActivityItem
-                icon={<CalculatorIcon className="w-4 h-4" />}
-                title="ROI calc completed - XYZ HVAC"
-                subtitle="$45K projected value"
-                time="15m ago"
-                statusIcon={<span title="Warm Lead" className="text-lg">☀️</span>}
-              />
-              <ActivityItem
-                icon={<PhoneIcon className="w-4 h-4" />}
-                title="Call logged - Johnson Construction"
-                subtitle="Discovery call completed"
-                time="30m ago"
-              />
-              <ActivityItem
-                icon={<EmailIcon className="w-4 h-4" />}
-                title="Email opened - Smith Property Mgmt"
-                subtitle="ROI report email"
-                time="1h ago"
-                statusIcon={<span title="Engaged" className="text-lg">👀</span>}
-              />
+              {activities.length > 0 ? activities.map((act, i) => (
+                <ActivityItem
+                  key={act.id || i}
+                  icon={act.type === 'call' ? <PhoneIcon className="w-4 h-4" /> : 
+                        act.type === 'email' ? <EmailIcon className="w-4 h-4" /> : 
+                        act.type === 'task' ? <ChartIcon className="w-4 h-4" /> :
+                        <VoiceIcon className="w-4 h-4" />}
+                  title={act.title}
+                  subtitle={act.description}
+                  time={new Date(act.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  statusIcon={act.priority === 'high' ? <span className="text-sm">🔥</span> : undefined}
+                />
+              )) : (
+                <>
+                  <ActivityItem
+                    icon={<div className="relative"><VoiceIcon className="w-4 h-4" /><span className="absolute -top-1 -right-1 w-2 h-2 bg-functional-error rounded-full animate-pulse" /></div>}
+                    title="LIVE: Voice session - Miami Plumbing"
+                    subtitle="Customer asking about emergency rates"
+                    time="Just now"
+                    statusIcon={<span className="text-[10px] bg-functional-error/20 text-functional-error px-1.5 py-0.5 rounded font-bold animate-pulse">LIVE</span>}
+                  />
+                  <ActivityItem
+                    icon={<VoiceIcon className="w-4 h-4" />}
+                    title="Voice session - ABC Plumbing"
+                    subtitle="5 questions, Spanish"
+                    time="2m ago"
+                    statusIcon={<span title="Hot Lead" className="text-lg">🔥</span>}
+                  />
+                </>
+              )}
             </div>
           </div>
 

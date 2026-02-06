@@ -251,6 +251,7 @@ export default function VoiceSessionsPage() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [creatingTaskId, setCreatingTaskId] = useState<string | null>(null);
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -389,6 +390,39 @@ export default function VoiceSessionsPage() {
     { key: 'en', label: t.voiceSessions.english },
     { key: 'es', label: t.voiceSessions.spanish },
   ];
+
+  const handleCreateTask = async (session: VoiceSession) => {
+    setCreatingTaskId(session.id);
+    const task = createTaskFromSession(session);
+    
+    try {
+      const res = await fetch('/api/data/create/activities', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'task',
+          title: task.title,
+          description: task.description,
+          status: 'pending',
+          priority: task.priority,
+          metadata: JSON.stringify({ source: 'voice_session', sessionId: session.id }),
+          due_date: task.dueDate,
+        }),
+      });
+
+      if (res.ok) {
+        alert('Success: Task added to your dashboard.');
+      } else {
+        throw new Error('Failed to create task');
+      }
+    } catch (err) {
+      console.error('Task creation error:', err);
+      alert('Error: Could not save task to database.');
+    } finally {
+      setCreatingTaskId(null);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -652,12 +686,12 @@ export default function VoiceSessionsPage() {
                                     <button 
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        const task = createTaskFromSession(session);
-                                        alert(`Task Created: ${task.title}\nDue: ${new Date(task.dueDate).toLocaleDateString()}`);
+                                        handleCreateTask(session);
                                       }}
-                                      className="text-[10px] bg-functional-success/20 hover:bg-functional-success/40 text-functional-success px-2 py-1 rounded transition-colors uppercase font-bold tracking-wider"
+                                      disabled={creatingTaskId === session.id}
+                                      className="text-[10px] bg-functional-success/20 hover:bg-functional-success/40 text-functional-success px-2 py-1 rounded transition-colors uppercase font-bold tracking-wider disabled:opacity-50"
                                     >
-                                      Add to Tasks
+                                      {creatingTaskId === session.id ? 'Saving...' : 'Add to Tasks'}
                                     </button>
                                   </div>
 

@@ -1,0 +1,21 @@
+{
+  "name": "KRE8TION AI CRM",
+  "short_name": "AI CRM",
+  "description": "Intelligent Sales & Partnership Management for AI SMBs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00E5FF",
+  "icons": [
+    {
+      "src": "/logos/dark_mode_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logos/dark_mode_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
