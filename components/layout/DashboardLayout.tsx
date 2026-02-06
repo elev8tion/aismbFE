@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import VoiceOperator from '@/components/VoiceOperator';
 import { VoiceAgentActionsProvider } from '@/contexts/VoiceAgentActionsContext';
+import { EnvHealthBanner } from '@/components/system/EnvHealthBanner';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -104,6 +105,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           isCollapsed ? 'md:ml-16' : 'md:ml-16 lg:ml-64'
         }`}
       >
+        <EnvHealthBanner />
         {children}
       </main>
 
