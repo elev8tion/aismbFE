@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createOpenAI, MODELS } from '@/lib/openai/config';
+import { createOpenAI, MODELS, VOICE_MAP } from '@/lib/openai/config';
 import { validateText } from '@/lib/security/requestValidator';
 import { getSessionUser } from '@/lib/agent/ncbClient';
 
@@ -22,16 +22,18 @@ export async function POST(request: NextRequest) {
   const openai = createOpenAI(apiKey);
 
   try {
-    const { text } = await request.json() as { text: string };
+    const { text, language } = await request.json() as { text: string; language?: string };
 
     const validation = validateText(text);
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
+    const voice = (language && VOICE_MAP[language]) || VOICE_MAP.default;
+
     const mp3 = await openai.audio.speech.create({
       model: MODELS.tts,
-      voice: MODELS.voice,
+      voice: voice as any,
       input: validation.sanitized!,
       response_format: 'mp3',
       speed: 1.0,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOpenAI } from '@/lib/openai/config';
 import { validateQuestion, detectPromptInjection } from '@/lib/security/requestValidator';
-import { getSessionUser, extractAuthCookies } from '@/lib/agent/ncbClient';
+import { getSessionUser, extractAuthCookies, ncbCreate, ncbUpdate } from '@/lib/agent/ncbClient';
 import { selectModel } from '@/lib/agent/modelRouter';
 import { getSession, addMessage } from '@/lib/agent/session';
 import { ALL_CRM_FUNCTIONS } from '@/lib/agent/functions';
@@ -21,6 +21,7 @@ Guidelines:
 - When presenting numbers, round to whole numbers and use plain language ("about fifty leads" not "49.7 leads").
 - Never expose raw IDs to the user. Refer to records by name.
 - If a tool returns an error, explain the issue simply and suggest what to do.
+- Always respond in the same language as the user. If the detected language is Spanish, respond entirely in Spanish. If English, respond in English.
 
 Navigation:
 - When the user asks to open, go to, show, or take me to a section (English or Spanish), call the navigate tool with a target from the allowed list.
@@ -259,10 +260,11 @@ export async function POST(request: NextRequest) {
   const openai = createOpenAI(apiKey);
 
   try {
-    const { question, sessionId, pagePath } = await request.json() as {
+    const { question, sessionId, pagePath, language } = await request.json() as {
       question: string;
       sessionId: string;
       pagePath?: string;
+      language?: string;
     };
 
     if (!sessionId) {
@@ -287,10 +289,16 @@ export async function POST(request: NextRequest) {
     // Select model based on complexity
     const model = selectModel(sanitizedQuestion);
 
+    // Update session language when provided
+    if (language) {
+      session.language = language;
+    }
+
     // Build messages
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'system', content: pagePath ? `Current page route: ${pagePath}` : 'Current page route: unknown' },
+      { role: 'system', content: `User language: ${language || 'en'}` },
       ...NAV_FEWSHOTS,
       ...session.conversation,
       { role: 'user', content: sanitizedQuestion },
@@ -367,6 +375,38 @@ export async function POST(request: NextRequest) {
 
     // Save assistant response to session
     addMessage(sessionId, { role: 'assistant', content: response });
+
+    // Persist to voice_sessions NCB table (fire-and-forget, never block response)
+    try {
+      const userMessages = session.conversation.filter(m => m.role === 'user');
+      const sessionData: Record<string, unknown> = {
+        external_session_id: sessionId,
+        start_time: new Date(session.created_at).toISOString(),
+        language: session.language || language || 'en',
+        messages: JSON.stringify(session.conversation.filter(m => m.role === 'user' || m.role === 'assistant')),
+        total_questions: userMessages.length,
+        referrer_page: pagePath || '/',
+        actions_taken: JSON.stringify(clientActions),
+        duration: Math.round((Date.now() - session.created_at) / 1000),
+      };
+
+      if (!session.voiceSessionDbId) {
+        // First turn — create
+        const result = await ncbCreate<{ data?: { id?: string }; id?: string }>(
+          'voice_sessions',
+          sessionData,
+          user.id,
+          authCookies
+        );
+        const dbId = (result as any)?.data?.id || (result as any)?.id;
+        if (dbId) session.voiceSessionDbId = String(dbId);
+      } else {
+        // Subsequent turns — update
+        await ncbUpdate('voice_sessions', session.voiceSessionDbId, sessionData, authCookies);
+      }
+    } catch (persistErr) {
+      console.error('Voice session persistence error (non-fatal):', persistErr);
+    }
 
     const duration = Date.now() - startTime;
     return NextResponse.json({ response, success: true, duration, model, clientActions });

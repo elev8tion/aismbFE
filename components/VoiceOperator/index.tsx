@@ -32,6 +32,7 @@ export default function VoiceOperator() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const iosAudioPlayerRef = useRef(getIOSAudioPlayer());
+  const detectedLanguageRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     try {
@@ -93,13 +94,14 @@ export default function VoiceOperator() {
 
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
+    const language = detectedLanguageRef.current;
 
     try {
       const response = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ question: transcribedText, sessionId, pagePath: window.location?.pathname || '/' }),
+        body: JSON.stringify({ question: transcribedText, sessionId, pagePath: window.location?.pathname || '/', language }),
         signal: abortController.signal,
       });
 
@@ -136,7 +138,7 @@ export default function VoiceOperator() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ text: data.response }),
+        body: JSON.stringify({ text: data.response, language }),
         signal: abortController.signal,
       });
 
@@ -175,7 +177,10 @@ export default function VoiceOperator() {
   }, [sessionId, startAutoCloseCountdown]);
 
   const handleTranscription = useCallback(
-    async (text: string) => { await processVoiceInteraction(text); },
+    async (text: string, language?: string) => {
+      detectedLanguageRef.current = language;
+      await processVoiceInteraction(text);
+    },
     [processVoiceInteraction]
   );
 

@@ -11,7 +11,7 @@ import {
 import { AudioURLManager, isValidAudioBlob } from './utils/audioProcessor';
 
 export interface VoiceRecordingOptions {
-  onTranscription?: (text: string) => void;
+  onTranscription?: (text: string, language?: string) => void;
   onError?: (error: Error) => void;
   maxDurationMs?: number;
 }
@@ -100,12 +100,12 @@ export function useVoiceRecording(options: VoiceRecordingOptions = {}) {
           throw new NetworkError(`Transcribe failed (${response.status}): ${errorDetail}`);
         }
 
-        const data = await response.json() as { text?: string };
+        const data = await response.json() as { text?: string; language?: string };
         if (!data || typeof data.text !== 'string') {
           throw new ValidationError('Invalid API response format');
         }
 
-        if (onTranscription) onTranscription(data.text);
+        if (onTranscription) onTranscription(data.text, data.language);
 
         setState((prev) => ({ ...prev, isProcessing: false, error: null }));
       } catch (error) {

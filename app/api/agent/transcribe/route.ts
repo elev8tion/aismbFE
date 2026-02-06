@@ -50,12 +50,13 @@ export async function POST(request: NextRequest) {
     const transcription = await openai.audio.transcriptions.create({
       file,
       model: MODELS.transcription,
-      response_format: 'json',
+      response_format: 'verbose_json',
       ...(language === 'es' || language === 'en' ? { language } : {}),
     });
 
+    const detectedLanguage = (transcription as any).language as string | undefined;
     const duration = Date.now() - startTime;
-    return NextResponse.json({ text: transcription.text, success: true, duration });
+    return NextResponse.json({ text: transcription.text, language: detectedLanguage, success: true, duration });
   } catch (error) {
     console.error('Transcription error:', error);
     return NextResponse.json(

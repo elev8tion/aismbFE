@@ -22,3 +22,10 @@ export const MODELS = {
 } as const;
 
 export type ModelTier = 'fast' | 'standard' | 'reasoning';
+
+// Language → TTS voice mapping
+export const VOICE_MAP: Record<string, string> = {
+  en: 'echo',
+  es: 'coral',
+  default: 'echo',
+};
