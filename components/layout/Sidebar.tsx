@@ -35,7 +35,7 @@ const navItems = [
 
 export function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
-  const { t } = useTranslations();
+  const { t, language, setLanguage } = useTranslations();
   const { user, signOut } = useAuth();
 
   // Auto-close mobile drawer on route change
@@ -89,6 +89,22 @@ export function Sidebar({ isCollapsed, onToggleCollapse, isMobileOpen, onMobileC
 
         {/* Settings & User */}
         <div className="p-4 border-t border-white/10 space-y-1">
+          {/* Language toggle */}
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+            className={`sidebar-item w-full ${expanded ? '' : 'justify-center'}`}
+            title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
+          >
+            <span className="w-5 h-5 shrink-0 flex items-center justify-center text-xs font-bold">
+              {language === 'en' ? 'EN' : 'ES'}
+            </span>
+            {expanded && (
+              <span className="whitespace-nowrap">
+                {language === 'en' ? 'English' : 'Español'}
+              </span>
+            )}
+          </button>
+
           <Link
             href="/settings"
             className={`sidebar-item ${expanded ? '' : 'justify-center'}`}
