@@ -62,8 +62,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <VoiceAgentActionsProvider>
     <div className="min-h-screen">
-      {/* Mobile header bar */}
-      <div className="mobile-header flex md:hidden">
+      {/* Mobile header bar — visible below tablet (768px) */}
+      <div className="mobile-header flex tablet:hidden">
         <button
           onClick={() => setIsMobileOpen((prev) => !prev)}
           className="relative w-10 h-10 flex flex-col items-center justify-center gap-1.5"
@@ -100,8 +100,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       />
 
       <main
-        className={`min-h-screen pt-16 md:pt-0 transition-[margin] duration-300 ${
-          isCollapsed ? 'md:ml-16' : 'md:ml-16 lg:ml-64'
+        className={`min-h-screen pt-16 tablet:pt-0 transition-[margin] duration-300 ${
+          isCollapsed ? 'tablet:ml-16' : 'tablet:ml-16 desktop:ml-64'
         }`}
       >
         {children}

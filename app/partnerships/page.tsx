@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StepProgress } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { TIER_PRICING, type TierKey } from '@/lib/stripe/pricing';
 
 interface Partnership {
   id: string;
@@ -23,10 +24,63 @@ interface Partnership {
   next_meeting?: string;
   notes?: string;
   created_at?: string;
+  payment_status?: string;
+  customer_email?: string;
+  stripe_customer_id?: string;
+}
+
+interface StripeInvoice {
+  id: string;
+  number: string | null;
+  status: string | null;
+  amount_due: number;
+  amount_paid: number;
+  currency: string;
+  created: number;
+  due_date: number | null;
+  paid: boolean;
+  hosted_invoice_url: string | null;
+  invoice_pdf: string | null;
+  customer_email: string | null;
+  metadata: Record<string, string> | null;
+  subscription: string | null;
 }
 
 const PHASES = ['discover', 'co-create', 'deploy', 'independent'];
 const STATUSES = ['onboarding', 'active', 'graduated'];
+
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toLocaleString()}`;
+}
+
+function formatDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString();
+}
+
+function getInvoiceStatusClass(status: string | null): string {
+  switch (status) {
+    case 'paid': return 'tag-success';
+    case 'open': return 'tag-info';
+    case 'void': return 'tag-neutral';
+    case 'uncollectible': return 'tag-danger';
+    default: return 'tag-neutral';
+  }
+}
+
+function getBillingStatusTag(paymentStatus: string | undefined, t: any) {
+  switch (paymentStatus) {
+    case 'setup_paid':
+      return <span className="tag tag-success">{t.billing.setupPaid}</span>;
+    case 'invoice_sent':
+      return <span className="tag tag-info">{t.billing.invoiceSent}</span>;
+    case 'past_due':
+      return <span className="tag tag-danger">{t.billing.pastDue}</span>;
+    case 'cancelled':
+      return <span className="tag tag-neutral">{t.billing.notStarted}</span>;
+    default:
+      return <span className="tag tag-neutral">{t.billing.notInvoiced}</span>;
+  }
+}
 
 export default function PartnershipsPage() {
   const { t } = useTranslations();
@@ -36,6 +90,16 @@ export default function PartnershipsPage() {
   const [updatePartnership, setUpdatePartnership] = useState<Partnership | null>(null);
   const [saving, setSaving] = useState(false);
   const [updateForm, setUpdateForm] = useState({ phase: '', status: '', health_score: 0, systems_delivered: 0 });
+
+  // Billing modals
+  const [invoicePartnership, setInvoicePartnership] = useState<Partnership | null>(null);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  const [invoiceEmail, setInvoiceEmail] = useState('');
+  const [invoiceName, setInvoiceName] = useState('');
+
+  const [invoicesPartnership, setInvoicesPartnership] = useState<Partnership | null>(null);
+  const [invoicesList, setInvoicesList] = useState<StripeInvoice[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
 
   const fetchPartnerships = useCallback(async () => {
     try {
@@ -123,34 +187,80 @@ export default function PartnershipsPage() {
     window.open(`mailto:?subject=${subject}&body=${body}`, '_self');
   };
 
-  const startCheckout = async (p: Partnership) => {
+  // ─── Invoice Actions ───
+
+  const openSendInvoice = (p: Partnership) => {
+    setInvoiceEmail(p.customer_email || '');
+    setInvoiceName(p.company_name || '');
+    setInvoicePartnership(p);
+  };
+
+  const handleSendInvoice = async () => {
+    if (!invoicePartnership || !invoiceEmail) return;
+    setSendingInvoice(true);
     try {
-      const amount = p.monthly_revenue || (p.tier === 'architect' ? 3000 : p.tier === 'foundation' ? 1500 : 750);
-      const res = await fetch('/api/integrations/stripe/checkout-session', {
+      const res = await fetch('/api/integrations/stripe/invoices/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mode: 'payment',
-          amount: Math.round(amount * 100),
-          currency: 'usd',
-          metadata: { tier: p.tier, phase: p.phase },
-          partnership_id: p.id,
-          success_path: '/payment-success',
-          cancel_path: '/partnerships',
-          product_name: `${p.company_name} — Monthly`,
-          description: `Monthly payment for ${p.company_name}`,
+          partnership_id: invoicePartnership.id,
+          customer_email: invoiceEmail,
+          customer_name: invoiceName,
+          tier: invoicePartnership.tier,
+          company_name: invoicePartnership.company_name || '',
         }),
       });
       const data = await res.json();
-      if (data?.url) {
-        window.location.href = data.url;
+      if (data.success) {
+        // Update partnership payment_status locally
+        await fetch(`/api/data/update/partnerships?id=${invoicePartnership.id}`, {
+          method: 'PUT', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            payment_status: 'invoice_sent',
+            stripe_customer_id: data.customer_id,
+            customer_email: invoiceEmail,
+          }),
+        });
+        setInvoicePartnership(null);
+        fetchPartnerships();
       } else {
-        alert(data?.error || 'Failed to start checkout');
+        alert(data.error || 'Failed to send invoice');
       }
-    } catch (e) {
-      console.error('Checkout error', e);
-      alert('Failed to start checkout');
+    } catch (err) {
+      console.error('Invoice error:', err);
+      alert('Failed to send invoice');
+    } finally {
+      setSendingInvoice(false);
     }
+  };
+
+  const openViewInvoices = async (p: Partnership) => {
+    setInvoicesPartnership(p);
+    setLoadingInvoices(true);
+    try {
+      const params = new URLSearchParams();
+      if (p.stripe_customer_id) params.set('customer_id', p.stripe_customer_id);
+      else params.set('partnership_id', p.id);
+
+      const res = await fetch(`/api/integrations/stripe/invoices/list?${params.toString()}`);
+      const data = await res.json();
+      setInvoicesList(data.invoices || []);
+    } catch {
+      setInvoicesList([]);
+    } finally {
+      setLoadingInvoices(false);
+    }
+  };
+
+  const getTierSetupAmount = (tier: string) => {
+    const pricing = TIER_PRICING[tier as TierKey];
+    return pricing ? formatCents(pricing.setup) : '$0';
+  };
+
+  const getTierMonthlyAmount = (tier: string) => {
+    const pricing = TIER_PRICING[tier as TierKey];
+    return pricing ? formatCents(pricing.monthly) : '$0';
   };
 
   return (
@@ -179,8 +289,14 @@ export default function PartnershipsPage() {
                       <span className={`tag ${getPartnershipStatusClass(partnership.status)}`}>
                         {statusLabels[partnership.status] || partnership.status}
                       </span>
+                      {getBillingStatusTag(partnership.payment_status, t)}
                     </div>
-                    <p className="text-xs md:text-sm text-white/50 mt-1">{t.partnerships.started} {partnership.start_date}</p>
+                    <p className="text-xs md:text-sm text-white/50 mt-1">
+                      {t.partnerships.started} {partnership.start_date}
+                      {partnership.payment_status === 'setup_paid' && (
+                        <span className="ml-3 text-emerald-400">{getTierMonthlyAmount(partnership.tier)}/mo</span>
+                      )}
+                    </p>
                   </div>
                   <div className="text-left sm:text-right shrink-0">
                     <p className="text-xs md:text-sm text-white/50">{t.partnerships.healthScore}</p>
@@ -213,9 +329,10 @@ export default function PartnershipsPage() {
                   <div className="sm:col-span-2 flex flex-wrap items-center gap-2 md:gap-3 lg:justify-end">
                     <button onClick={() => setViewPartnership(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.viewDetails}</button>
                     <button onClick={() => handleScheduleMeeting(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.scheduleMeeting}</button>
-                    {(partnership.status === 'active' || partnership.status === 'onboarding') && (
-                      <button onClick={() => startCheckout(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.payments.payNow}</button>
+                    {(partnership.status === 'active' || partnership.status === 'onboarding') && !partnership.payment_status && (
+                      <button onClick={() => openSendInvoice(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.billing.sendSetupInvoice}</button>
                     )}
+                    <button onClick={() => openViewInvoices(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.billing.viewInvoices}</button>
                     <button onClick={() => openUpdate(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.partnerships.updateProgress}</button>
                   </div>
                 </div>
@@ -253,6 +370,16 @@ export default function PartnershipsPage() {
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/50">{t.partnerships.started}</p>
                 <p className="text-sm font-medium text-white mt-1">{viewPartnership.start_date || '—'}</p>
+              </div>
+            </div>
+            {/* Billing Summary */}
+            <div className="bg-white/5 rounded-lg p-3">
+              <p className="text-xs text-white/50 mb-2">{t.billing.setupFee} / {t.billing.monthlyPartnership}</p>
+              <div className="flex items-center gap-3">
+                {getBillingStatusTag(viewPartnership.payment_status, t)}
+                <span className="text-sm text-white/70">
+                  {t.billing.setupFee}: {getTierSetupAmount(viewPartnership.tier)} | {t.billing.monthlyPartnership}: {getTierMonthlyAmount(viewPartnership.tier)}/mo
+                </span>
               </div>
             </div>
             {viewPartnership.notes && (
@@ -298,12 +425,106 @@ export default function PartnershipsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Send Invoice Modal */}
+      <Modal open={!!invoicePartnership} onClose={() => setInvoicePartnership(null)} title={`${t.billing.sendSetupInvoice} — ${invoicePartnership?.company_name || ''}`}>
+        {invoicePartnership && (
+          <div className="space-y-4">
+            <p className="text-sm text-white/70">{t.billing.confirmSendInvoice}</p>
+            <div className="bg-white/5 rounded-lg p-4 space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-white/50">{t.pipeline.tier}</span>
+                <span className={`tag ${getTierClass(invoicePartnership.tier)}`}>{invoicePartnership.tier}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-white/50">{t.billing.invoiceAmount}</span>
+                <span className="text-lg font-bold text-white">{getTierSetupAmount(invoicePartnership.tier)}</span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-white/60 mb-1">{t.common.email} *</label>
+              <input
+                type="email"
+                required
+                className="input-glass w-full"
+                value={invoiceEmail}
+                onChange={e => setInvoiceEmail(e.target.value)}
+                placeholder="client@company.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-white/60 mb-1">{t.common.name}</label>
+              <input
+                type="text"
+                className="input-glass w-full"
+                value={invoiceName}
+                onChange={e => setInvoiceName(e.target.value)}
+                placeholder="Contact Name"
+              />
+            </div>
+            <div className="flex gap-3 justify-end pt-2">
+              <button type="button" onClick={() => setInvoicePartnership(null)} className="btn-secondary">{t.common.cancel}</button>
+              <button
+                onClick={handleSendInvoice}
+                disabled={sendingInvoice || !invoiceEmail}
+                className="btn-primary"
+              >
+                {sendingInvoice ? t.common.saving : t.billing.sendInvoice}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* View Invoices Modal */}
+      <Modal open={!!invoicesPartnership} onClose={() => { setInvoicesPartnership(null); setInvoicesList([]); }} title={`${t.billing.invoiceHistory} — ${invoicesPartnership?.company_name || ''}`} wide>
+        {loadingInvoices ? (
+          <p className="text-white/60 text-center py-6">{t.common.loading}</p>
+        ) : invoicesList.length === 0 ? (
+          <p className="text-white/60 text-center py-6">{t.common.noData}</p>
+        ) : (
+          <div className="space-y-2">
+            {invoicesList.map((inv) => (
+              <div key={inv.id} className="bg-white/5 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-white">{inv.number || inv.id.slice(0, 20)}</span>
+                    <span className={`tag text-xs ${getInvoiceStatusClass(inv.status)}`}>
+                      {inv.status === 'paid' ? t.billing.paid
+                        : inv.status === 'open' ? t.billing.open
+                        : inv.status === 'void' ? t.billing.void
+                        : inv.status || '—'}
+                    </span>
+                    {inv.metadata?.type === 'setup' && (
+                      <span className="text-xs text-white/40">{t.billing.setupFee}</span>
+                    )}
+                    {inv.subscription && (
+                      <span className="text-xs text-white/40">{t.billing.monthlyPartnership}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-white/40 mt-1">
+                    {formatDate(inv.created)} — {inv.customer_email || ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-sm font-semibold text-white">{formatCents(inv.amount_due)}</span>
+                  {inv.hosted_invoice_url && (
+                    <a href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs">
+                      {t.common.view}
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </DashboardLayout>
   );
 }
 
 const MOCK_PARTNERSHIPS: Partnership[] = [
-  { id: '1', company_name: 'Smith & Sons Construction', tier: 'architect', status: 'active', phase: 'co-create', health_score: 85, systems_delivered: 3, total_systems: 6, start_date: '2024-01-15', notes: 'Strong engagement. Currently building custom estimating AI and project management automation.' },
-  { id: '2', company_name: 'XYZ Property Management', tier: 'foundation', status: 'active', phase: 'deploy', health_score: 92, systems_delivered: 2, total_systems: 3, start_date: '2024-02-01', notes: 'Tenant communication AI deployed and performing well. Maintenance scheduling next.' },
+  { id: '1', company_name: 'Smith & Sons Construction', tier: 'architect', status: 'active', phase: 'co-create', health_score: 85, systems_delivered: 3, total_systems: 6, start_date: '2024-01-15', notes: 'Strong engagement. Currently building custom estimating AI and project management automation.', payment_status: 'setup_paid' },
+  { id: '2', company_name: 'XYZ Property Management', tier: 'foundation', status: 'active', phase: 'deploy', health_score: 92, systems_delivered: 2, total_systems: 3, start_date: '2024-02-01', notes: 'Tenant communication AI deployed and performing well. Maintenance scheduling next.', payment_status: 'invoice_sent' },
   { id: '3', company_name: 'Quick Fix HVAC', tier: 'discovery', status: 'onboarding', phase: 'discover', health_score: 100, systems_delivered: 0, total_systems: 1, start_date: '2024-03-01', notes: 'Initial discovery phase. Evaluating AI-powered scheduling system.' },
 ];
