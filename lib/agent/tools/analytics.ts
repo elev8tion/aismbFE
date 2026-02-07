@@ -1,9 +1,9 @@
 import { ncbRead, ncbCreate } from '../ncbClient';
 
-interface Lead { id: string; status: string; created_at?: string }
+interface Lead { id: string; name?: string; status: string; created_at?: string; updated_at?: string; value?: number; assigned_to?: string }
 interface Booking { id: string; status: string; date: string }
-interface Opportunity { id: string; stage: string; value: number }
-interface Activity { id: string; type: string; description: string; created_at?: string }
+interface Opportunity { id: string; stage: string; value: number; name?: string }
+interface Activity { id: string; type: string; description: string; created_at?: string; lead_id?: string; contact_id?: string }
 interface VoiceSession { id: string; sentiment?: string; duration?: number; total_questions?: number; outcome?: string; topics?: string }
 interface RoiCalculation { id: string; industry?: string; employee_count?: number; estimated_savings?: number; created_at?: string }
 interface Task { id: string; title: string; description?: string; status: string; due_date?: string; priority?: string }
@@ -129,4 +129,138 @@ export async function list_tasks(params: { status?: string }, cookies: string) {
   if (params.status) filters.status = params.status;
   const result = await ncbRead<Task>('tasks', cookies, filters);
   return { tasks: result.data || [], total: (result.data || []).length };
+}
+
+// ─── Activity Logging ──────────────────────────────────────────────────────
+
+export async function log_activity(
+  params: { type: string; description: string; lead_id?: string; contact_id?: string },
+  userId: string,
+  cookies: string
+) {
+  const result = await ncbCreate('activities', {
+    type: params.type,
+    description: params.description,
+    lead_id: params.lead_id || null,
+    contact_id: params.contact_id || null,
+  }, userId, cookies);
+  return { success: true, activity: result };
+}
+
+export async function schedule_followup(
+  params: { description: string; due_date: string; lead_id?: string; contact_id?: string },
+  userId: string,
+  cookies: string
+) {
+  const result = await ncbCreate('activities', {
+    type: 'followup',
+    description: params.description,
+    lead_id: params.lead_id || null,
+    contact_id: params.contact_id || null,
+    due_date: params.due_date,
+  }, userId, cookies);
+  return { success: true, followup: result };
+}
+
+// ─── Smart Queries ─────────────────────────────────────────────────────────
+
+export async function get_conversion_rate(_params: Record<string, never>, cookies: string) {
+  const result = await ncbRead<Lead>('leads', cookies);
+  const leads = result.data || [];
+  const total = leads.length;
+  const won = leads.filter(l => l.status === 'won').length;
+  const rate = total > 0 ? Math.round((won / total) * 100) : 0;
+  return { total_leads: total, won, conversion_rate_percent: rate };
+}
+
+export async function get_revenue_forecast(_params: Record<string, never>, cookies: string) {
+  const result = await ncbRead<Opportunity>('opportunities', cookies);
+  const opps = result.data || [];
+
+  const stageProbability: Record<string, number> = {
+    discovery: 0.2,
+    proposal: 0.5,
+    negotiation: 0.75,
+    closed_won: 1.0,
+    closed_lost: 0,
+  };
+
+  let weightedTotal = 0;
+  let rawTotal = 0;
+  const byStage: Record<string, { count: number; value: number; weighted: number }> = {};
+
+  for (const o of opps) {
+    const value = Number(o.value) || 0;
+    const prob = stageProbability[o.stage] ?? 0.3;
+    const weighted = Math.round(value * prob);
+    rawTotal += value;
+    weightedTotal += weighted;
+
+    if (!byStage[o.stage]) byStage[o.stage] = { count: 0, value: 0, weighted: 0 };
+    byStage[o.stage].count++;
+    byStage[o.stage].value += value;
+    byStage[o.stage].weighted += weighted;
+  }
+
+  return { total_pipeline: rawTotal, weighted_forecast: weightedTotal, by_stage: byStage };
+}
+
+export async function get_stale_leads(params: { days_inactive?: number }, cookies: string) {
+  const days = params.days_inactive || 14;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = cutoff.toISOString();
+
+  const result = await ncbRead<Lead>('leads', cookies);
+  const leads = result.data || [];
+
+  const stale = leads.filter(l => {
+    if (l.status === 'won' || l.status === 'lost') return false;
+    const lastUpdate = l.updated_at || l.created_at || '';
+    return lastUpdate < cutoffStr;
+  });
+
+  return {
+    stale_leads: stale.slice(0, 25).map(l => ({ id: l.id, name: l.name, status: l.status, last_activity: l.updated_at || l.created_at })),
+    total: stale.length,
+    days_inactive: days,
+  };
+}
+
+export async function get_top_performers(params: { metric?: string; limit?: number }, cookies: string) {
+  const limit = params.limit || 10;
+  const metric = params.metric || 'value';
+
+  if (metric === 'value') {
+    const result = await ncbRead<Opportunity>('opportunities', cookies);
+    const opps = (result.data || [])
+      .filter(o => o.stage !== 'closed_lost')
+      .sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0))
+      .slice(0, limit);
+    return { metric: 'pipeline_value', top: opps.map(o => ({ id: o.id, name: o.name, value: Number(o.value) || 0, stage: o.stage })) };
+  }
+
+  // Default: top leads by activity count
+  const [leadsResult, activitiesResult] = await Promise.all([
+    ncbRead<Lead>('leads', cookies),
+    ncbRead<Activity>('activities', cookies),
+  ]);
+
+  const activityCount: Record<string, number> = {};
+  for (const a of activitiesResult.data || []) {
+    if (a.lead_id) activityCount[a.lead_id] = (activityCount[a.lead_id] || 0) + 1;
+  }
+
+  const leadsMap = new Map((leadsResult.data || []).map(l => [l.id, l]));
+  const sorted = Object.entries(activityCount)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, limit);
+
+  return {
+    metric: 'activity_count',
+    top: sorted.map(([id, count]) => {
+      const lead = leadsMap.get(id);
+      return { id, name: lead?.name, activity_count: count, status: lead?.status };
+    }),
+  };
 }

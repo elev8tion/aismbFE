@@ -410,6 +410,40 @@ const partnershipFunctions: ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'create_partnership',
+      description: 'Create a new partnership record',
+      parameters: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Partner company or individual name' },
+          partner_type: { type: 'string', enum: ['referral', 'reseller', 'technology', 'strategic'], description: 'Type of partnership' },
+          phase: { type: 'string', description: 'Initial phase (default prospecting)' },
+          contact_name: { type: 'string', description: 'Primary contact name' },
+          contact_email: { type: 'string', description: 'Primary contact email' },
+        },
+        required: ['name'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'log_partner_interaction',
+      description: 'Log an interaction or touchpoint with a partner',
+      parameters: {
+        type: 'object',
+        properties: {
+          partnership_id: { type: 'string', description: 'ID of the partnership' },
+          type: { type: 'string', enum: ['call', 'email', 'meeting', 'note'], description: 'Interaction type' },
+          description: { type: 'string', description: 'What happened' },
+        },
+        required: ['partnership_id', 'type', 'description'],
+      },
+    },
+  },
 ];
 
 // ─── ANALYTICS ──────────────────────────────────────────────────────────────
@@ -489,6 +523,173 @@ const analyticsFunctions: ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'log_activity',
+      description: 'Log a CRM activity (call, email, meeting, note) linked to a lead or contact',
+      parameters: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: ['call', 'email', 'meeting', 'note'], description: 'Activity type' },
+          description: { type: 'string', description: 'What happened' },
+          lead_id: { type: 'string', description: 'Optional lead to link this activity to' },
+          contact_id: { type: 'string', description: 'Optional contact to link this activity to' },
+        },
+        required: ['type', 'description'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'schedule_followup',
+      description: 'Schedule a follow-up reminder/task for a future date',
+      parameters: {
+        type: 'object',
+        properties: {
+          description: { type: 'string', description: 'What the follow-up is about' },
+          due_date: { type: 'string', description: 'Due date in YYYY-MM-DD format' },
+          lead_id: { type: 'string', description: 'Optional lead to link to' },
+          contact_id: { type: 'string', description: 'Optional contact to link to' },
+        },
+        required: ['description', 'due_date'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_conversion_rate',
+      description: 'Calculate the lead-to-won conversion rate',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_revenue_forecast',
+      description: 'Get a weighted pipeline revenue forecast based on deal stages and probabilities',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_stale_leads',
+      description: 'Find leads with no recent activity, useful for identifying neglected prospects',
+      parameters: {
+        type: 'object',
+        properties: {
+          days_inactive: { type: 'number', description: 'Number of days without activity to consider stale (default 14)' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_top_performers',
+      description: 'Rank leads or deals by value or activity count',
+      parameters: {
+        type: 'object',
+        properties: {
+          metric: { type: 'string', enum: ['value', 'activity'], description: 'Rank by pipeline value or activity count (default value)' },
+          limit: { type: 'number', description: 'Number of results (default 10)' },
+        },
+      },
+    },
+  },
+];
+
+// ─── BULK OPERATIONS ───────────────────────────────────────────────────────
+const bulkFunctions: ChatCompletionTool[] = [
+  {
+    type: 'function',
+    function: {
+      name: 'bulk_update_lead_status',
+      description: 'Update the status of multiple leads at once',
+      parameters: {
+        type: 'object',
+        properties: {
+          lead_ids: { type: 'array', items: { type: 'string' }, description: 'Array of lead IDs to update' },
+          status: { type: 'string', enum: ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'] },
+        },
+        required: ['lead_ids', 'status'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'bulk_assign_leads',
+      description: 'Assign multiple leads to a team member',
+      parameters: {
+        type: 'object',
+        properties: {
+          lead_ids: { type: 'array', items: { type: 'string' }, description: 'Array of lead IDs to assign' },
+          assignee: { type: 'string', description: 'Name or ID of the team member to assign to' },
+        },
+        required: ['lead_ids', 'assignee'],
+      },
+    },
+  },
+];
+
+// ─── MESSAGING DRAFTS ──────────────────────────────────────────────────────
+const messagingFunctions: ChatCompletionTool[] = [
+  {
+    type: 'function',
+    function: {
+      name: 'draft_email',
+      description: 'Generate an email draft for the user to review and send manually',
+      parameters: {
+        type: 'object',
+        properties: {
+          to: { type: 'string', description: 'Recipient email address or name' },
+          subject: { type: 'string', description: 'Email subject line' },
+          context: { type: 'string', description: 'What the email should be about' },
+        },
+        required: ['to', 'subject', 'context'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'draft_sms',
+      description: 'Generate a short SMS draft for the user to review and send manually',
+      parameters: {
+        type: 'object',
+        properties: {
+          to: { type: 'string', description: 'Recipient phone number or name' },
+          context: { type: 'string', description: 'What the message should say' },
+        },
+        required: ['to', 'context'],
+      },
+    },
+  },
+];
+
+// ─── ROI VOICE CONTROL ─────────────────────────────────────────────────────
+const roiFunctions: ChatCompletionTool[] = [
+  {
+    type: 'function',
+    function: {
+      name: 'run_roi_calculation',
+      description: 'Run an ROI calculation for a business and save the results',
+      parameters: {
+        type: 'object',
+        properties: {
+          business_name: { type: 'string', description: 'Name of the business' },
+          monthly_revenue: { type: 'number', description: 'Monthly revenue in dollars' },
+          employee_count: { type: 'number', description: 'Number of employees' },
+          industry: { type: 'string', description: 'Industry category (optional)' },
+        },
+        required: ['business_name', 'monthly_revenue', 'employee_count'],
+      },
+    },
+  },
 ];
 
 export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
@@ -498,6 +699,9 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
   ...contactFunctions,
   ...partnershipFunctions,
   ...analyticsFunctions,
+  ...bulkFunctions,
+  ...messagingFunctions,
+  ...roiFunctions,
   // Navigation (client-side actions)
   {
     type: 'function',

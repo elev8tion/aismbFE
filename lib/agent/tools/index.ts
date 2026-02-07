@@ -8,11 +8,16 @@ import * as partnerships from './partnerships';
 import * as analytics from './analytics';
 import * as navigation from './navigation';
 import * as ui from './ui';
+import * as bulk from './bulk';
+import * as messaging from './messaging';
+import * as roi from './roi';
 
 // Tools that require userId for create operations
 const CREATE_TOOLS = new Set([
   'create_lead', 'create_opportunity', 'create_contact', 'create_company',
   'block_date', 'create_task',
+  'create_partnership', 'run_roi_calculation', 'log_activity', 'schedule_followup',
+  'log_partner_interaction',
 ]);
 
 type ToolHandler = (params: Record<string, unknown>, cookiesOrUserId: string, cookies?: string) => Promise<unknown>;
@@ -66,6 +71,27 @@ const registry: Record<string, ToolHandler> = {
   get_roi_calculation_insights: analytics.get_roi_calculation_insights as unknown as ToolHandler,
   create_task: analytics.create_task as unknown as ToolHandler,
   list_tasks: analytics.list_tasks as unknown as ToolHandler,
+  log_activity: analytics.log_activity as unknown as ToolHandler,
+  schedule_followup: analytics.schedule_followup as unknown as ToolHandler,
+  get_conversion_rate: analytics.get_conversion_rate as unknown as ToolHandler,
+  get_revenue_forecast: analytics.get_revenue_forecast as unknown as ToolHandler,
+  get_stale_leads: analytics.get_stale_leads as unknown as ToolHandler,
+  get_top_performers: analytics.get_top_performers as unknown as ToolHandler,
+
+  // Bulk Operations
+  bulk_update_lead_status: bulk.bulk_update_lead_status as unknown as ToolHandler,
+  bulk_assign_leads: bulk.bulk_assign_leads as unknown as ToolHandler,
+
+  // Messaging Drafts
+  draft_email: messaging.draft_email as unknown as ToolHandler,
+  draft_sms: messaging.draft_sms as unknown as ToolHandler,
+
+  // ROI
+  run_roi_calculation: roi.run_roi_calculation as unknown as ToolHandler,
+
+  // Partnership extensions
+  create_partnership: partnerships.create_partnership as unknown as ToolHandler,
+  log_partner_interaction: partnerships.log_partner_interaction as unknown as ToolHandler,
 
   // Navigation (client-side action)
   navigate: navigation.navigate as unknown as ToolHandler,

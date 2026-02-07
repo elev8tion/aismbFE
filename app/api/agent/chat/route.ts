@@ -225,6 +225,24 @@ const NAV_FEWSHOTS = [
   { role: 'assistant', content: null, tool_calls: [ { id: 'nav14', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'dashboard' }) } } ] },
   { role: 'tool', tool_call_id: 'nav14', content: JSON.stringify({ ok: true, target: 'dashboard', route: '/dashboard', client_action: { type: 'navigate', route: '/dashboard', target: 'dashboard' } }) },
   { role: 'assistant', content: 'Abriendo panel.' },
+
+  // Activity logging (EN)
+  { role: 'user', content: 'Log a call with ABC Plumbing' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'act1', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', description: 'Call with ABC Plumbing' }) } } ] },
+  { role: 'tool', tool_call_id: 'act1', content: JSON.stringify({ success: true, activity: { id: '1', type: 'call' } }) },
+  { role: 'assistant', content: 'Logged a call with ABC Plumbing.' },
+
+  // Conversion rate (EN)
+  { role: 'user', content: "What's my conversion rate?" },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'conv1', type: 'function', function: { name: 'get_conversion_rate', arguments: '{}' } } ] },
+  { role: 'tool', tool_call_id: 'conv1', content: JSON.stringify({ total_leads: 50, won: 8, conversion_rate_percent: 16 }) },
+  { role: 'assistant', content: 'Your conversion rate is about 16%. You have 8 won leads out of 50 total.' },
+
+  // Stale leads (EN)
+  { role: 'user', content: "Find leads I haven't touched in 2 weeks" },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'stale1', type: 'function', function: { name: 'get_stale_leads', arguments: JSON.stringify({ days_inactive: 14 }) } } ] },
+  { role: 'tool', tool_call_id: 'stale1', content: JSON.stringify({ stale_leads: [{ id: '1', name: 'Acme Corp', status: 'contacted' }], total: 1, days_inactive: 14 }) },
+  { role: 'assistant', content: 'Found 1 lead inactive for 2 weeks: Acme Corp, currently in contacted status.' },
 // Cast to SDK param type; examples use tool_calls which may not be in the param type
 ] as unknown as ChatCompletionMessageParam[];
 
