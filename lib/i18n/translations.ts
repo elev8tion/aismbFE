@@ -8,6 +8,7 @@ export interface Translations {
     companies: string;
     contacts: string;
     partnerships: string;
+    drafts: string;
     voiceSessions: string;
     roiCalculations: string;
     reports: string;
@@ -116,6 +117,30 @@ export interface Translations {
       active: string;
       graduated: string;
     };
+  };
+  // Drafts
+  drafts: {
+    title: string;
+    subtitle: string;
+    newDraft: string;
+    allDrafts: string;
+    emails: string;
+    sms: string;
+    notes: string;
+    toRecipient: string;
+    subject: string;
+    body: string;
+    status: string;
+    draft: string;
+    sent: string;
+    archived: string;
+    copyToClipboard: string;
+    copied: string;
+    totalDrafts: string;
+    emptyState: string;
+    type: string;
+    date: string;
+    selectType: string;
   };
   // Settings
   settings: {
@@ -345,6 +370,30 @@ export interface Translations {
     failedSignIn: string;
     failedCreateAccount: string;
   };
+  // Billing
+  billing: {
+    sendSetupInvoice: string;
+    viewInvoices: string;
+    invoiceSent: string;
+    setupPaid: string;
+    notInvoiced: string;
+    monthlyActive: string;
+    pastDue: string;
+    notStarted: string;
+    confirmSendInvoice: string;
+    invoiceAmount: string;
+    sendInvoice: string;
+    invoiceHistory: string;
+    invoiceDate: string;
+    invoiceStatus: string;
+    invoiceNumber: string;
+    paid: string;
+    open: string;
+    void: string;
+    overdue: string;
+    setupFee: string;
+    monthlyPartnership: string;
+  };
   // Voice Operator
   voiceAgent: {
     states: {
@@ -380,6 +429,7 @@ export const translations: Record<'en' | 'es', Translations> = {
       companies: 'Companies',
       contacts: 'Contacts',
       partnerships: 'Partnerships',
+      drafts: 'Drafts',
       voiceSessions: 'Voice Sessions',
       roiCalculations: 'ROI Calculations',
       reports: 'Reports',
@@ -482,6 +532,29 @@ export const translations: Record<'en' | 'es', Translations> = {
         active: 'Active',
         graduated: 'Graduated',
       },
+    },
+    drafts: {
+      title: 'Drafts',
+      subtitle: 'Manage your email, SMS, and note drafts',
+      newDraft: 'New Draft',
+      allDrafts: 'All Drafts',
+      emails: 'Emails',
+      sms: 'SMS',
+      notes: 'Notes',
+      toRecipient: 'To',
+      subject: 'Subject',
+      body: 'Body',
+      status: 'Status',
+      draft: 'Draft',
+      sent: 'Sent',
+      archived: 'Archived',
+      copyToClipboard: 'Copy to Clipboard',
+      copied: 'Copied!',
+      totalDrafts: 'total drafts',
+      emptyState: 'No drafts yet. Use the voice agent or create one manually.',
+      type: 'Type',
+      date: 'Date',
+      selectType: 'Select type',
     },
     settings: {
       title: 'Settings',
@@ -704,6 +777,29 @@ export const translations: Record<'en' | 'es', Translations> = {
       failedSignIn: 'Failed to sign in',
       failedCreateAccount: 'Failed to create account',
     },
+    billing: {
+      sendSetupInvoice: 'Send Setup Invoice',
+      viewInvoices: 'View Invoices',
+      invoiceSent: 'Invoice Sent',
+      setupPaid: 'Setup Paid',
+      notInvoiced: 'Not Invoiced',
+      monthlyActive: 'Active',
+      pastDue: 'Past Due',
+      notStarted: 'Not Started',
+      confirmSendInvoice: 'Send a setup invoice to this client?',
+      invoiceAmount: 'Invoice Amount',
+      sendInvoice: 'Send Invoice',
+      invoiceHistory: 'Invoice History',
+      invoiceDate: 'Date',
+      invoiceStatus: 'Status',
+      invoiceNumber: 'Invoice #',
+      paid: 'Paid',
+      open: 'Open',
+      void: 'Void',
+      overdue: 'Overdue',
+      setupFee: 'Setup Fee',
+      monthlyPartnership: 'Monthly Partnership',
+    },
     voiceAgent: {
       states: {
         idle: { title: 'Voice Operator', description: 'Tap to start speaking' },
@@ -736,6 +832,7 @@ export const translations: Record<'en' | 'es', Translations> = {
       companies: 'Empresas',
       contacts: 'Contactos',
       partnerships: 'Asociaciones',
+      drafts: 'Borradores',
       voiceSessions: 'Sesiones de Voz',
       roiCalculations: 'Cálculos de ROI',
       reports: 'Informes',
@@ -838,6 +935,29 @@ export const translations: Record<'en' | 'es', Translations> = {
         active: 'Activo',
         graduated: 'Graduado',
       },
+    },
+    drafts: {
+      title: 'Borradores',
+      subtitle: 'Gestiona tus borradores de email, SMS y notas',
+      newDraft: 'Nuevo Borrador',
+      allDrafts: 'Todos los Borradores',
+      emails: 'Emails',
+      sms: 'SMS',
+      notes: 'Notas',
+      toRecipient: 'Para',
+      subject: 'Asunto',
+      body: 'Cuerpo',
+      status: 'Estado',
+      draft: 'Borrador',
+      sent: 'Enviado',
+      archived: 'Archivado',
+      copyToClipboard: 'Copiar al Portapapeles',
+      copied: '¡Copiado!',
+      totalDrafts: 'borradores en total',
+      emptyState: 'No hay borradores aún. Usa el agente de voz o crea uno manualmente.',
+      type: 'Tipo',
+      date: 'Fecha',
+      selectType: 'Seleccionar tipo',
     },
     settings: {
       title: 'Configuración',
@@ -1059,6 +1179,29 @@ export const translations: Record<'en' | 'es', Translations> = {
       passwordMinLength: 'La contraseña debe tener al menos 8 caracteres',
       failedSignIn: 'Error al iniciar sesión',
       failedCreateAccount: 'Error al crear la cuenta',
+    },
+    billing: {
+      sendSetupInvoice: 'Enviar Factura de Inicio',
+      viewInvoices: 'Ver Facturas',
+      invoiceSent: 'Factura Enviada',
+      setupPaid: 'Inicio Pagado',
+      notInvoiced: 'Sin Facturar',
+      monthlyActive: 'Activo',
+      pastDue: 'Vencido',
+      notStarted: 'No Iniciado',
+      confirmSendInvoice: 'Enviar factura de inicio a este cliente?',
+      invoiceAmount: 'Monto de Factura',
+      sendInvoice: 'Enviar Factura',
+      invoiceHistory: 'Historial de Facturas',
+      invoiceDate: 'Fecha',
+      invoiceStatus: 'Estado',
+      invoiceNumber: 'Factura #',
+      paid: 'Pagado',
+      open: 'Abierto',
+      void: 'Anulado',
+      overdue: 'Vencido',
+      setupFee: 'Tarifa de Inicio',
+      monthlyPartnership: 'Asociación Mensual',
     },
     voiceAgent: {
       states: {

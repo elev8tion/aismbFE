@@ -17,7 +17,7 @@ const CREATE_TOOLS = new Set([
   'create_lead', 'create_opportunity', 'create_contact', 'create_company',
   'block_date', 'create_task',
   'create_partnership', 'run_roi_calculation', 'log_activity', 'schedule_followup',
-  'log_partner_interaction',
+  'log_partner_interaction', 'draft_email', 'draft_sms',
 ]);
 
 type ToolHandler = (params: Record<string, unknown>, cookiesOrUserId: string, cookies?: string) => Promise<unknown>;

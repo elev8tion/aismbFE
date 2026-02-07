@@ -723,6 +723,7 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
               'bookings',
               'bookings_availability',
               'partnerships',
+              'drafts',
               'voice_sessions',
               'roi_calculations',
               'reports_weekly',
@@ -743,7 +744,7 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','voice_sessions','roi_calculations','reports_weekly','settings'] },
+          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','drafts','voice_sessions','roi_calculations','reports_weekly','settings'] },
           filter: { type: 'string' },
         },
         required: ['scope','filter'],
@@ -758,7 +759,7 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','voice_sessions','roi_calculations','reports_weekly','settings'] },
+          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','drafts','voice_sessions','roi_calculations','reports_weekly','settings'] },
           query: { type: 'string' },
         },
         required: ['scope','query'],
@@ -773,7 +774,7 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','voice_sessions','roi_calculations','reports_weekly','settings'] },
+          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','drafts','voice_sessions','roi_calculations','reports_weekly','settings'] },
         },
         required: ['scope'],
       },
@@ -787,7 +788,7 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','voice_sessions','roi_calculations','reports_weekly','settings'] },
+          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','drafts','voice_sessions','roi_calculations','reports_weekly','settings'] },
           id: { type: 'string', description: 'Record ID to edit. Provide id or query, not both.' },
           query: { type: 'string', description: 'Fuzzy search query to find the record. Provide query or id, not both.' },
         },
@@ -803,7 +804,7 @@ export const ALL_CRM_FUNCTIONS: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','voice_sessions','roi_calculations','reports_weekly','settings'] },
+          scope: { type: 'string', enum: ['leads','contacts','companies','pipeline','bookings','partnerships','drafts','voice_sessions','roi_calculations','reports_weekly','settings'] },
           id: { type: 'string', description: 'Record ID to view. Provide id or query, not both.' },
           query: { type: 'string', description: 'Fuzzy search query to find the record. Provide query or id, not both.' },
         },

@@ -39,6 +39,7 @@ Navigation:
   - pipeline/deals/opportunities → target: pipeline
   - bookings/calendar/appointments → target: bookings
   - partnerships/alliances → target: partnerships
+  - drafts/notes/notepad → target: drafts
   - voice sessions/voice transcripts → target: voice_sessions
   - ROI calculator/ROI → target: roi_calculations
   - weekly report/reports → target: reports_weekly (ask to clarify if just "reports")
@@ -69,6 +70,7 @@ Navegación:
   - embudo/acuerdos/oportunidades → target: pipeline
   - reservas/calendario/citas/agenda → target: bookings
   - alianzas/socios → target: partnerships
+  - borradores/notas/bloc de notas → target: drafts
   - sesiones de voz/registros del agente de voz → target: voice_sessions
   - calculadora de ROI → target: roi_calculations
   - reporte semanal/informes → target: reports_weekly (preguntar si solo dice "informes")
@@ -128,6 +130,12 @@ const FEWSHOTS_EN = [
   { role: 'assistant', content: null, tool_calls: [ { id: 'en7', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'companies' }) } } ] },
   { role: 'tool', tool_call_id: 'en7', content: JSON.stringify({ ok: true, target: 'companies', route: '/companies', client_action: { type: 'navigate', route: '/companies', target: 'companies' } }) },
   { role: 'assistant', content: 'Opening companies.' },
+
+  // Navigation: drafts
+  { role: 'user', content: 'Open drafts' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en8a', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'drafts' }) } } ] },
+  { role: 'tool', tool_call_id: 'en8a', content: JSON.stringify({ ok: true, target: 'drafts', route: '/drafts', client_action: { type: 'navigate', route: '/drafts', target: 'drafts' } }) },
+  { role: 'assistant', content: 'Opening drafts.' },
 
   // Reports ambiguity — clarify
   { role: 'user', content: 'Open reports' },
@@ -220,6 +228,12 @@ const FEWSHOTS_ES = [
   { role: 'assistant', content: null, tool_calls: [ { id: 'es7', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'dashboard' }) } } ] },
   { role: 'tool', tool_call_id: 'es7', content: JSON.stringify({ ok: true, target: 'dashboard', route: '/dashboard', client_action: { type: 'navigate', route: '/dashboard', target: 'dashboard' } }) },
   { role: 'assistant', content: 'Abriendo panel.' },
+
+  // Navegación: borradores
+  { role: 'user', content: 'Abrir borradores' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es7a', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'drafts' }) } } ] },
+  { role: 'tool', tool_call_id: 'es7a', content: JSON.stringify({ ok: true, target: 'drafts', route: '/drafts', client_action: { type: 'navigate', route: '/drafts', target: 'drafts' } }) },
+  { role: 'assistant', content: 'Abriendo borradores.' },
 
   // Ambigüedad: informes
   { role: 'user', content: 'Ir a informes' },

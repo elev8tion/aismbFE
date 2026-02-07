@@ -9,6 +9,7 @@ type NavigateTarget =
   | 'bookings'
   | 'bookings_availability'
   | 'partnerships'
+  | 'drafts'
   | 'voice_sessions'
   | 'roi_calculations'
   | 'reports_weekly'
@@ -23,6 +24,7 @@ const TARGET_TO_ROUTE: Record<NavigateTarget, string> = {
   bookings: '/bookings',
   bookings_availability: '/bookings/availability',
   partnerships: '/partnerships',
+  drafts: '/drafts',
   voice_sessions: '/voice-sessions',
   roi_calculations: '/roi-calculations',
   reports_weekly: '/reports/weekly',
