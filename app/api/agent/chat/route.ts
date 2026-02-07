@@ -10,10 +10,11 @@ import type { ChatCompletionMessageParam } from 'openai/resources/chat/completio
 
 export const runtime = 'edge';
 
-const SYSTEM_PROMPT = `You are the AI Voice Operator for a CRM system. You help users manage their business by executing CRM operations through voice commands.
+// ─── Language-specific system prompts ──────────────────────────────────────
 
-Guidelines:
+const GUIDELINES = `Guidelines:
 - Be concise. Responses will be spoken aloud — keep them under 2-3 sentences.
+- CRITICAL: NEVER call a create/write tool (create_partnership, create_lead, create_contact, create_company, create_opportunity, create_task, log_activity, run_roi_calculation, bulk_update_lead_status, bulk_assign_leads) unless the user EXPLICITLY asks to create, add, or log something. Merely mentioning a topic is NOT a create request. When in doubt, ask first.
 - When executing write operations (create, update, delete), always confirm the action and summarize what was done.
 - For read operations, summarize the key numbers and highlight anything noteworthy.
 - If a request is ambiguous, ask ONE clarifying question before acting.
@@ -21,229 +22,250 @@ Guidelines:
 - When presenting numbers, round to whole numbers and use plain language ("about fifty leads" not "49.7 leads").
 - Never expose raw IDs to the user. Refer to records by name.
 - If a tool returns an error, explain the issue simply and suggest what to do.
+- Prefer using an id if you have it; otherwise pass a short query string and the client will pick the first match.`;
+
+const SYSTEM_PROMPT_EN = `You are the AI Voice Operator for a CRM system. You help users manage their business by executing CRM operations through voice commands. You MUST respond ONLY in English.
+
+${GUIDELINES}
 
 Navigation:
-- When the user asks to open, go to, show, or take me to a section (English or Spanish), call the navigate tool with a target from the allowed list.
+- When the user asks to open, go to, show, or take me to a section, call the navigate tool with a target from the allowed list.
 - Only call the navigate tool when the intent to change pages is explicit — do not navigate if the user is merely discussing a section.
-- English → Spanish synonyms:
-  - dashboard/panel → target: dashboard
-  - leads/prospects/clientes potenciales → target: leads
-  - contacts/people/personas → target: contacts
-  - companies/accounts/organizations/empresas → target: companies
-  - pipeline/deals/opportunities/embudo/acuerdos/oportunidades → target: pipeline
-  - bookings/calendar/appointments/reservas/calendario/citas/agenda → target: bookings
-  - partnerships/alliances/socios → target: partnerships
-  - voice sessions/voice transcripts/registros del agente de voz → target: voice_sessions
-  - ROI calculator/ROI/calculadora de ROI → target: roi_calculations
-  - weekly report/reports/reporte semanal/informes → target: reports_weekly (ask to clarify if just "reports")
-  - settings/preferences/configuración/ajustes → target: settings
-  - availability/disponibilidad (calendar availability) → target: bookings_availability
+- Synonyms:
+  - dashboard → target: dashboard
+  - leads/prospects → target: leads
+  - contacts/people → target: contacts
+  - companies/accounts/organizations → target: companies
+  - pipeline/deals/opportunities → target: pipeline
+  - bookings/calendar/appointments → target: bookings
+  - partnerships/alliances → target: partnerships
+  - voice sessions/voice transcripts → target: voice_sessions
+  - ROI calculator/ROI → target: roi_calculations
+  - weekly report/reports → target: reports_weekly (ask to clarify if just "reports")
+  - settings/preferences → target: settings
+  - availability (calendar availability) → target: bookings_availability
 - If the user says just "reports" or otherwise ambiguous terms, ask one clarifying question before navigating.
 
-On-page UI actions (English/Spanish):
+On-page UI actions:
 - When the user asks to filter, search, open a new form, or open/edit a record on the current page, call the corresponding ui_* tool with the appropriate scope.
-- Examples: "filter to qualified" / "filtra a calificados" → ui_set_filter { scope: 'leads', filter: 'qualified' }.
-- "search for Maria" / "buscar Maria" → ui_search { scope: 'leads', query: 'maria' }.
-- "new lead" / "nuevo lead" → ui_open_new { scope: 'leads' }.
-- "edit John" / "editar John" → ui_open_edit { scope: 'leads', query: 'john' }.
-- Prefer using an id if you have it; otherwise pass a short query string and the client will pick the first match.
+- "filter to qualified" → ui_set_filter { scope: 'leads', filter: 'qualified' }
+- "search for Maria" → ui_search { scope: 'leads', query: 'maria' }
+- "new lead" → ui_open_new { scope: 'leads' }
+- "edit John" → ui_open_edit { scope: 'leads', query: 'john' }
 `;
 
-const NAV_FEWSHOTS = [
-  // English example: Open pipeline
-  {
-    role: 'user',
-    content: 'Open pipeline',
-  },
-  {
-    role: 'assistant',
-    content: null,
-    tool_calls: [
-      {
-        id: 'nav1',
-        type: 'function',
-        function: { name: 'navigate', arguments: JSON.stringify({ target: 'pipeline' }) },
-      },
-    ],
-  },
-  {
-    role: 'tool',
-    tool_call_id: 'nav1',
-    content: JSON.stringify({ ok: true, target: 'pipeline', route: '/pipeline', client_action: { type: 'navigate', route: '/pipeline', target: 'pipeline' } }),
-  },
-  {
-    role: 'assistant',
-    content: 'Opening pipeline.',
-  },
+const SYSTEM_PROMPT_ES = `Eres el Operador de Voz IA para un sistema CRM. Ayudas a los usuarios a gestionar su negocio mediante comandos de voz. DEBES responder SOLO en español.
 
-  // Spanish example: Abrir configuración
-  {
-    role: 'user',
-    content: 'Abrir configuración',
-  },
-  {
-    role: 'assistant',
-    content: null,
-    tool_calls: [
-      {
-        id: 'nav2',
-        type: 'function',
-        function: { name: 'navigate', arguments: JSON.stringify({ target: 'settings' }) },
-      },
-    ],
-  },
-  {
-    role: 'tool',
-    tool_call_id: 'nav2',
-    content: JSON.stringify({ ok: true, target: 'settings', route: '/settings', client_action: { type: 'navigate', route: '/settings', target: 'settings' } }),
-  },
-  {
-    role: 'assistant',
-    content: 'Abriendo configuración.',
-  },
+${GUIDELINES}
 
-  // Leads filtering (EN)
-  { role: 'user', content: 'Filter leads to qualified' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui1', type: 'function', function: { name: 'ui_set_filter', arguments: JSON.stringify({ scope: 'leads', filter: 'qualified' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui1', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'leads', action: 'set_filter', payload: { filter: 'qualified' } } }) },
-  { role: 'assistant', content: 'Showing qualified leads.' },
+Navegación:
+- Cuando el usuario pida abrir, ir a, mostrar o llevar a una sección, llama al tool navigate con un target de la lista.
+- Solo llama navigate cuando la intención de cambiar página es explícita — no navegues si el usuario solo menciona una sección.
+- Sinónimos:
+  - panel/tablero → target: dashboard
+  - leads/prospectos/clientes potenciales → target: leads
+  - contactos/personas → target: contacts
+  - empresas/compañías/organizaciones → target: companies
+  - embudo/acuerdos/oportunidades → target: pipeline
+  - reservas/calendario/citas/agenda → target: bookings
+  - alianzas/socios → target: partnerships
+  - sesiones de voz/registros del agente de voz → target: voice_sessions
+  - calculadora de ROI → target: roi_calculations
+  - reporte semanal/informes → target: reports_weekly (preguntar si solo dice "informes")
+  - configuración/ajustes → target: settings
+  - disponibilidad → target: bookings_availability
+- Si el usuario dice solo "informes" o algo ambiguo, haz una pregunta aclaratoria antes de navegar.
 
-  // Leads search (ES)
-  { role: 'user', content: 'Buscar Maria' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui2', type: 'function', function: { name: 'ui_search', arguments: JSON.stringify({ scope: 'leads', query: 'maria' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui2', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'leads', action: 'search', payload: { query: 'maria' } } }) },
-  { role: 'assistant', content: 'Buscando Maria.' },
+Acciones de UI en la página:
+- Cuando el usuario pida filtrar, buscar, abrir un formulario nuevo, o abrir/editar un registro, llama al tool ui_* correspondiente con el scope apropiado.
+- "filtra a calificados" → ui_set_filter { scope: 'leads', filter: 'qualified' }
+- "buscar Maria" → ui_search { scope: 'leads', query: 'maria' }
+- "nuevo lead" → ui_open_new { scope: 'leads' }
+- "editar John" → ui_open_edit { scope: 'leads', query: 'john' }
+`;
 
-  // Contacts new (ES)
-  { role: 'user', content: 'Nuevo contacto' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui3', type: 'function', function: { name: 'ui_open_new', arguments: JSON.stringify({ scope: 'contacts' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui3', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'contacts', action: 'open_new' } }) },
-  { role: 'assistant', content: 'Abriendo nuevo contacto.' },
+// ─── Few-shot examples — English only ──────────────────────────────────────
 
-  // Bookings filter (EN)
-  { role: 'user', content: 'Show pending bookings' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui4', type: 'function', function: { name: 'ui_set_filter', arguments: JSON.stringify({ scope: 'bookings', filter: 'pending' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui4', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'bookings', action: 'set_filter', payload: { filter: 'pending' } } }) },
-  { role: 'assistant', content: 'Showing pending bookings.' },
+const FEWSHOTS_EN = [
+  // Navigation: pipeline
+  { role: 'user', content: 'Open pipeline' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en1', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'pipeline' }) } } ] },
+  { role: 'tool', tool_call_id: 'en1', content: JSON.stringify({ ok: true, target: 'pipeline', route: '/pipeline', client_action: { type: 'navigate', route: '/pipeline', target: 'pipeline' } }) },
+  { role: 'assistant', content: 'Opening pipeline.' },
 
-  // Partnerships view (ES)
-  { role: 'user', content: 'Ver detalles de XYZ Property Management' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui5', type: 'function', function: { name: 'ui_open_view', arguments: JSON.stringify({ scope: 'partnerships', query: 'xyz property management' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui5', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'partnerships', action: 'open_view', payload: { query: 'xyz property management' } } }) },
-  { role: 'assistant', content: 'Abriendo detalles de la alianza.' },
-
-  // Pipeline new (EN)
-  { role: 'user', content: 'New deal' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui6', type: 'function', function: { name: 'ui_open_new', arguments: JSON.stringify({ scope: 'pipeline' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui6', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'pipeline', action: 'open_new' } }) },
-  { role: 'assistant', content: 'Opening new deal.' },
-
-  // Voice sessions filter (EN)
-  { role: 'user', content: 'Filter sessions to positive' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui7', type: 'function', function: { name: 'ui_set_filter', arguments: JSON.stringify({ scope: 'voice_sessions', filter: 'positive' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui7', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'voice_sessions', action: 'set_filter', payload: { filter: 'positive' } } }) },
-  { role: 'assistant', content: 'Showing positive sessions.' },
-
-  // ROI search (ES)
-  { role: 'user', content: 'Buscar HVAC' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'ui8', type: 'function', function: { name: 'ui_search', arguments: JSON.stringify({ scope: 'roi_calculations', query: 'HVAC' }) } } ] },
-  { role: 'tool', tool_call_id: 'ui8', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'roi_calculations', action: 'search', payload: { query: 'HVAC' } } }) },
-  { role: 'assistant', content: 'Buscando HVAC.' },
-
-  // Leads (EN)
+  // Navigation: leads
   { role: 'user', content: 'Open leads' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav3', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'leads' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav3', content: JSON.stringify({ ok: true, target: 'leads', route: '/leads', client_action: { type: 'navigate', route: '/leads', target: 'leads' } }) },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en2', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'leads' }) } } ] },
+  { role: 'tool', tool_call_id: 'en2', content: JSON.stringify({ ok: true, target: 'leads', route: '/leads', client_action: { type: 'navigate', route: '/leads', target: 'leads' } }) },
   { role: 'assistant', content: 'Opening leads.' },
 
-  // Leads (ES)
-  { role: 'user', content: 'Mostrar prospectos' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav4', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'leads' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav4', content: JSON.stringify({ ok: true, target: 'leads', route: '/leads', client_action: { type: 'navigate', route: '/leads', target: 'leads' } }) },
-  { role: 'assistant', content: 'Abriendo leads.' },
-
-  // Contacts (EN)
+  // Navigation: contacts
   { role: 'user', content: 'Go to contacts' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav5', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'contacts' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav5', content: JSON.stringify({ ok: true, target: 'contacts', route: '/contacts', client_action: { type: 'navigate', route: '/contacts', target: 'contacts' } }) },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en3', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'contacts' }) } } ] },
+  { role: 'tool', tool_call_id: 'en3', content: JSON.stringify({ ok: true, target: 'contacts', route: '/contacts', client_action: { type: 'navigate', route: '/contacts', target: 'contacts' } }) },
   { role: 'assistant', content: 'Opening contacts.' },
 
-  // Contacts (ES)
-  { role: 'user', content: 'Ir a contactos' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav6', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'contacts' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav6', content: JSON.stringify({ ok: true, target: 'contacts', route: '/contacts', client_action: { type: 'navigate', route: '/contacts', target: 'contacts' } }) },
-  { role: 'assistant', content: 'Abriendo contactos.' },
-
-  // Bookings availability (EN)
+  // Navigation: availability
   { role: 'user', content: 'Show availability' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav7', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'bookings_availability' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav7', content: JSON.stringify({ ok: true, target: 'bookings_availability', route: '/bookings/availability', client_action: { type: 'navigate', route: '/bookings/availability', target: 'bookings_availability' } }) },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en4', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'bookings_availability' }) } } ] },
+  { role: 'tool', tool_call_id: 'en4', content: JSON.stringify({ ok: true, target: 'bookings_availability', route: '/bookings/availability', client_action: { type: 'navigate', route: '/bookings/availability', target: 'bookings_availability' } }) },
   { role: 'assistant', content: 'Opening availability.' },
 
-  // Bookings availability (ES)
-  { role: 'user', content: 'Mostrar disponibilidad' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav8', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'bookings_availability' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav8', content: JSON.stringify({ ok: true, target: 'bookings_availability', route: '/bookings/availability', client_action: { type: 'navigate', route: '/bookings/availability', target: 'bookings_availability' } }) },
-  { role: 'assistant', content: 'Abriendo disponibilidad.' },
-
-  // ROI calculator (EN)
+  // Navigation: ROI calculator
   { role: 'user', content: 'Open ROI calculator' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav9', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'roi_calculations' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav9', content: JSON.stringify({ ok: true, target: 'roi_calculations', route: '/roi-calculations', client_action: { type: 'navigate', route: '/roi-calculations', target: 'roi_calculations' } }) },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en5', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'roi_calculations' }) } } ] },
+  { role: 'tool', tool_call_id: 'en5', content: JSON.stringify({ ok: true, target: 'roi_calculations', route: '/roi-calculations', client_action: { type: 'navigate', route: '/roi-calculations', target: 'roi_calculations' } }) },
   { role: 'assistant', content: 'Opening ROI calculator.' },
 
-  // ROI calculator (ES)
+  // Navigation: voice sessions
+  { role: 'user', content: 'Open voice sessions' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en6', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'voice_sessions' }) } } ] },
+  { role: 'tool', tool_call_id: 'en6', content: JSON.stringify({ ok: true, target: 'voice_sessions', route: '/voice-sessions', client_action: { type: 'navigate', route: '/voice-sessions', target: 'voice_sessions' } }) },
+  { role: 'assistant', content: 'Opening voice sessions.' },
+
+  // Navigation: companies
+  { role: 'user', content: 'Show companies' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en7', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'companies' }) } } ] },
+  { role: 'tool', tool_call_id: 'en7', content: JSON.stringify({ ok: true, target: 'companies', route: '/companies', client_action: { type: 'navigate', route: '/companies', target: 'companies' } }) },
+  { role: 'assistant', content: 'Opening companies.' },
+
+  // Reports ambiguity — clarify
+  { role: 'user', content: 'Open reports' },
+  { role: 'assistant', content: 'Do you mean the weekly report?' },
+
+  // UI: filter leads
+  { role: 'user', content: 'Filter leads to qualified' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en8', type: 'function', function: { name: 'ui_set_filter', arguments: JSON.stringify({ scope: 'leads', filter: 'qualified' }) } } ] },
+  { role: 'tool', tool_call_id: 'en8', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'leads', action: 'set_filter', payload: { filter: 'qualified' } } }) },
+  { role: 'assistant', content: 'Showing qualified leads.' },
+
+  // UI: filter bookings
+  { role: 'user', content: 'Show pending bookings' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en9', type: 'function', function: { name: 'ui_set_filter', arguments: JSON.stringify({ scope: 'bookings', filter: 'pending' }) } } ] },
+  { role: 'tool', tool_call_id: 'en9', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'bookings', action: 'set_filter', payload: { filter: 'pending' } } }) },
+  { role: 'assistant', content: 'Showing pending bookings.' },
+
+  // UI: new deal
+  { role: 'user', content: 'New deal' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en10', type: 'function', function: { name: 'ui_open_new', arguments: JSON.stringify({ scope: 'pipeline' }) } } ] },
+  { role: 'tool', tool_call_id: 'en10', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'pipeline', action: 'open_new' } }) },
+  { role: 'assistant', content: 'Opening new deal.' },
+
+  // UI: filter voice sessions
+  { role: 'user', content: 'Filter sessions to positive' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en11', type: 'function', function: { name: 'ui_set_filter', arguments: JSON.stringify({ scope: 'voice_sessions', filter: 'positive' }) } } ] },
+  { role: 'tool', tool_call_id: 'en11', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'voice_sessions', action: 'set_filter', payload: { filter: 'positive' } } }) },
+  { role: 'assistant', content: 'Showing positive sessions.' },
+
+  // Tool: activity logging
+  { role: 'user', content: 'Log a call with ABC Plumbing' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en12', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', description: 'Call with ABC Plumbing' }) } } ] },
+  { role: 'tool', tool_call_id: 'en12', content: JSON.stringify({ success: true, activity: { id: '1', type: 'call' } }) },
+  { role: 'assistant', content: 'Logged a call with ABC Plumbing.' },
+
+  // Tool: conversion rate
+  { role: 'user', content: "What's my conversion rate?" },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en13', type: 'function', function: { name: 'get_conversion_rate', arguments: '{}' } } ] },
+  { role: 'tool', tool_call_id: 'en13', content: JSON.stringify({ total_leads: 50, won: 8, conversion_rate_percent: 16 }) },
+  { role: 'assistant', content: 'Your conversion rate is about 16%. You have 8 won leads out of 50 total.' },
+
+  // Tool: stale leads
+  { role: 'user', content: "Find leads I haven't touched in 2 weeks" },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en14', type: 'function', function: { name: 'get_stale_leads', arguments: JSON.stringify({ days_inactive: 14 }) } } ] },
+  { role: 'tool', tool_call_id: 'en14', content: JSON.stringify({ stale_leads: [{ id: '1', name: 'Acme Corp', status: 'contacted' }], total: 1, days_inactive: 14 }) },
+  { role: 'assistant', content: 'Found 1 lead inactive for 2 weeks: Acme Corp, currently in contacted status.' },
+] as unknown as ChatCompletionMessageParam[];
+
+// ─── Few-shot examples — Spanish only ──────────────────────────────────────
+
+const FEWSHOTS_ES = [
+  // Navegación: configuración
+  { role: 'user', content: 'Abrir configuración' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es1', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'settings' }) } } ] },
+  { role: 'tool', tool_call_id: 'es1', content: JSON.stringify({ ok: true, target: 'settings', route: '/settings', client_action: { type: 'navigate', route: '/settings', target: 'settings' } }) },
+  { role: 'assistant', content: 'Abriendo configuración.' },
+
+  // Navegación: leads
+  { role: 'user', content: 'Mostrar prospectos' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es2', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'leads' }) } } ] },
+  { role: 'tool', tool_call_id: 'es2', content: JSON.stringify({ ok: true, target: 'leads', route: '/leads', client_action: { type: 'navigate', route: '/leads', target: 'leads' } }) },
+  { role: 'assistant', content: 'Abriendo leads.' },
+
+  // Navegación: contactos
+  { role: 'user', content: 'Ir a contactos' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es3', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'contacts' }) } } ] },
+  { role: 'tool', tool_call_id: 'es3', content: JSON.stringify({ ok: true, target: 'contacts', route: '/contacts', client_action: { type: 'navigate', route: '/contacts', target: 'contacts' } }) },
+  { role: 'assistant', content: 'Abriendo contactos.' },
+
+  // Navegación: disponibilidad
+  { role: 'user', content: 'Mostrar disponibilidad' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es4', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'bookings_availability' }) } } ] },
+  { role: 'tool', tool_call_id: 'es4', content: JSON.stringify({ ok: true, target: 'bookings_availability', route: '/bookings/availability', client_action: { type: 'navigate', route: '/bookings/availability', target: 'bookings_availability' } }) },
+  { role: 'assistant', content: 'Abriendo disponibilidad.' },
+
+  // Navegación: calculadora de ROI
   { role: 'user', content: 'Abrir calculadora de ROI' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav10', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'roi_calculations' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav10', content: JSON.stringify({ ok: true, target: 'roi_calculations', route: '/roi-calculations', client_action: { type: 'navigate', route: '/roi-calculations', target: 'roi_calculations' } }) },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es5', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'roi_calculations' }) } } ] },
+  { role: 'tool', tool_call_id: 'es5', content: JSON.stringify({ ok: true, target: 'roi_calculations', route: '/roi-calculations', client_action: { type: 'navigate', route: '/roi-calculations', target: 'roi_calculations' } }) },
   { role: 'assistant', content: 'Abriendo calculadora de ROI.' },
 
-  // Reports ambiguity (ES) — clarify instead of navigating
+  // Navegación: alianzas
+  { role: 'user', content: 'Abrir alianzas' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es6', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'partnerships' }) } } ] },
+  { role: 'tool', tool_call_id: 'es6', content: JSON.stringify({ ok: true, target: 'partnerships', route: '/partnerships', client_action: { type: 'navigate', route: '/partnerships', target: 'partnerships' } }) },
+  { role: 'assistant', content: 'Abriendo alianzas.' },
+
+  // Navegación: panel
+  { role: 'user', content: 'Ir al panel' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es7', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'dashboard' }) } } ] },
+  { role: 'tool', tool_call_id: 'es7', content: JSON.stringify({ ok: true, target: 'dashboard', route: '/dashboard', client_action: { type: 'navigate', route: '/dashboard', target: 'dashboard' } }) },
+  { role: 'assistant', content: 'Abriendo panel.' },
+
+  // Ambigüedad: informes
   { role: 'user', content: 'Ir a informes' },
   { role: 'assistant', content: '¿Te refieres al reporte semanal?' },
 
-  // Voice sessions (EN)
-  { role: 'user', content: 'Open voice sessions' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav11', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'voice_sessions' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav11', content: JSON.stringify({ ok: true, target: 'voice_sessions', route: '/voice-sessions', client_action: { type: 'navigate', route: '/voice-sessions', target: 'voice_sessions' } }) },
-  { role: 'assistant', content: 'Opening voice sessions.' },
+  // UI: buscar leads
+  { role: 'user', content: 'Buscar Maria' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es8', type: 'function', function: { name: 'ui_search', arguments: JSON.stringify({ scope: 'leads', query: 'maria' }) } } ] },
+  { role: 'tool', tool_call_id: 'es8', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'leads', action: 'search', payload: { query: 'maria' } } }) },
+  { role: 'assistant', content: 'Buscando Maria.' },
 
-  // Partnerships (ES)
-  { role: 'user', content: 'Abrir alianzas' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav12', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'partnerships' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav12', content: JSON.stringify({ ok: true, target: 'partnerships', route: '/partnerships', client_action: { type: 'navigate', route: '/partnerships', target: 'partnerships' } }) },
-  { role: 'assistant', content: 'Abriendo alianzas.' },
+  // UI: nuevo contacto
+  { role: 'user', content: 'Nuevo contacto' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es9', type: 'function', function: { name: 'ui_open_new', arguments: JSON.stringify({ scope: 'contacts' }) } } ] },
+  { role: 'tool', tool_call_id: 'es9', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'contacts', action: 'open_new' } }) },
+  { role: 'assistant', content: 'Abriendo nuevo contacto.' },
 
-  // Companies (EN)
-  { role: 'user', content: 'Show companies' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav13', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'companies' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav13', content: JSON.stringify({ ok: true, target: 'companies', route: '/companies', client_action: { type: 'navigate', route: '/companies', target: 'companies' } }) },
-  { role: 'assistant', content: 'Opening companies.' },
+  // UI: ver detalles de alianza
+  { role: 'user', content: 'Ver detalles de XYZ Property Management' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es10', type: 'function', function: { name: 'ui_open_view', arguments: JSON.stringify({ scope: 'partnerships', query: 'xyz property management' }) } } ] },
+  { role: 'tool', tool_call_id: 'es10', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'partnerships', action: 'open_view', payload: { query: 'xyz property management' } } }) },
+  { role: 'assistant', content: 'Abriendo detalles de la alianza.' },
 
-  // Dashboard (ES)
-  { role: 'user', content: 'Ir al panel' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'nav14', type: 'function', function: { name: 'navigate', arguments: JSON.stringify({ target: 'dashboard' }) } } ] },
-  { role: 'tool', tool_call_id: 'nav14', content: JSON.stringify({ ok: true, target: 'dashboard', route: '/dashboard', client_action: { type: 'navigate', route: '/dashboard', target: 'dashboard' } }) },
-  { role: 'assistant', content: 'Abriendo panel.' },
+  // UI: buscar ROI
+  { role: 'user', content: 'Buscar HVAC' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es11', type: 'function', function: { name: 'ui_search', arguments: JSON.stringify({ scope: 'roi_calculations', query: 'HVAC' }) } } ] },
+  { role: 'tool', tool_call_id: 'es11', content: JSON.stringify({ ok: true, client_action: { type: 'ui_action', scope: 'roi_calculations', action: 'search', payload: { query: 'HVAC' } } }) },
+  { role: 'assistant', content: 'Buscando HVAC.' },
 
-  // Activity logging (EN)
-  { role: 'user', content: 'Log a call with ABC Plumbing' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'act1', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', description: 'Call with ABC Plumbing' }) } } ] },
-  { role: 'tool', tool_call_id: 'act1', content: JSON.stringify({ success: true, activity: { id: '1', type: 'call' } }) },
-  { role: 'assistant', content: 'Logged a call with ABC Plumbing.' },
+  // Tool: registrar actividad
+  { role: 'user', content: 'Registrar una llamada con ABC Plumbing' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es12', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', description: 'Llamada con ABC Plumbing' }) } } ] },
+  { role: 'tool', tool_call_id: 'es12', content: JSON.stringify({ success: true, activity: { id: '1', type: 'call' } }) },
+  { role: 'assistant', content: 'Registrada una llamada con ABC Plumbing.' },
 
-  // Conversion rate (EN)
-  { role: 'user', content: "What's my conversion rate?" },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'conv1', type: 'function', function: { name: 'get_conversion_rate', arguments: '{}' } } ] },
-  { role: 'tool', tool_call_id: 'conv1', content: JSON.stringify({ total_leads: 50, won: 8, conversion_rate_percent: 16 }) },
-  { role: 'assistant', content: 'Your conversion rate is about 16%. You have 8 won leads out of 50 total.' },
+  // Tool: tasa de conversión
+  { role: 'user', content: '¿Cuál es mi tasa de conversión?' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es13', type: 'function', function: { name: 'get_conversion_rate', arguments: '{}' } } ] },
+  { role: 'tool', tool_call_id: 'es13', content: JSON.stringify({ total_leads: 50, won: 8, conversion_rate_percent: 16 }) },
+  { role: 'assistant', content: 'Tu tasa de conversión es del 16%. Tienes 8 leads ganados de 50 en total.' },
 
-  // Stale leads (EN)
-  { role: 'user', content: "Find leads I haven't touched in 2 weeks" },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'stale1', type: 'function', function: { name: 'get_stale_leads', arguments: JSON.stringify({ days_inactive: 14 }) } } ] },
-  { role: 'tool', tool_call_id: 'stale1', content: JSON.stringify({ stale_leads: [{ id: '1', name: 'Acme Corp', status: 'contacted' }], total: 1, days_inactive: 14 }) },
-  { role: 'assistant', content: 'Found 1 lead inactive for 2 weeks: Acme Corp, currently in contacted status.' },
-// Cast to SDK param type; examples use tool_calls which may not be in the param type
+  // Tool: leads inactivos
+  { role: 'user', content: 'Buscar leads inactivos por 2 semanas' },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es14', type: 'function', function: { name: 'get_stale_leads', arguments: JSON.stringify({ days_inactive: 14 }) } } ] },
+  { role: 'tool', tool_call_id: 'es14', content: JSON.stringify({ stale_leads: [{ id: '1', name: 'Acme Corp', status: 'contacted' }], total: 1, days_inactive: 14 }) },
+  { role: 'assistant', content: 'Encontré 1 lead inactivo por 2 semanas: Acme Corp, en estado contactado.' },
 ] as unknown as ChatCompletionMessageParam[];
 
 const MAX_TOOL_ROUNDS = 5;
@@ -294,16 +316,15 @@ export async function POST(request: NextRequest) {
     // Select model based on complexity
     const model = selectModel(sanitizedQuestion);
 
-    // Build messages
-    const languageInstruction: ChatCompletionMessageParam[] = language === 'es'
-      ? [{ role: 'system' as const, content: 'INSTRUCCIÓN OBLIGATORIA DE IDIOMA: Eres un asistente que SOLO responde en español. Toda tu comunicación debe ser en español natural.' }]
-      : [];
+    // Build messages — select language-matched system prompt and few-shots based on UI toggle
+    const isSpanish = language === 'es';
+    const systemPrompt = isSpanish ? SYSTEM_PROMPT_ES : SYSTEM_PROMPT_EN;
+    const fewShots = isSpanish ? FEWSHOTS_ES : FEWSHOTS_EN;
 
     const messages: ChatCompletionMessageParam[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...languageInstruction,
+      { role: 'system', content: systemPrompt },
       { role: 'system', content: pagePath ? `Current page route: ${pagePath}` : 'Current page route: unknown' },
-      ...NAV_FEWSHOTS,
+      ...fewShots,
       ...session.conversation,
       { role: 'user', content: sanitizedQuestion },
     ];
