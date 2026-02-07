@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getTierPricing, getPriceEnvVar, type TierKey } from '@/lib/stripe/pricing';
-import { sendWelcomeEmail } from '@/lib/email/sendEmail';
+import { sendWelcomeEmail, sendPaymentFailedAlert } from '@/lib/email/sendEmail';
 
 export const runtime = 'edge';
 
@@ -211,6 +211,18 @@ export async function POST(req: NextRequest) {
             payment_status: 'past_due',
           });
         }
+
+        // Alert admin about payment failure
+        sendPaymentFailedAlert({
+          adminEmail: 'connect@elev8tion.one',
+          customerEmail: invoice.customer_email || '',
+          customerName: invoice.customer_name || '',
+          tier: meta.tier || 'unknown',
+          amount: invoice.amount_due,
+          attemptCount: invoice.attempt_count || 1,
+          partnershipId: partnershipId || undefined,
+        }).catch((err) => console.error('[Email] Failed to send payment failed alert:', err));
+
         break;
       }
 
