@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+export const runtime = 'edge';
+
 export default function SignLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[#0f0f14]">
