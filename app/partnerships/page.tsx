@@ -104,6 +104,12 @@ export default function PartnershipsPage() {
   const [invoicesList, setInvoicesList] = useState<StripeInvoice[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
 
+  // Grant access state
+  const [grantAccessPartnership, setGrantAccessPartnership] = useState<Partnership | null>(null);
+  const [grantForm, setGrantForm] = useState({ customer_user_id: '', access_level: 'view' });
+  const [granting, setGranting] = useState(false);
+  const [grantSuccess, setGrantSuccess] = useState(false);
+
   // Contract state
   const [contractStatuses, setContractStatuses] = useState<Record<string, DocumentStatus | null>>({});
   const [sendContractPartnership, setSendContractPartnership] = useState<Partnership | null>(null);
@@ -289,6 +295,42 @@ export default function PartnershipsPage() {
     }
   };
 
+  // ─── Grant Access Actions ───
+
+  const handleGrantAccess = async () => {
+    if (!grantAccessPartnership || !grantForm.customer_user_id) return;
+    setGranting(true);
+    setGrantSuccess(false);
+    try {
+      const res = await fetch('/api/admin/grant-access', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_user_id: grantForm.customer_user_id,
+          partnership_id: grantAccessPartnership.id,
+          access_level: grantForm.access_level,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGrantSuccess(true);
+        setTimeout(() => {
+          setGrantAccessPartnership(null);
+          setGrantSuccess(false);
+          setGrantForm({ customer_user_id: '', access_level: 'view' });
+        }, 1500);
+      } else {
+        alert(data.error || 'Failed to grant access');
+      }
+    } catch (err) {
+      console.error('Grant access error:', err);
+      alert('Failed to grant access');
+    } finally {
+      setGranting(false);
+    }
+  };
+
   const getTierSetupAmount = (tier: string) => {
     const pricing = TIER_PRICING[tier as TierKey];
     return pricing ? formatCents(pricing.setup) : '$0';
@@ -375,6 +417,7 @@ export default function PartnershipsPage() {
                       <button onClick={() => openSendInvoice(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.billing.sendSetupInvoice}</button>
                     )}
                     <button onClick={() => openViewInvoices(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.billing.viewInvoices}</button>
+                    <button onClick={() => { setGrantForm({ customer_user_id: '', access_level: 'view' }); setGrantAccessPartnership(partnership); }} className="btn-secondary text-sm flex-1 sm:flex-none">{t.portal.grantAccess}</button>
                     <button onClick={() => openUpdate(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.partnerships.updateProgress}</button>
                   </div>
                 </div>
@@ -561,6 +604,61 @@ export default function PartnershipsPage() {
           </div>
         )}
       </Modal>
+      {/* Grant Access Modal */}
+      <Modal open={!!grantAccessPartnership} onClose={() => { setGrantAccessPartnership(null); setGrantSuccess(false); }} title={`${t.portal.grantAccessTitle} — ${grantAccessPartnership?.company_name || ''}`}>
+        {grantAccessPartnership && (
+          <div className="space-y-4">
+            {grantSuccess ? (
+              <div className="text-center py-6">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="text-green-400 font-medium">{t.portal.accessGranted}</p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">{t.portal.customerUserId} *</label>
+                  <input
+                    type="text"
+                    required
+                    className="input-glass w-full"
+                    value={grantForm.customer_user_id}
+                    onChange={(e) => setGrantForm({ ...grantForm, customer_user_id: e.target.value })}
+                    placeholder="e.g. ptoDigytXjSgf691ZidAeAGKMwFWSVVV"
+                  />
+                  <p className="text-xs text-white/30 mt-1">The user_id from the customer&apos;s NCB account</p>
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-1">{t.portal.accessLevel}</label>
+                  <select
+                    className="select-glass w-full"
+                    value={grantForm.access_level}
+                    onChange={(e) => setGrantForm({ ...grantForm, access_level: e.target.value })}
+                  >
+                    <option value="view">View</option>
+                    <option value="comment">Comment</option>
+                    <option value="edit">Edit</option>
+                  </select>
+                </div>
+                <div className="flex gap-3 justify-end pt-2">
+                  <button type="button" onClick={() => setGrantAccessPartnership(null)} className="btn-secondary">{t.common.cancel}</button>
+                  <button
+                    onClick={handleGrantAccess}
+                    disabled={granting || !grantForm.customer_user_id}
+                    className="btn-primary"
+                  >
+                    {granting ? t.portal.granting : t.portal.grantAccess}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </Modal>
+
       {/* Send Contract Modal */}
       {sendContractPartnership && (
         <SendContractModal

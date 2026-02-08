@@ -1,23 +1,20 @@
 'use client';
 
 import { ReactNode, useState, useEffect, useCallback } from 'react';
-import { Sidebar } from './Sidebar';
+import { PortalSidebar } from './PortalSidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useRouter } from 'next/navigation';
-import VoiceOperator from '@/components/VoiceOperator';
-import { VoiceAgentActionsProvider } from '@/contexts/VoiceAgentActionsContext';
 
-interface DashboardLayoutProps {
+interface PortalLayoutProps {
   children: ReactNode;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function PortalLayout({ children }: PortalLayoutProps) {
   const { user, loading } = useAuth();
   const { permissions, loading: permissionsLoading } = usePermissions();
   const router = useRouter();
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -27,8 +24,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (!loading && !permissionsLoading && user && !permissions.isAdmin) {
-      router.push('/portal');
+    if (!loading && !permissionsLoading && user && permissions.isAdmin) {
+      router.push('/dashboard');
     }
   }, [user, loading, permissionsLoading, permissions.isAdmin, router]);
 
@@ -48,10 +45,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setIsMobileOpen(false);
   }, []);
 
-  const handleToggleCollapse = useCallback(() => {
-    setIsCollapsed((prev) => !prev);
-  }, []);
-
   if (loading || permissionsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -63,14 +56,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  if (!user || !permissions.isAdmin) {
+  if (!user || permissions.isAdmin) {
     return null;
   }
 
   return (
-    <VoiceAgentActionsProvider>
     <div className="min-h-screen">
-      {/* Mobile header bar — visible below tablet (768px) */}
+      {/* Mobile header bar */}
       <div className="mobile-header flex tablet:hidden">
         <button
           onClick={() => setIsMobileOpen((prev) => !prev)}
@@ -100,24 +92,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         />
       </div>
 
-      <Sidebar
-        isCollapsed={isCollapsed}
-        onToggleCollapse={handleToggleCollapse}
+      <PortalSidebar
         isMobileOpen={isMobileOpen}
         onMobileClose={handleMobileClose}
       />
 
-      <main
-        className={`min-h-screen pt-16 tablet:pt-0 transition-[margin] duration-300 ${
-          isCollapsed ? 'tablet:ml-16' : 'tablet:ml-16 desktop:ml-64'
-        }`}
-      >
+      <main className="min-h-screen pt-16 tablet:pt-0 tablet:ml-64">
         {children}
       </main>
-
-      {/* Voice Operator FAB — visible on all authenticated pages */}
-      <VoiceOperator />
     </div>
-    </VoiceAgentActionsProvider>
   );
 }

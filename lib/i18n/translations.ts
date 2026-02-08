@@ -394,6 +394,45 @@ export interface Translations {
     name: string;
     notes: string;
   };
+  // Customer Portal
+  portal: {
+    title: string;
+    welcome: string;
+    customerPortal: string;
+    nav: {
+      dashboard: string;
+      documents: string;
+      meetings: string;
+      settings: string;
+      signOut: string;
+    };
+    partnershipProgress: string;
+    phase: string;
+    healthScore: string;
+    systems: string;
+    systemStatus: {
+      live: string;
+      building: string;
+      planned: string;
+    };
+    hoursSaved: string;
+    documents: string;
+    noContracts: string;
+    upcoming: string;
+    noMeetings: string;
+    noAccess: string;
+    noAccessMessage: string;
+    grantAccess: string;
+    grantAccessTitle: string;
+    customerUserId: string;
+    accessLevel: string;
+    granting: string;
+    accessGranted: string;
+  };
+  // Unauthorized
+  unauthorized: string;
+  unauthorizedMessage: string;
+  backToLogin: string;
   // Auth
   auth: {
     signIn: string;
@@ -846,6 +885,43 @@ export const translations: Record<'en' | 'es', Translations> = {
       name: 'Name',
       notes: 'Notes',
     },
+    portal: {
+      title: 'Customer Portal',
+      welcome: 'Welcome',
+      customerPortal: 'Customer Portal',
+      nav: {
+        dashboard: 'Dashboard',
+        documents: 'Documents',
+        meetings: 'Meetings',
+        settings: 'Settings',
+        signOut: 'Sign Out',
+      },
+      partnershipProgress: 'Partnership Progress',
+      phase: 'Phase',
+      healthScore: 'Health Score',
+      systems: 'Systems',
+      systemStatus: {
+        live: 'Live',
+        building: 'Building',
+        planned: 'Planned',
+      },
+      hoursSaved: 'Hours Saved / Week',
+      documents: 'Documents',
+      noContracts: 'No contracts found.',
+      upcoming: 'Upcoming Meetings',
+      noMeetings: 'No upcoming meetings.',
+      noAccess: 'No Access',
+      noAccessMessage: 'You have not been granted access to any partnership yet. Please contact your administrator.',
+      grantAccess: 'Grant Access',
+      grantAccessTitle: 'Grant Customer Access',
+      customerUserId: 'Customer User ID',
+      accessLevel: 'Access Level',
+      granting: 'Granting...',
+      accessGranted: 'Access granted successfully',
+    },
+    unauthorized: 'Access Denied',
+    unauthorizedMessage: 'Your account does not have permission to access this application. Please contact an administrator if you believe this is an error.',
+    backToLogin: 'Back to Login',
     auth: {
       signIn: 'Sign In',
       signUp: 'Sign Up',
@@ -1293,6 +1369,43 @@ export const translations: Record<'en' | 'es', Translations> = {
       name: 'Nombre',
       notes: 'Notas',
     },
+    portal: {
+      title: 'Portal del Cliente',
+      welcome: 'Bienvenido',
+      customerPortal: 'Portal del Cliente',
+      nav: {
+        dashboard: 'Panel',
+        documents: 'Documentos',
+        meetings: 'Reuniones',
+        settings: 'Configuración',
+        signOut: 'Cerrar Sesión',
+      },
+      partnershipProgress: 'Progreso de la Asociación',
+      phase: 'Fase',
+      healthScore: 'Puntaje de Salud',
+      systems: 'Sistemas',
+      systemStatus: {
+        live: 'En Vivo',
+        building: 'En Construcción',
+        planned: 'Planeado',
+      },
+      hoursSaved: 'Horas Ahorradas / Semana',
+      documents: 'Documentos',
+      noContracts: 'No se encontraron contratos.',
+      upcoming: 'Próximas Reuniones',
+      noMeetings: 'No hay reuniones próximas.',
+      noAccess: 'Sin Acceso',
+      noAccessMessage: 'Aún no se te ha otorgado acceso a ninguna asociación. Por favor contacta a tu administrador.',
+      grantAccess: 'Otorgar Acceso',
+      grantAccessTitle: 'Otorgar Acceso al Cliente',
+      customerUserId: 'ID de Usuario del Cliente',
+      accessLevel: 'Nivel de Acceso',
+      granting: 'Otorgando...',
+      accessGranted: 'Acceso otorgado exitosamente',
+    },
+    unauthorized: 'Acceso Denegado',
+    unauthorizedMessage: 'Tu cuenta no tiene permiso para acceder a esta aplicación. Contacta a un administrador si crees que esto es un error.',
+    backToLogin: 'Volver al Inicio de Sesión',
     auth: {
       signIn: 'Iniciar Sesión',
       signUp: 'Registrarse',

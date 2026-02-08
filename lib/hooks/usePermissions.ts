@@ -27,7 +27,7 @@ interface Permissions {
   canExportData: boolean;
 }
 
-const ADMIN_EMAIL = 'connect@elev8tion.one';
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'connect@elev8tion.one';
 
 export function usePermissions() {
   const { user } = useAuth();
@@ -35,9 +35,9 @@ export function usePermissions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProfile = useCallback(async (userId: string, email?: string) => {
+  const fetchProfile = useCallback(async (email?: string) => {
     try {
-      const res = await fetch(`/api/data/read/user_profiles?user_id=${userId}`, {
+      const res = await fetch('/api/data/read/user_profiles', {
         credentials: 'include',
       });
       const data = await res.json();
@@ -47,9 +47,18 @@ export function usePermissions() {
       } else {
         // Auto-create profile for first-time users
         const isFirstAdmin = email === ADMIN_EMAIL;
-        const newProfile = await createProfile(userId, email, isFirstAdmin ? 'admin' : 'customer');
+        const newProfile = await createProfile(email, isFirstAdmin ? 'admin' : 'customer');
         if (newProfile) {
-          setProfile(newProfile);
+          // Re-fetch to get the complete record
+          const refetch = await fetch('/api/data/read/user_profiles', {
+            credentials: 'include',
+          });
+          const refetchData = await refetch.json();
+          if (refetchData.data && refetchData.data.length > 0) {
+            setProfile(refetchData.data[0]);
+          } else {
+            setProfile(newProfile);
+          }
         }
       }
     } catch (err) {
@@ -61,7 +70,6 @@ export function usePermissions() {
   }, []);
 
   const createProfile = async (
-    userId: string,
     email?: string,
     role: 'admin' | 'team_member' | 'customer' = 'customer'
   ): Promise<UserProfile | null> => {
@@ -71,7 +79,6 @@ export function usePermissions() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: userId,
           role,
           display_name: email ? email.split('@')[0] : null,
           timezone: 'America/New_York',
@@ -87,7 +94,7 @@ export function usePermissions() {
 
   useEffect(() => {
     if (user?.id) {
-      fetchProfile(user.id, user.email);
+      fetchProfile(user.email);
     } else {
       setLoading(false);
     }
@@ -108,7 +115,7 @@ export function usePermissions() {
   const refreshProfile = useCallback(() => {
     if (user?.id) {
       setLoading(true);
-      fetchProfile(user.id, user.email);
+      fetchProfile(user.email);
     }
   }, [user?.id, user?.email, fetchProfile]);
 

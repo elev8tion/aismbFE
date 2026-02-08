@@ -37,6 +37,13 @@ export async function POST(
     const { path } = await params;
     const pathStr = path.join("/");
 
+    if (pathStr.startsWith("sign-up")) {
+      return NextResponse.json(
+        { error: "Registration is disabled" },
+        { status: 403 }
+      );
+    }
+
     if (pathStr === "sign-out") {
       return handleSignOut(req);
     }

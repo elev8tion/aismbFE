@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -99,14 +98,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-white/60 text-sm">
-              {t.auth.noAccount}{' '}
-              <Link href="/register" className="text-primary-electricBlue hover:underline">
-                {t.auth.signUp}
-              </Link>
-            </p>
-          </div>
         </div>
 
         {/* Back to landing */}
