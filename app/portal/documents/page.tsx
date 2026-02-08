@@ -3,30 +3,35 @@
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useCustomerPortal } from '@/lib/hooks/useCustomerPortal';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { getContractBundle } from '@/lib/contracts/templates';
+import { TIER_PRICING, type TierKey } from '@/lib/stripe/pricing';
+import DocumentViewer from '@/components/contracts/DocumentViewer';
+import ContractPDFRenderer from '@/components/contracts/ContractPDFRenderer';
 
 interface DocumentRecord {
   id: number;
   partnership_id: number;
-  doc_type: string;
+  document_type: string;
   status: string;
+  client_name?: string;
+  client_email?: string;
+  company_name?: string;
+  tier?: string;
+  setup_fee_cents?: number;
+  monthly_fee_cents?: number;
+  min_months?: number;
   created_at?: string;
-}
-
-interface SignatureRecord {
-  id: number;
-  partnership_id: number;
-  signer_name?: string;
-  signed_at?: string;
 }
 
 export default function PortalDocumentsPage() {
   const { t } = useTranslations();
   const { partnerships, loading } = useCustomerPortal();
   const [documentsByPartnership, setDocumentsByPartnership] = useState<
-    Record<number, { documents: DocumentRecord[]; signatures: SignatureRecord[] }>
+    Record<number, DocumentRecord[]>
   >({});
   const [loadingDocs, setLoadingDocs] = useState(true);
+  const [previewPartnership, setPreviewPartnership] = useState<number | null>(null);
 
   useEffect(() => {
     if (partnerships.length === 0) {
@@ -34,7 +39,7 @@ export default function PortalDocumentsPage() {
       return;
     }
     (async () => {
-      const result: Record<number, { documents: DocumentRecord[]; signatures: SignatureRecord[] }> = {};
+      const result: Record<number, DocumentRecord[]> = {};
       for (const p of partnerships) {
         try {
           const res = await fetch(`/api/contracts/status?partnership_id=${p.id}`, {
@@ -42,10 +47,7 @@ export default function PortalDocumentsPage() {
           });
           if (res.ok) {
             const data = await res.json();
-            result[p.id] = {
-              documents: data.documents || [],
-              signatures: data.signatures || [],
-            };
+            result[p.id] = data.documents || [];
           }
         } catch {
           // ignore
@@ -82,6 +84,33 @@ export default function PortalDocumentsPage() {
     }
   };
 
+  // Generate contract HTML bundles for preview/download per partnership
+  const contractBundles = useMemo(() => {
+    const bundles: Record<number, ReturnType<typeof getContractBundle>> = {};
+    for (const [pid, docs] of Object.entries(documentsByPartnership)) {
+      const partnershipId = Number(pid);
+      const sampleDoc = docs[0];
+      if (!sampleDoc) continue;
+      const tierKey = (sampleDoc.tier || 'foundation') as TierKey;
+      const pricing = TIER_PRICING[tierKey] || TIER_PRICING.foundation;
+      bundles[partnershipId] = getContractBundle({
+        company_name: sampleDoc.company_name || 'Company',
+        client_name: sampleDoc.client_name || 'Client',
+        client_email: sampleDoc.client_email || '',
+        client_title: 'Authorized Representative',
+        tier: tierKey,
+        tierName: pricing.name,
+        fees: {
+          setup_cents: sampleDoc.setup_fee_cents || pricing.setup,
+          monthly_cents: sampleDoc.monthly_fee_cents || pricing.monthly,
+        },
+        min_months: sampleDoc.min_months || pricing.minMonths,
+        effective_date: sampleDoc.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      });
+    }
+    return bundles;
+  }, [documentsByPartnership]);
+
   const isLoading = loading || loadingDocs;
 
   return (
@@ -102,33 +131,72 @@ export default function PortalDocumentsPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-gap)' }}>
             {partnerships.map((partnership) => {
-              const data = documentsByPartnership[partnership.id];
-              const docs = data?.documents || [];
+              const docs = documentsByPartnership[partnership.id] || [];
+              const bundle = contractBundles[partnership.id];
+              const isPreviewOpen = previewPartnership === partnership.id;
 
               return (
                 <div key={partnership.id} className="card">
-                  <h2 className="text-base font-semibold text-white mb-3">
-                    {partnership.company_name}
-                  </h2>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <h2 className="text-base font-semibold text-white">
+                      {partnership.company_name}
+                    </h2>
+                    {bundle && docs.length > 0 && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setPreviewPartnership(isPreviewOpen ? null : partnership.id)}
+                          className="btn-ghost text-sm"
+                        >
+                          <svg className="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          {isPreviewOpen ? t.documents.hidePreview : t.documents.preview}
+                        </button>
+                        <ContractPDFRenderer
+                          html={bundle}
+                          filename={`contract-${(partnership.company_name || 'document').replace(/\s+/g, '-').toLowerCase()}`}
+                          buttonLabel={t.documents.downloadPdf}
+                        />
+                      </div>
+                    )}
+                  </div>
 
                   {docs.length === 0 ? (
                     <p className="text-sm text-white/50">{t.portal.noContracts}</p>
                   ) : (
-                    <div className="space-y-2">
-                      {docs.map((doc) => (
-                        <div key={doc.id} className="bg-white/5 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-medium text-white">{getDocTypeLabel(doc.doc_type)}</p>
-                            {doc.created_at && (
-                              <p className="text-xs text-white/40 mt-0.5">
-                                {new Date(doc.created_at).toLocaleDateString()}
-                              </p>
-                            )}
+                    <>
+                      {/* Document status list */}
+                      <div className="space-y-2 mb-3">
+                        {docs.map((doc) => (
+                          <div key={doc.id} className="bg-white/5 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-medium text-white">{getDocTypeLabel(doc.document_type)}</p>
+                              {doc.created_at && (
+                                <p className="text-xs text-white/40 mt-0.5">
+                                  {new Date(doc.created_at).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+                            {getStatusTag(doc.status)}
                           </div>
-                          {getStatusTag(doc.status)}
+                        ))}
+                      </div>
+
+                      {/* Inline preview */}
+                      {isPreviewOpen && bundle && (
+                        <div className="rounded-xl overflow-hidden border border-white/10">
+                          <DocumentViewer
+                            html={bundle}
+                            labels={{
+                              msa: t.documents.types.msa,
+                              sow: t.documents.types.sow,
+                              addendum: t.documents.types.addendum,
+                            }}
+                          />
                         </div>
-                      ))}
-                    </div>
+                      )}
+                    </>
                   )}
                 </div>
               );

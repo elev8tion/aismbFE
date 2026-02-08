@@ -78,11 +78,20 @@ English and Spanish. `LanguageContext` provides `useTranslations()` returning `{
 NCB_INSTANCE=36905_ai_smb_crm
 NCB_AUTH_API_URL=https://app.nocodebackend.com/api/user-auth
 NCB_DATA_API_URL=https://app.nocodebackend.com/api/data
+NCB_OPENAPI_URL=https://openapi.nocodebackend.com
+NCB_SECRET_KEY=<from NCB Dashboard → Settings>
 ```
 
 ## NCB Database Tables
 
 `companies`, `contacts`, `leads`, `opportunities`, `partnerships`, `voice_sessions`, `roi_calculations`, `proposed_systems`, `delivered_systems`, `payments`, `activities`, `user_profiles`, `customer_access`, `team_assignments`
+
+## NCB Reference
+
+Before making any NCB-related changes, read the shared reference docs:
+- `/Users/kcdacre8tor/ai-smb-partners/.claude/ncb-reference/README.md`
+- `/Users/kcdacre8tor/ai-smb-partners/.claude/ncb-reference/openapi-guide.md`
+- `/Users/kcdacre8tor/ai-smb-partners/.claude/ncb-reference/integration-guide.md`
 
 ## Existing Documentation
 

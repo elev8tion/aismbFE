@@ -3,18 +3,22 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge';
 
 const NCB_INSTANCE = process.env.NCB_INSTANCE!;
-const NCB_DATA_API_URL = process.env.NCB_DATA_API_URL!;
+const NCB_OPENAPI_URL = process.env.NCB_OPENAPI_URL || 'https://openapi.nocodebackend.com';
+const NCB_SECRET_KEY = process.env.NCB_SECRET_KEY || '';
 
 async function ncbQuery(table: string, filters: Record<string, unknown>) {
-  const params = new URLSearchParams({ instance: NCB_INSTANCE });
+  const params = new URLSearchParams({ Instance: NCB_INSTANCE });
   Object.entries(filters).forEach(([k, v]) => params.append(k, String(v)));
-  const url = `${NCB_DATA_API_URL}/read/${table}?${params}`;
+  const url = `${NCB_OPENAPI_URL}/read/${table}?${params}`;
   const res = await fetch(url, {
-    headers: { 'X-Database-instance': NCB_INSTANCE },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${NCB_SECRET_KEY}`,
+    },
   });
   if (!res.ok) return [];
   const data = await res.json();
-  return Array.isArray(data) ? data : data.data || [];
+  return data.data || [];
 }
 
 export async function GET(req: NextRequest) {

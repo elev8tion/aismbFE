@@ -6,6 +6,7 @@ const CONFIG = {
   instance: process.env.NCB_INSTANCE!,
   dataApiUrl: process.env.NCB_DATA_API_URL!,
   authApiUrl: process.env.NCB_AUTH_API_URL!,
+  secretKey: process.env.NCB_SECRET_KEY || '',
 };
 
 // Tables any authenticated user can access (public booking data + own profile via RLS)
@@ -18,9 +19,19 @@ const PUBLIC_TABLES = new Set([
 ]);
 
 // Tables customers can READ (not write). Admins have full access.
+// Bypasses RLS via secret key so customers can see admin-owned records.
 const CUSTOMER_TABLES = new Set([
   'partnerships',
   'delivered_systems',
+  'companies',
+]);
+
+// Tables without a user_id column — NCB Data Proxy can't filter by user,
+// so we must use Bearer auth (secret key) to read them.
+const NO_USER_ID_TABLES = new Set([
+  'bookings',
+  'availability_settings',
+  'blocked_dates',
 ]);
 
 function extractAuthCookies(cookieHeader: string): string {
@@ -116,8 +127,9 @@ function isAuthorized(table: string | null, role: string | null, operation: stri
 
 function customerNeedsFilter(table: string | null, role: string | null, searchParams: URLSearchParams): boolean {
   if (role !== 'customer' || !table || !CUSTOMER_TABLES.has(table)) return false;
-  // Customers must provide id__in or partnership_id to prevent listing all records
-  return !searchParams.has('id__in') && !searchParams.has('partnership_id') && !searchParams.has('id');
+  // Customers must provide a filter to prevent listing all records
+  return !searchParams.has('id__in') && !searchParams.has('id') &&
+    !searchParams.has('partnership_id') && !searchParams.has('partnership_id__in');
 }
 
 function forbidden() {
@@ -127,7 +139,7 @@ function forbidden() {
   });
 }
 
-async function proxyToNCB(req: NextRequest, path: string, body?: string) {
+async function proxyToNCB(req: NextRequest, path: string, body?: string, bypassRLS = false) {
   const searchParams = new URLSearchParams();
   searchParams.set("Instance", CONFIG.instance);
 
@@ -138,17 +150,23 @@ async function proxyToNCB(req: NextRequest, path: string, body?: string) {
   const url = `${CONFIG.dataApiUrl}/${path}?${searchParams.toString()}`;
   const origin = req.headers.get("origin") || req.nextUrl.origin;
 
-  const cookieHeader = req.headers.get("cookie") || "";
-  const authCookies = extractAuthCookies(cookieHeader);
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "X-Database-Instance": CONFIG.instance,
+    Origin: origin,
+  };
+
+  if (bypassRLS && CONFIG.secretKey) {
+    // Use secret key to bypass RLS for customer reads of shared data
+    headers["Authorization"] = `Bearer ${CONFIG.secretKey}`;
+  } else {
+    const cookieHeader = req.headers.get("cookie") || "";
+    headers["Cookie"] = extractAuthCookies(cookieHeader);
+  }
 
   const res = await fetch(url, {
     method: req.method,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Database-Instance": CONFIG.instance,
-      Cookie: authCookies,
-      Origin: origin,
-    },
+    headers,
     body: body || undefined,
   });
 
@@ -199,7 +217,13 @@ export async function GET(
     return forbidden();
   }
 
-  return proxyToNCB(req, pathStr);
+  // Bypass RLS for: (1) customer reads on CUSTOMER_TABLES (admin-owned data),
+  // (2) tables without user_id column (NCB can't filter, needs Bearer auth)
+  const bypassRLS = !!table && (
+    (role === 'customer' && CUSTOMER_TABLES.has(table)) ||
+    NO_USER_ID_TABLES.has(table)
+  );
+  return proxyToNCB(req, pathStr, undefined, bypassRLS);
 }
 
 export async function POST(

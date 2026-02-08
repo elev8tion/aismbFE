@@ -9,9 +9,9 @@ interface Booking {
   id: number;
   guest_name: string;
   guest_email: string;
-  date: string;
-  time: string;
-  duration?: number;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
   status: string;
   notes?: string;
 }
@@ -41,8 +41,8 @@ export default function PortalMeetingsPage() {
   }, [user?.email]);
 
   const now = new Date().toISOString().split('T')[0];
-  const upcoming = bookings.filter((b) => b.date >= now);
-  const past = bookings.filter((b) => b.date < now);
+  const upcoming = bookings.filter((b) => b.booking_date >= now);
+  const past = bookings.filter((b) => b.booking_date < now);
   const displayed = tab === 'upcoming' ? upcoming : past;
 
   return (
@@ -90,10 +90,9 @@ export default function PortalMeetingsPage() {
               <div key={booking.id} className="card">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <p className="text-base font-medium text-white">{booking.date}</p>
+                    <p className="text-base font-medium text-white">{booking.booking_date}</p>
                     <p className="text-sm text-white/50 mt-0.5">
-                      {booking.time}
-                      {booking.duration && ` (${booking.duration} ${t.bookings.minutesShort})`}
+                      {booking.start_time} — {booking.end_time}
                     </p>
                     {booking.notes && (
                       <p className="text-xs text-white/40 mt-1">{booking.notes}</p>

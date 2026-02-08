@@ -13,8 +13,9 @@ interface Booking {
   id: number;
   guest_name: string;
   guest_email: string;
-  date: string;
-  time: string;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
   status: string;
   notes?: string;
 }
@@ -22,7 +23,7 @@ interface Booking {
 interface DocumentRecord {
   id: number;
   partnership_id: number;
-  doc_type: string;
+  document_type: string;
   status: string;
 }
 
@@ -44,7 +45,7 @@ export default function PortalDashboardPage() {
         const data = await res.json();
         const allBookings: Booking[] = data.data || [];
         const now = new Date().toISOString().split('T')[0];
-        setBookings(allBookings.filter((b) => b.date >= now).slice(0, 5));
+        setBookings(allBookings.filter((b) => b.booking_date >= now).slice(0, 5));
       } catch {
         setBookings([]);
       }
@@ -151,8 +152,8 @@ export default function PortalDashboardPage() {
                   </div>
                   <div className="text-left sm:text-right">
                     <p className="text-xs text-white/50">{t.portal.healthScore}</p>
-                    <p className={`text-2xl font-bold ${getHealthColor(Number(partnership.health_score))}`}>
-                      {Number(partnership.health_score)}%
+                    <p className={`text-2xl font-bold ${getHealthColor(Number(partnership.satisfaction_score || 0))}`}>
+                      {Number(partnership.satisfaction_score || 0)}%
                     </p>
                   </div>
                 </div>
@@ -162,7 +163,7 @@ export default function PortalDashboardPage() {
                   <p className="text-xs text-white/50 mb-3">{t.portal.phase}</p>
                   <div className="flex items-center gap-1">
                     {PHASES.map((phase, idx) => {
-                      const currentIdx = PHASES.indexOf(partnership.phase);
+                      const currentIdx = PHASES.indexOf(partnership.current_phase);
                       const isCompleted = idx < currentIdx;
                       const isCurrent = idx === currentIdx;
                       return (
@@ -218,7 +219,7 @@ export default function PortalDashboardPage() {
                     <div className="flex flex-wrap gap-2">
                       {documents[partnership.id].map((doc) => (
                         <div key={doc.id} className="bg-white/5 rounded-lg px-3 py-2 flex items-center gap-2">
-                          <span className="text-sm text-white/80">{doc.doc_type?.toUpperCase()}</span>
+                          <span className="text-sm text-white/80">{doc.document_type?.toUpperCase()}</span>
                           {getDocStatusTag(doc.status)}
                         </div>
                       ))}
@@ -238,7 +239,7 @@ export default function PortalDashboardPage() {
                   {bookings.map((booking) => (
                     <div key={booking.id} className="bg-white/5 rounded-lg p-3 flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-white">{booking.date} at {booking.time}</p>
+                        <p className="text-sm text-white">{booking.booking_date} at {booking.start_time}</p>
                         {booking.notes && <p className="text-xs text-white/40 mt-0.5">{booking.notes}</p>}
                       </div>
                       <span className={`tag ${booking.status === 'confirmed' ? 'tag-success' : 'tag-warning'}`}>
