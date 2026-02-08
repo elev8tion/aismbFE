@@ -4,11 +4,15 @@ interface Booking {
   id: string;
   guest_name: string;
   guest_email: string;
-  date: string;
-  time_slot: string;
+  guest_phone?: string;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
   status: string;
-  meeting_type?: string;
+  booking_type?: string;
   notes?: string;
+  company_name?: string;
+  industry?: string;
   created_at?: string;
 }
 
@@ -38,7 +42,7 @@ function futureDate(days: number): string {
 export async function get_todays_bookings(_params: Record<string, never>, cookies: string) {
   const result = await ncbRead<Booking>('bookings', cookies);
   const today = todayStr();
-  const todays = (result.data || []).filter(b => b.date === today);
+  const todays = (result.data || []).filter(b => b.booking_date === today);
   return { date: today, bookings: todays, count: todays.length };
 }
 
@@ -47,7 +51,7 @@ export async function get_upcoming_bookings(params: { days?: number }, cookies: 
   const result = await ncbRead<Booking>('bookings', cookies);
   const today = todayStr();
   const end = futureDate(days);
-  const upcoming = (result.data || []).filter(b => b.date >= today && b.date <= end && b.status !== 'cancelled');
+  const upcoming = (result.data || []).filter(b => b.booking_date >= today && b.booking_date <= end && b.status !== 'cancelled');
   return { from: today, to: end, bookings: upcoming, count: upcoming.length };
 }
 
@@ -65,7 +69,7 @@ export async function confirm_booking(params: { booking_id: string }, cookies: s
 
 export async function cancel_booking(params: { booking_id: string; reason?: string }, cookies: string) {
   const data: Record<string, unknown> = { status: 'cancelled' };
-  if (params.reason) data.cancellation_reason = params.reason;
+  if (params.reason) data.notes = params.reason;
   const result = await ncbUpdate<Booking>('bookings', params.booking_id, data, cookies);
   return { success: true, booking: result };
 }
@@ -127,7 +131,7 @@ export async function get_booking_summary(_params: Record<string, never>, cookie
     counts[status] = (counts[status] || 0) + 1;
   }
   const today = todayStr();
-  const todaysCount = bookings.filter(b => b.date === today).length;
-  const upcomingCount = bookings.filter(b => b.date > today && b.status !== 'cancelled').length;
+  const todaysCount = bookings.filter(b => b.booking_date === today).length;
+  const upcomingCount = bookings.filter(b => b.booking_date > today && b.status !== 'cancelled').length;
   return { total: bookings.length, by_status: counts, today: todaysCount, upcoming: upcomingCount };
 }

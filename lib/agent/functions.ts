@@ -10,7 +10,7 @@ const leadFunctions: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          status: { type: 'string', enum: ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'], description: 'Filter by lead status' },
+          status: { type: 'string', enum: ['new', 'contacted', 'qualified', 'nurturing', 'converted', 'disqualified'], description: 'Filter by lead status' },
           limit: { type: 'number', description: 'Max results to return (default 20)' },
         },
       },
@@ -46,14 +46,16 @@ const leadFunctions: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          name: { type: 'string' },
-          email: { type: 'string' },
-          company: { type: 'string' },
+          email: { type: 'string', description: 'Lead email (required)' },
+          first_name: { type: 'string' },
+          last_name: { type: 'string' },
+          company_name: { type: 'string' },
           phone: { type: 'string' },
-          source: { type: 'string' },
-          notes: { type: 'string' },
+          source: { type: 'string', enum: ['voice-agent', 'roi-calculator', 'referral', 'website', 'social-media', 'cold-outreach', 'other'] },
+          industry: { type: 'string' },
+          employee_count: { type: 'string', enum: ['1-5', '5-10', '10-25', '25-50', '50-100', '100+'] },
         },
-        required: ['name'],
+        required: ['email', 'source'],
       },
     },
   },
@@ -66,7 +68,7 @@ const leadFunctions: ChatCompletionTool[] = [
         type: 'object',
         properties: {
           lead_id: { type: 'string', description: 'The ID of the lead' },
-          status: { type: 'string', enum: ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'] },
+          status: { type: 'string', enum: ['new', 'contacted', 'qualified', 'nurturing', 'converted', 'disqualified'] },
         },
         required: ['lead_id', 'status'],
       },
@@ -222,7 +224,7 @@ const pipelineFunctions: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          stage: { type: 'string', enum: ['discovery', 'proposal', 'negotiation', 'closed_won', 'closed_lost'] },
+          stage: { type: 'string', enum: ['new-lead', 'contacted', 'discovery-call', 'proposal-sent', 'negotiation', 'closed-won', 'closed-lost'] },
         },
       },
     },
@@ -244,12 +246,15 @@ const pipelineFunctions: ChatCompletionTool[] = [
         type: 'object',
         properties: {
           name: { type: 'string' },
-          value: { type: 'number', description: 'Deal value in dollars' },
-          stage: { type: 'string', enum: ['discovery', 'proposal', 'negotiation'] },
+          tier: { type: 'string', enum: ['discovery', 'foundation', 'architect'], description: 'Service tier' },
+          setup_fee: { type: 'number', description: 'Setup fee in dollars' },
+          monthly_fee: { type: 'number', description: 'Monthly fee in dollars' },
+          stage: { type: 'string', enum: ['new-lead', 'contacted', 'discovery-call', 'proposal-sent', 'negotiation', 'closed-won', 'closed-lost'] },
           company_id: { type: 'string' },
-          contact_id: { type: 'string' },
+          primary_contact_id: { type: 'string' },
+          expected_close_date: { type: 'string', description: 'Expected close date YYYY-MM-DD' },
         },
-        required: ['name', 'value'],
+        required: ['name', 'tier', 'setup_fee'],
       },
     },
   },
@@ -262,7 +267,7 @@ const pipelineFunctions: ChatCompletionTool[] = [
         type: 'object',
         properties: {
           opportunity_id: { type: 'string' },
-          stage: { type: 'string', enum: ['discovery', 'proposal', 'negotiation', 'closed_won', 'closed_lost'] },
+          stage: { type: 'string', enum: ['new-lead', 'contacted', 'discovery-call', 'proposal-sent', 'negotiation', 'closed-won', 'closed-lost'] },
         },
         required: ['opportunity_id', 'stage'],
       },
@@ -304,13 +309,16 @@ const contactFunctions: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          name: { type: 'string' },
+          first_name: { type: 'string' },
+          last_name: { type: 'string' },
           email: { type: 'string' },
           phone: { type: 'string' },
-          company_id: { type: 'string' },
+          company_id: { type: 'string', description: 'Company ID (required)' },
           title: { type: 'string' },
+          role: { type: 'string' },
+          decision_maker: { type: 'number', description: '1 if decision maker, 0 if not' },
         },
-        required: ['name'],
+        required: ['first_name', 'last_name', 'email', 'company_id'],
       },
     },
   },
@@ -335,11 +343,13 @@ const contactFunctions: ChatCompletionTool[] = [
         type: 'object',
         properties: {
           name: { type: 'string' },
-          industry: { type: 'string' },
+          industry: { type: 'string', description: 'Industry (required)' },
+          employee_count: { type: 'string', enum: ['1-5', '5-10', '10-25', '25-50', '50-100', '100+'], description: 'Employee count range (required)' },
           website: { type: 'string' },
-          size: { type: 'string' },
+          city: { type: 'string' },
+          state: { type: 'string' },
         },
-        required: ['name'],
+        required: ['name', 'industry', 'employee_count'],
       },
     },
   },
@@ -363,11 +373,12 @@ const partnershipFunctions: ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'list_partnerships',
-      description: 'List all partnerships with optional phase filter',
+      description: 'List all partnerships with optional phase or status filter',
       parameters: {
         type: 'object',
         properties: {
-          phase: { type: 'string' },
+          phase: { type: 'string', enum: ['discover', 'co-create', 'deploy', 'independent'], description: 'Filter by current phase' },
+          status: { type: 'string', description: 'Filter by status (active, onboarding, completed, churned)' },
         },
       },
     },
@@ -376,7 +387,7 @@ const partnershipFunctions: ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'get_partnership_summary',
-      description: 'Get summary of partnerships by phase and health',
+      description: 'Get summary of partnerships by phase and satisfaction score',
       parameters: { type: 'object', properties: {} },
     },
   },
@@ -384,12 +395,12 @@ const partnershipFunctions: ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'update_partnership_phase',
-      description: 'Update the phase of a partnership',
+      description: 'Update the phase of a partnership (discover → co-create → deploy → independent)',
       parameters: {
         type: 'object',
         properties: {
           partnership_id: { type: 'string' },
-          phase: { type: 'string' },
+          phase: { type: 'string', enum: ['discover', 'co-create', 'deploy', 'independent'] },
         },
         required: ['partnership_id', 'phase'],
       },
@@ -398,15 +409,15 @@ const partnershipFunctions: ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
-      name: 'update_health_score',
-      description: 'Update the health score of a partnership',
+      name: 'update_satisfaction_score',
+      description: 'Update the satisfaction score of a partnership',
       parameters: {
         type: 'object',
         properties: {
           partnership_id: { type: 'string' },
-          health_score: { type: 'number', description: 'Score from 0-100' },
+          score: { type: 'number', description: 'Score from 0-100' },
         },
-        required: ['partnership_id', 'health_score'],
+        required: ['partnership_id', 'score'],
       },
     },
   },
@@ -418,13 +429,13 @@ const partnershipFunctions: ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          name: { type: 'string', description: 'Partner company or individual name' },
-          partner_type: { type: 'string', enum: ['referral', 'reseller', 'technology', 'strategic'], description: 'Type of partnership' },
-          phase: { type: 'string', description: 'Initial phase (default prospecting)' },
-          contact_name: { type: 'string', description: 'Primary contact name' },
-          contact_email: { type: 'string', description: 'Primary contact email' },
+          company_id: { type: 'string', description: 'Company ID (required)' },
+          opportunity_id: { type: 'string', description: 'Opportunity ID (required)' },
+          tier: { type: 'string', enum: ['discovery', 'foundation', 'architect'], description: 'Service tier' },
+          phase: { type: 'string', enum: ['discover', 'co-create', 'deploy', 'independent'], description: 'Initial phase (default discover)' },
+          customer_email: { type: 'string', description: 'Customer email for portal access' },
         },
-        required: ['name'],
+        required: ['company_id', 'opportunity_id', 'tier'],
       },
     },
   },
@@ -438,9 +449,10 @@ const partnershipFunctions: ChatCompletionTool[] = [
         properties: {
           partnership_id: { type: 'string', description: 'ID of the partnership' },
           type: { type: 'string', enum: ['call', 'email', 'meeting', 'note'], description: 'Interaction type' },
-          description: { type: 'string', description: 'What happened' },
+          subject: { type: 'string', description: 'Brief subject line (required)' },
+          description: { type: 'string', description: 'Details of what happened' },
         },
-        required: ['partnership_id', 'type', 'description'],
+        required: ['partnership_id', 'type', 'subject'],
       },
     },
   },
@@ -496,47 +508,20 @@ const analyticsFunctions: ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
-      name: 'create_task',
-      description: 'Create a task/reminder',
-      parameters: {
-        type: 'object',
-        properties: {
-          title: { type: 'string' },
-          description: { type: 'string' },
-          due_date: { type: 'string', description: 'Due date in YYYY-MM-DD format' },
-          priority: { type: 'string', enum: ['low', 'medium', 'high'] },
-        },
-        required: ['title'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'list_tasks',
-      description: 'List tasks with optional status filter',
-      parameters: {
-        type: 'object',
-        properties: {
-          status: { type: 'string', enum: ['pending', 'in_progress', 'completed'] },
-        },
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
       name: 'log_activity',
-      description: 'Log a CRM activity (call, email, meeting, note) linked to a lead or contact',
+      description: 'Log a CRM activity (call, email, meeting, note) linked to a company, contact, opportunity, or partnership',
       parameters: {
         type: 'object',
         properties: {
           type: { type: 'string', enum: ['call', 'email', 'meeting', 'note'], description: 'Activity type' },
-          description: { type: 'string', description: 'What happened' },
-          lead_id: { type: 'string', description: 'Optional lead to link this activity to' },
-          contact_id: { type: 'string', description: 'Optional contact to link this activity to' },
+          subject: { type: 'string', description: 'Brief subject line (required)' },
+          description: { type: 'string', description: 'Details of what happened' },
+          company_id: { type: 'string', description: 'Optional company to link to' },
+          contact_id: { type: 'string', description: 'Optional contact to link to' },
+          opportunity_id: { type: 'string', description: 'Optional opportunity to link to' },
+          partnership_id: { type: 'string', description: 'Optional partnership to link to' },
         },
-        required: ['type', 'description'],
+        required: ['type', 'subject'],
       },
     },
   },
@@ -544,16 +529,17 @@ const analyticsFunctions: ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'schedule_followup',
-      description: 'Schedule a follow-up reminder/task for a future date',
+      description: 'Schedule a follow-up activity linked to a company, contact, or partnership',
       parameters: {
         type: 'object',
         properties: {
-          description: { type: 'string', description: 'What the follow-up is about' },
-          due_date: { type: 'string', description: 'Due date in YYYY-MM-DD format' },
-          lead_id: { type: 'string', description: 'Optional lead to link to' },
+          subject: { type: 'string', description: 'Brief subject line (required)' },
+          description: { type: 'string', description: 'Details of the follow-up' },
+          company_id: { type: 'string', description: 'Optional company to link to' },
           contact_id: { type: 'string', description: 'Optional contact to link to' },
+          partnership_id: { type: 'string', description: 'Optional partnership to link to' },
         },
-        required: ['description', 'due_date'],
+        required: ['subject'],
       },
     },
   },
@@ -589,12 +575,11 @@ const analyticsFunctions: ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
-      name: 'get_top_performers',
-      description: 'Rank leads or deals by value or activity count',
+      name: 'get_top_opportunities',
+      description: 'Rank opportunities by total contract value',
       parameters: {
         type: 'object',
         properties: {
-          metric: { type: 'string', enum: ['value', 'activity'], description: 'Rank by pipeline value or activity count (default value)' },
           limit: { type: 'number', description: 'Number of results (default 10)' },
         },
       },

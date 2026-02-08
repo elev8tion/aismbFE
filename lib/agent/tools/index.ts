@@ -15,7 +15,7 @@ import * as roi from './roi';
 // Tools that require userId for create operations
 const CREATE_TOOLS = new Set([
   'create_lead', 'create_opportunity', 'create_contact', 'create_company',
-  'block_date', 'create_task',
+  'block_date',
   'create_partnership', 'run_roi_calculation', 'log_activity', 'schedule_followup',
   'log_partner_interaction', 'draft_email', 'draft_sms',
 ]);
@@ -61,7 +61,7 @@ const registry: Record<string, ToolHandler> = {
   list_partnerships: partnerships.list_partnerships as unknown as ToolHandler,
   get_partnership_summary: partnerships.get_partnership_summary as unknown as ToolHandler,
   update_partnership_phase: partnerships.update_partnership_phase as unknown as ToolHandler,
-  update_health_score: partnerships.update_health_score as unknown as ToolHandler,
+  update_satisfaction_score: partnerships.update_satisfaction_score as unknown as ToolHandler,
 
   // Analytics
   get_dashboard_stats: analytics.get_dashboard_stats as unknown as ToolHandler,
@@ -69,14 +69,12 @@ const registry: Record<string, ToolHandler> = {
   get_recent_activities: analytics.get_recent_activities as unknown as ToolHandler,
   get_voice_session_insights: analytics.get_voice_session_insights as unknown as ToolHandler,
   get_roi_calculation_insights: analytics.get_roi_calculation_insights as unknown as ToolHandler,
-  create_task: analytics.create_task as unknown as ToolHandler,
-  list_tasks: analytics.list_tasks as unknown as ToolHandler,
   log_activity: analytics.log_activity as unknown as ToolHandler,
   schedule_followup: analytics.schedule_followup as unknown as ToolHandler,
   get_conversion_rate: analytics.get_conversion_rate as unknown as ToolHandler,
   get_revenue_forecast: analytics.get_revenue_forecast as unknown as ToolHandler,
   get_stale_leads: analytics.get_stale_leads as unknown as ToolHandler,
-  get_top_performers: analytics.get_top_performers as unknown as ToolHandler,
+  get_top_opportunities: analytics.get_top_opportunities as unknown as ToolHandler,
 
   // Bulk Operations
   bulk_update_lead_status: bulk.bulk_update_lead_status as unknown as ToolHandler,

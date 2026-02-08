@@ -5,7 +5,17 @@ const CONFIG = {
   instance: process.env.NCB_INSTANCE!,
   dataApiUrl: process.env.NCB_DATA_API_URL!,
   authApiUrl: process.env.NCB_AUTH_API_URL!,
+  openApiUrl: process.env.NCB_OPENAPI_URL || 'https://openapi.nocodebackend.com',
+  secretKey: process.env.NCB_SECRET_KEY || '',
 };
+
+// Tables without a user_id column — Data Proxy can't filter by user,
+// so we must use OpenAPI with Bearer auth to read/write them.
+const NO_USER_ID_TABLES = new Set([
+  'bookings',
+  'availability_settings',
+  'blocked_dates',
+]);
 
 interface NCBResponse<T> {
   data: T;
@@ -23,6 +33,17 @@ function buildUrl(path: string, params?: Record<string, string>): string {
   return `${CONFIG.dataApiUrl}/${path}?${searchParams.toString()}`;
 }
 
+function buildOpenApiUrl(path: string, params?: Record<string, string>): string {
+  const searchParams = new URLSearchParams();
+  searchParams.set('Instance', CONFIG.instance);
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      searchParams.set(key, value);
+    }
+  }
+  return `${CONFIG.openApiUrl}/${path}?${searchParams.toString()}`;
+}
+
 async function ncbFetch<T>(
   path: string,
   options: {
@@ -32,15 +53,28 @@ async function ncbFetch<T>(
     cookies: string;
   }
 ): Promise<T> {
-  const url = buildUrl(path, options.params);
+  // Extract table name from path (e.g., "read/bookings" → "bookings")
+  const table = path.split('/')[1];
+  const useOpenApi = table && NO_USER_ID_TABLES.has(table);
+
+  const url = useOpenApi
+    ? buildOpenApiUrl(path, options.params)
+    : buildUrl(path, options.params);
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (useOpenApi) {
+    headers['Authorization'] = `Bearer ${CONFIG.secretKey}`;
+  } else {
+    headers['X-Database-instance'] = CONFIG.instance;
+    headers['Cookie'] = options.cookies;
+  }
 
   const res = await fetch(url, {
     method: options.method || 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Database-instance': CONFIG.instance,
-      Cookie: options.cookies,
-    },
+    headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
@@ -74,9 +108,13 @@ export async function ncbCreate<T>(
   userId: string,
   cookies: string
 ): Promise<T> {
+  // Don't inject user_id for tables that don't have the column
+  const body = NO_USER_ID_TABLES.has(table)
+    ? data
+    : { ...data, user_id: userId };
   return ncbFetch<T>(`create/${table}`, {
     method: 'POST',
-    body: { ...data, user_id: userId },
+    body,
     cookies,
   });
 }
