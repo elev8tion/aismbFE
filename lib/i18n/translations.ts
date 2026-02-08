@@ -158,6 +158,10 @@ export interface Translations {
       alreadySigned: string;
       viewedCheck: string;
     };
+    templates: string;
+    templatesDescription: string;
+    preview: string;
+    hidePreview: string;
   };
   // Drafts
   drafts: {
@@ -613,6 +617,10 @@ export const translations: Record<'en' | 'es', Translations> = {
         alreadySigned: 'These documents have already been signed.',
         viewedCheck: 'Reviewed',
       },
+      templates: 'Contract Templates',
+      templatesDescription: 'Preview the standard contract documents sent to partners',
+      preview: 'Preview',
+      hidePreview: 'Hide Preview',
     },
     drafts: {
       title: 'Drafts',
@@ -1056,6 +1064,10 @@ export const translations: Record<'en' | 'es', Translations> = {
         alreadySigned: 'Estos documentos ya han sido firmados.',
         viewedCheck: 'Revisado',
       },
+      templates: 'Plantillas de Contrato',
+      templatesDescription: 'Vista previa de los documentos de contrato estándar enviados a socios',
+      preview: 'Vista Previa',
+      hidePreview: 'Ocultar Vista Previa',
     },
     drafts: {
       title: 'Borradores',

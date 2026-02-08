@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
 import DocumentStatusBadge from '@/components/contracts/DocumentStatusBadge';
@@ -8,6 +8,7 @@ import SendContractModal from '@/components/contracts/SendContractModal';
 import CounterSignModal from '@/components/contracts/CounterSignModal';
 import ContractPDFRenderer from '@/components/contracts/ContractPDFRenderer';
 import { DocumentRecord, DocumentStatus } from '@/lib/contracts/types';
+import { getContractBundle } from '@/lib/contracts/templates';
 
 interface Partnership {
   id: number;
@@ -31,6 +32,23 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true);
   const [sendModal, setSendModal] = useState<Partnership | null>(null);
   const [counterSignModal, setCounterSignModal] = useState<Partnership | null>(null);
+  const [previewOpen, setPreviewOpen] = useState<Record<'msa' | 'sow' | 'addendum', boolean>>({
+    msa: false,
+    sow: false,
+    addendum: false,
+  });
+
+  const templateBundle = useMemo(() => getContractBundle({
+    company_name: 'Client Company',
+    client_name: 'Client Name',
+    client_email: 'client@example.com',
+    client_title: 'Owner',
+    tier: 'foundation',
+    tierName: 'Foundation',
+    fees: { setup_cents: 500000, monthly_cents: 150000 },
+    min_months: 6,
+    effective_date: new Date().toISOString().split('T')[0],
+  }), []);
 
   const loadData = useCallback(async () => {
     try {
@@ -68,7 +86,7 @@ export default function DocumentsPage() {
   }
 
   const partnershipsWithoutDocs = partnerships.filter(
-    p => !docGroups.some(g => g.partnership.id === p.id) && (p.status === 'active' || p.status === 'onboarding')
+    p => !docGroups.some(g => g.partnership.id === p.id)
   );
 
   return (
@@ -86,6 +104,39 @@ export default function DocumentsPage() {
           </div>
         ) : (
           <>
+            {/* Contract Templates */}
+            <div>
+              <h2 className="text-lg font-semibold text-white mb-1">{t.documents.templates}</h2>
+              <p className="text-sm text-zinc-400 mb-3">{t.documents.templatesDescription}</p>
+              <div className="space-y-3">
+                {([
+                  { key: 'msa' as const, label: t.documents.types.msa },
+                  { key: 'sow' as const, label: t.documents.types.sow },
+                  { key: 'addendum' as const, label: t.documents.types.addendum },
+                ]).map(({ key, label }) => (
+                  <div key={key} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                    <div className="p-4 flex items-center justify-between">
+                      <p className="font-medium text-white">{label}</p>
+                      <button
+                        onClick={() => setPreviewOpen(prev => ({ ...prev, [key]: !prev[key] }))}
+                        className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-lg transition-colors"
+                      >
+                        {previewOpen[key] ? t.documents.hidePreview : t.documents.preview}
+                      </button>
+                    </div>
+                    {previewOpen[key] && (
+                      <div className="border-t border-zinc-800 p-4">
+                        <div
+                          className="bg-white rounded-lg p-6 max-h-[600px] overflow-y-auto"
+                          dangerouslySetInnerHTML={{ __html: templateBundle[key] }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Partnerships needing contracts */}
             {partnershipsWithoutDocs.length > 0 && (
               <div>
