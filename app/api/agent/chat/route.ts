@@ -167,15 +167,15 @@ const FEWSHOTS_EN = [
 
   // Tool: activity logging
   { role: 'user', content: 'Log a call with ABC Plumbing' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'en12', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', description: 'Call with ABC Plumbing' }) } } ] },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'en12', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', subject: 'Call with ABC Plumbing' }) } } ] },
   { role: 'tool', tool_call_id: 'en12', content: JSON.stringify({ success: true, activity: { id: '1', type: 'call' } }) },
   { role: 'assistant', content: 'Logged a call with ABC Plumbing.' },
 
   // Tool: conversion rate
   { role: 'user', content: "What's my conversion rate?" },
   { role: 'assistant', content: null, tool_calls: [ { id: 'en13', type: 'function', function: { name: 'get_conversion_rate', arguments: '{}' } } ] },
-  { role: 'tool', tool_call_id: 'en13', content: JSON.stringify({ total_leads: 50, won: 8, conversion_rate_percent: 16 }) },
-  { role: 'assistant', content: 'Your conversion rate is about 16%. You have 8 won leads out of 50 total.' },
+  { role: 'tool', tool_call_id: 'en13', content: JSON.stringify({ total_leads: 50, converted: 8, conversion_rate_percent: 16 }) },
+  { role: 'assistant', content: 'Your conversion rate is about 16%. You have 8 converted leads out of 50 total.' },
 
   // Tool: stale leads
   { role: 'user', content: "Find leads I haven't touched in 2 weeks" },
@@ -265,15 +265,15 @@ const FEWSHOTS_ES = [
 
   // Tool: registrar actividad
   { role: 'user', content: 'Registrar una llamada con ABC Plumbing' },
-  { role: 'assistant', content: null, tool_calls: [ { id: 'es12', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', description: 'Llamada con ABC Plumbing' }) } } ] },
+  { role: 'assistant', content: null, tool_calls: [ { id: 'es12', type: 'function', function: { name: 'log_activity', arguments: JSON.stringify({ type: 'call', subject: 'Llamada con ABC Plumbing' }) } } ] },
   { role: 'tool', tool_call_id: 'es12', content: JSON.stringify({ success: true, activity: { id: '1', type: 'call' } }) },
   { role: 'assistant', content: 'Registrada una llamada con ABC Plumbing.' },
 
   // Tool: tasa de conversión
   { role: 'user', content: '¿Cuál es mi tasa de conversión?' },
   { role: 'assistant', content: null, tool_calls: [ { id: 'es13', type: 'function', function: { name: 'get_conversion_rate', arguments: '{}' } } ] },
-  { role: 'tool', tool_call_id: 'es13', content: JSON.stringify({ total_leads: 50, won: 8, conversion_rate_percent: 16 }) },
-  { role: 'assistant', content: 'Tu tasa de conversión es del 16%. Tienes 8 leads ganados de 50 en total.' },
+  { role: 'tool', tool_call_id: 'es13', content: JSON.stringify({ total_leads: 50, converted: 8, conversion_rate_percent: 16 }) },
+  { role: 'assistant', content: 'Tu tasa de conversión es del 16%. Tienes 8 leads convertidos de 50 en total.' },
 
   // Tool: leads inactivos
   { role: 'user', content: 'Buscar leads inactivos por 2 semanas' },
