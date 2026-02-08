@@ -8,7 +8,7 @@ import { useTranslations } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   DashboardIcon, BookingsIcon, LeadsIcon, PipelineIcon,
-  CompaniesIcon, ContactsIcon, PartnershipsIcon, DraftsIcon, VoiceIcon,
+  CompaniesIcon, ContactsIcon, PartnershipsIcon, DocumentsIcon, DraftsIcon, VoiceIcon,
   CalculatorIcon, SettingsIcon, HelpIcon, ChevronIcon, ChartIcon,
 } from '@/components/icons';
 
@@ -27,6 +27,7 @@ const navItems = [
   { key: 'companies', href: '/companies', icon: CompaniesIcon },
   { key: 'contacts', href: '/contacts', icon: ContactsIcon },
   { key: 'partnerships', href: '/partnerships', icon: PartnershipsIcon },
+  { key: 'documents', href: '/documents', icon: DocumentsIcon },
   { key: 'drafts', href: '/drafts', icon: DraftsIcon },
   { key: 'voiceSessions', href: '/voice-sessions', icon: VoiceIcon },
   { key: 'roiCalculations', href: '/roi-calculations', icon: CalculatorIcon },

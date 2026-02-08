@@ -8,6 +8,8 @@
  */
 
 import { welcomeEmailTemplate, type WelcomeEmailData } from './templates';
+import { signingRequestTemplate } from './signingRequestTemplate';
+import { contractSignedTemplate } from './contractSignedTemplate';
 
 const EMAILIT_API_URL = 'https://api.emailit.com/v1/emails';
 
@@ -153,5 +155,83 @@ body { font-family: sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
     console.log(`[Email] Payment failed alert sent to ${data.adminEmail}`);
   } catch (error) {
     console.error('[Email] Failed to send payment failed alert:', error);
+  }
+}
+
+// ─── Signing Request (sent to client to sign contracts) ──────────────────
+
+export async function sendSigningRequest(data: {
+  to: string;
+  clientName: string;
+  companyName: string;
+  signingUrl: string;
+  emailitApiKey?: string;
+}): Promise<void> {
+  const apiKey = data.emailitApiKey || process.env.EMAILIT_API_KEY;
+
+  if (!apiKey) {
+    console.warn('[Email] EMAILIT_API_KEY not configured, skipping signing request');
+    return;
+  }
+
+  try {
+    const html = signingRequestTemplate({
+      clientName: data.clientName,
+      companyName: data.companyName,
+      signingUrl: data.signingUrl,
+    });
+
+    await sendViaEmailIt({
+      apiKey,
+      to: data.to,
+      subject: `Action Required: Contract for ${data.companyName} — Please Review & Sign`,
+      html,
+      text: `Hi ${data.clientName}, your contract documents for ${data.companyName} are ready for review and signature. Please visit: ${data.signingUrl}`,
+      tags: ['kre8tion', 'crm', 'signing-request'],
+    });
+
+    console.log(`[Email] Signing request sent to ${data.to}`);
+  } catch (error) {
+    console.error('[Email] Failed to send signing request:', error);
+  }
+}
+
+// ─── Contract Signed Notification (sent to admin) ────────────────────────
+
+export async function sendContractSignedNotification(data: {
+  clientName: string;
+  companyName: string;
+  tier: string;
+  partnershipId: number;
+  emailitApiKey?: string;
+}): Promise<void> {
+  const apiKey = data.emailitApiKey || process.env.EMAILIT_API_KEY;
+  const adminEmail = process.env.ADMIN_EMAIL || 'connect@elev8tion.one';
+
+  if (!apiKey) {
+    console.warn('[Email] EMAILIT_API_KEY not configured, skipping signed notification');
+    return;
+  }
+
+  try {
+    const html = contractSignedTemplate({
+      clientName: data.clientName,
+      companyName: data.companyName,
+      tier: data.tier,
+      partnershipId: data.partnershipId,
+    });
+
+    await sendViaEmailIt({
+      apiKey,
+      to: adminEmail,
+      subject: `Contract Signed: ${data.companyName} — Ready for Counter-Signature`,
+      html,
+      text: `${data.clientName} from ${data.companyName} has signed the contract documents (${data.tier} tier). Partnership #${data.partnershipId} is ready for your counter-signature.`,
+      tags: ['kre8tion', 'crm', 'contract-signed'],
+    });
+
+    console.log(`[Email] Contract signed notification sent to ${adminEmail}`);
+  } catch (error) {
+    console.error('[Email] Failed to send contract signed notification:', error);
   }
 }

@@ -1,0 +1,253 @@
+🌐 WEBSITE TERMS OF SERVICE
+
+ELEV8TION LLC
+
+Effective Date: [insert date]
+
+These Terms of Service (“Terms”) govern use of the ELEV8TION website and services.
+By accessing this website or engaging services, you agree to these Terms.
+
+Company: ELEV8TION LLC
+Location: Waterbury, Connecticut
+Contact: connect@elev8tion.one
+
+⸻
+
+1. Services Overview
+
+ELEV8TION provides consulting, training, and intelligent systems architecture services including AI workflow design, automation strategy, and capability transfer.
+
+Information on this website is for informational purposes only and does not constitute professional, legal, financial, or operational advice.
+
+⸻
+
+2. No Guarantees
+
+Any examples of:
+	•	cost savings
+	•	efficiency gains
+	•	ROI
+	•	performance improvements
+
+are illustrative only.
+
+Results vary by business and are not guaranteed.
+
+Client outcomes depend on implementation, supervision, and internal processes.
+
+⸻
+
+3. AI & Automation Use
+
+ELEV8TION works with artificial intelligence tools and automation systems.
+
+Users acknowledge:
+	•	AI outputs may be inaccurate
+	•	AI systems require human review
+	•	automation carries operational risk
+
+ELEV8TION is not responsible for actions taken based on AI-generated outputs.
+
+⸻
+
+4. Intellectual Property
+
+All website content, branding, frameworks, and materials are owned by ELEV8TION LLC.
+
+No content may be copied, resold, or reused without permission.
+
+Client projects are governed by separate service agreements.
+
+⸻
+
+5. Acceptable Use
+
+Users agree not to:
+	•	misuse the website
+	•	attempt unauthorized access
+	•	interfere with systems
+	•	copy proprietary materials
+
+⸻
+
+6. Third-Party Tools
+
+The website and services may reference or use third-party platforms.
+
+ELEV8TION is not responsible for:
+	•	third-party outages
+	•	platform changes
+	•	third-party policies
+
+⸻
+
+7. Limitation of Liability
+
+To the maximum extent permitted by law:
+
+ELEV8TION shall not be liable for:
+	•	indirect damages
+	•	lost profits
+	•	reliance on website content
+	•	use of AI tools
+
+⸻
+
+8. Governing Law
+
+These Terms are governed by the laws of the State of Connecticut.
+
+Disputes shall be resolved through arbitration in Connecticut.
+
+⸻
+
+9. Changes
+
+ELEV8TION may update these Terms at any time.
+
+Continued use of the site constitutes acceptance.
+
+⸻
+
+🔐 PRIVACY POLICY
+
+ELEV8TION LLC
+
+Effective Date: [insert date]
+
+ELEV8TION respects your privacy and collects only necessary information.
+
+⸻
+
+1. Information Collected
+
+We may collect:
+	•	name
+	•	email
+	•	business information
+	•	messages submitted
+	•	usage data
+	•	analytics data
+
+We do not intentionally collect sensitive personal data.
+
+⸻
+
+2. How Information Is Used
+
+We use data to:
+	•	communicate with you
+	•	provide services
+	•	improve offerings
+	•	send relevant updates
+
+We do not sell personal data.
+
+⸻
+
+3. AI Tools & Data
+
+We may use third-party AI tools and software platforms to deliver services.
+
+Client data is used only to provide requested services and is not used to train public AI models.
+
+⸻
+
+4. Data Sharing
+
+We may share data with:
+	•	service providers
+	•	software platforms
+	•	payment processors
+
+Only as necessary to deliver services.
+
+⸻
+
+5. Data Security
+
+We implement reasonable safeguards but cannot guarantee absolute security.
+
+Users are responsible for protecting their own systems and credentials.
+
+⸻
+
+6. Cookies
+
+We may use cookies and analytics tools to improve the website experience.
+
+Users may disable cookies in browser settings.
+
+⸻
+
+7. Your Rights
+
+You may request:
+	•	access to your data
+	•	deletion of your data
+	•	correction of information
+
+Contact: connect@elev8tion.one
+
+⸻
+
+8. Updates
+
+This policy may be updated periodically.
+
+⸻
+
+🤖 AI USE DISCLOSURE (PLACE ON SITE)
+
+You should have a short page or section with this:
+
+⸻
+
+AI & Automation Disclosure
+
+ELEV8TION works with artificial intelligence systems and automation technologies.
+
+These systems:
+	•	may produce inaccurate or incomplete outputs
+	•	require human review
+	•	should not be relied upon without supervision
+
+All AI systems built or configured for clients are tools intended to assist operations, not replace human oversight.
+
+Clients remain responsible for how systems are used and deployed within their organization.
+
+⸻
+
+⚠️ LANDING PAGE DISCLAIMER TEXT
+
+(Paste near ROI/pricing sections)
+
+Under ROI numbers:
+
+Performance examples are illustrative. Results vary by organization and are not guaranteed.
+
+Under pricing tiers:
+
+Services are consulting and capability transfer. Outcomes depend on implementation and use by the client.
+
+Near automation/agent language:
+
+AI systems require human oversight. Clients are responsible for deployment and supervision of automated workflows.
+
+⸻
+
+🦶 FOOTER TEXT FOR YOUR SITE
+
+Add to footer:
+
+ELEV8TION LLC
+Waterbury, Connecticut
+connect@elev8tion.one
+
+Links:
+	•	Terms of Service
+	•	Privacy Policy
+	•	AI Disclosure
+
+⸻
+

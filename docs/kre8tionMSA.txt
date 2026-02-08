@@ -1,0 +1,248 @@
+MASTER SERVICES AGREEMENT
+
+ELEV8TION LLC
+
+This Master Services Agreement (“Agreement”) is entered into between ELEV8TION LLC, a Connecticut limited liability company with a principal place of business in Waterbury, Connecticut (“ELEV8TION”), and the client identified in the applicable Statement of Work (“Client”).
+
+This Agreement governs all services provided by ELEV8TION to Client.
+
+⸻
+
+1. Services
+
+ELEV8TION provides consulting, training, and intelligent systems architecture services, including but not limited to:
+	•	AI system design and integration
+	•	Agent and automation development
+	•	Capability transfer and technical training
+	•	Workflow and process architecture
+	•	Advisory and strategic consulting
+
+Specific deliverables, timelines, and fees will be defined in one or more Statements of Work (“SOW”).
+
+ELEV8TION does not provide legal, financial, accounting, or regulatory advice.
+
+⸻
+
+2. Independent Contractor
+
+ELEV8TION is an independent contractor. Nothing in this Agreement creates a partnership, joint venture, or employment relationship.
+
+⸻
+
+3. Client Responsibilities
+
+Client agrees to:
+	•	Provide accurate information and timely feedback
+	•	Review all system outputs before use
+	•	Approve any automation prior to production deployment
+	•	Maintain supervision over all deployed systems
+	•	Secure and manage credentials, API keys, and access permissions
+
+Client is solely responsible for how systems are used after delivery, training, or deployment.
+
+⸻
+
+4. AI Systems & Automation Disclaimer
+
+Client acknowledges that:
+	•	AI systems may produce inaccurate or unpredictable outputs
+	•	Automated agents may act based on provided instructions
+	•	Third-party models may change behavior over time
+
+Client agrees that all AI outputs must be reviewed by a human prior to reliance or execution in business operations.
+
+Once systems or automations are approved for deployment by Client, Client assumes responsibility for monitoring and supervising those systems.
+
+ELEV8TION shall not be liable for damages arising from:
+	•	AI-generated outputs
+	•	Automated actions taken by deployed systems
+	•	Decisions made based on AI outputs
+
+⸻
+
+5. Capability Transfer Model
+
+ELEV8TION’s services are designed to transfer knowledge and capability to Client.
+
+Upon completion of training, system delivery, or implementation, Client assumes responsibility for operation, maintenance, and use of systems.
+
+ELEV8TION is not responsible for outcomes resulting from Client’s independent use of delivered systems.
+
+⸻
+
+6. Third-Party Tools & APIs
+
+Services may rely on third-party platforms including AI model providers, APIs, and software tools.
+
+ELEV8TION is not responsible for:
+	•	outages
+	•	pricing changes
+	•	model behavior changes
+	•	discontinued services
+	•	third-party data handling
+
+Client agrees that use of such tools is subject to the respective provider’s terms.
+
+⸻
+
+7. Access & Credentials
+
+Client may provide access credentials, API keys, or system permissions solely for purposes of performing services.
+
+Client remains responsible for:
+	•	credential security
+	•	key rotation
+	•	permission management
+
+ELEV8TION is not liable for damages resulting from compromised credentials or unauthorized access not caused by ELEV8TION’s gross negligence.
+
+⸻
+
+8. Fees & Payment
+
+Fees will be defined in each SOW.
+
+Unless otherwise stated:
+	•	Payments are due in advance or as invoiced
+	•	Deposits are non-refundable
+	•	Completed work is non-refundable
+	•	If Client terminates, future unpaid installments are canceled
+	•	Minimum engagement terms remain due
+
+Late payments may result in suspension of services.
+
+⸻
+
+9. Intellectual Property
+
+Client Ownership
+
+Client owns final configured systems, workflows, and internal implementations created specifically for Client.
+
+ELEV8TION Ownership
+
+ELEV8TION retains ownership of:
+	•	frameworks
+	•	templates
+	•	methodologies
+	•	reusable code
+	•	training materials
+	•	system architectures
+	•	proprietary processes
+
+Nothing in this Agreement transfers ownership of ELEV8TION’s underlying intellectual property.
+
+ELEV8TION may reuse general knowledge, skills, and techniques developed during the engagement.
+
+⸻
+
+10. Confidentiality
+
+Both parties agree to maintain confidentiality of non-public information shared during the engagement.
+
+This obligation survives termination.
+
+⸻
+
+11. Data Handling
+
+ELEV8TION will access Client data only as necessary to perform services.
+
+ELEV8TION does not sell Client data and does not use Client data to train public AI models.
+
+Client is responsible for ensuring it has the right to use any data provided.
+
+Additional data terms may be included in a Data Processing Addendum.
+
+⸻
+
+12. No Guarantee of Results
+
+Client acknowledges that business outcomes depend on many factors outside ELEV8TION’s control.
+
+Any examples of ROI, savings, or performance improvements are illustrative only and not guaranteed.
+
+⸻
+
+13. Limitation of Liability
+
+To the maximum extent permitted by law:
+
+ELEV8TION’s total liability under this Agreement shall not exceed the total amount paid by Client to ELEV8TION in the three (3) months preceding the claim.
+
+ELEV8TION shall not be liable for:
+	•	lost profits
+	•	business interruption
+	•	indirect or consequential damages
+	•	data loss
+	•	automation outcomes
+
+⸻
+
+14. Indemnification
+
+Client agrees to indemnify and hold harmless ELEV8TION from claims arising from:
+	•	Client’s use of systems
+	•	deployment of automation
+	•	misuse of AI outputs
+	•	violation of third-party terms
+
+⸻
+
+15. Term & Termination
+
+This Agreement remains in effect until terminated by either party.
+
+Either party may terminate with written notice.
+
+Client remains responsible for payment of:
+	•	completed work
+	•	work in progress
+	•	minimum engagement commitments
+
+No refunds will be issued for completed phases.
+
+⸻
+
+16. Dispute Resolution
+
+Any dispute shall first be resolved through binding arbitration in Connecticut.
+
+If arbitration cannot be enforced, disputes shall be resolved in the state courts of Connecticut.
+
+Each party is responsible for its own legal fees.
+
+⸻
+
+17. Governing Law
+
+This Agreement is governed by the laws of the State of Connecticut.
+
+⸻
+
+18. Entire Agreement
+
+This Agreement, together with any SOW and addenda, constitutes the entire agreement between the parties.
+
+⸻
+
+19. Signatures
+
+ELEV8TION LLC
+Waterbury, Connecticut
+connect@elev8tion.one
+
+Authorized Signature: __________________
+Name:
+Title:
+Date:
+
+CLIENT
+
+Authorized Signature: __________________
+Name:
+Title:
+Company:
+Date:
+
+⸻

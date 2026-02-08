@@ -8,6 +8,7 @@ export interface Translations {
     companies: string;
     contacts: string;
     partnerships: string;
+    documents: string;
     drafts: string;
     voiceSessions: string;
     roiCalculations: string;
@@ -116,6 +117,46 @@ export interface Translations {
       onboarding: string;
       active: string;
       graduated: string;
+    };
+  };
+  // Documents / Contracts
+  documents: {
+    title: string;
+    sendContract: string;
+    viewDocuments: string;
+    counterSign: string;
+    downloadPdf: string;
+    statuses: {
+      draft: string;
+      pending: string;
+      clientSigned: string;
+      fullyExecuted: string;
+    };
+    types: {
+      msa: string;
+      sow: string;
+      addendum: string;
+    };
+    sendModal: {
+      title: string;
+      description: string;
+      clientName: string;
+      clientEmail: string;
+      send: string;
+      sending: string;
+    };
+    signing: {
+      title: string;
+      reviewAll: string;
+      signBelow: string;
+      fullName: string;
+      jobTitle: string;
+      sign: string;
+      signing: string;
+      success: string;
+      expired: string;
+      alreadySigned: string;
+      viewedCheck: string;
     };
   };
   // Drafts
@@ -429,6 +470,7 @@ export const translations: Record<'en' | 'es', Translations> = {
       companies: 'Companies',
       contacts: 'Contacts',
       partnerships: 'Partnerships',
+      documents: 'Documents',
       drafts: 'Drafts',
       voiceSessions: 'Voice Sessions',
       roiCalculations: 'ROI Calculations',
@@ -531,6 +573,45 @@ export const translations: Record<'en' | 'es', Translations> = {
         onboarding: 'Onboarding',
         active: 'Active',
         graduated: 'Graduated',
+      },
+    },
+    documents: {
+      title: 'Documents & Contracts',
+      sendContract: 'Send Contract',
+      viewDocuments: 'View Documents',
+      counterSign: 'Counter-Sign',
+      downloadPdf: 'Download PDF',
+      statuses: {
+        draft: 'Draft',
+        pending: 'Pending Signature',
+        clientSigned: 'Client Signed',
+        fullyExecuted: 'Fully Executed',
+      },
+      types: {
+        msa: 'Master Services Agreement',
+        sow: 'Statement of Work',
+        addendum: 'AI & Automation Addendum',
+      },
+      sendModal: {
+        title: 'Send Contract Package',
+        description: 'Send the MSA, SOW, and AI Addendum for e-signature.',
+        clientName: 'Client Name',
+        clientEmail: 'Client Email',
+        send: 'Send for Signature',
+        sending: 'Sending...',
+      },
+      signing: {
+        title: 'Contract Signing',
+        reviewAll: 'Please review all documents before signing.',
+        signBelow: 'Sign below to accept all documents.',
+        fullName: 'Full Legal Name',
+        jobTitle: 'Job Title',
+        sign: 'Sign Documents',
+        signing: 'Signing...',
+        success: 'Documents signed successfully!',
+        expired: 'This signing link has expired. Please contact us for a new one.',
+        alreadySigned: 'These documents have already been signed.',
+        viewedCheck: 'Reviewed',
       },
     },
     drafts: {
@@ -832,6 +913,7 @@ export const translations: Record<'en' | 'es', Translations> = {
       companies: 'Empresas',
       contacts: 'Contactos',
       partnerships: 'Asociaciones',
+      documents: 'Documentos',
       drafts: 'Borradores',
       voiceSessions: 'Sesiones de Voz',
       roiCalculations: 'Cálculos de ROI',
@@ -934,6 +1016,45 @@ export const translations: Record<'en' | 'es', Translations> = {
         onboarding: 'Incorporación',
         active: 'Activo',
         graduated: 'Graduado',
+      },
+    },
+    documents: {
+      title: 'Documentos y Contratos',
+      sendContract: 'Enviar Contrato',
+      viewDocuments: 'Ver Documentos',
+      counterSign: 'Contrafirmar',
+      downloadPdf: 'Descargar PDF',
+      statuses: {
+        draft: 'Borrador',
+        pending: 'Pendiente de Firma',
+        clientSigned: 'Firmado por Cliente',
+        fullyExecuted: 'Completamente Ejecutado',
+      },
+      types: {
+        msa: 'Acuerdo Marco de Servicios',
+        sow: 'Declaracion de Trabajo',
+        addendum: 'Adenda de IA y Automatizacion',
+      },
+      sendModal: {
+        title: 'Enviar Paquete de Contrato',
+        description: 'Enviar el MSA, SOW y Adenda de IA para firma electronica.',
+        clientName: 'Nombre del Cliente',
+        clientEmail: 'Correo del Cliente',
+        send: 'Enviar para Firma',
+        sending: 'Enviando...',
+      },
+      signing: {
+        title: 'Firma de Contrato',
+        reviewAll: 'Por favor revise todos los documentos antes de firmar.',
+        signBelow: 'Firme abajo para aceptar todos los documentos.',
+        fullName: 'Nombre Legal Completo',
+        jobTitle: 'Titulo del Cargo',
+        sign: 'Firmar Documentos',
+        signing: 'Firmando...',
+        success: 'Documentos firmados exitosamente!',
+        expired: 'Este enlace de firma ha expirado. Por favor contactenos para uno nuevo.',
+        alreadySigned: 'Estos documentos ya han sido firmados.',
+        viewedCheck: 'Revisado',
       },
     },
     drafts: {

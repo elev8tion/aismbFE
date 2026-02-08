@@ -9,6 +9,9 @@ import { StepProgress } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 import { TIER_PRICING, type TierKey } from '@/lib/stripe/pricing';
+import DocumentStatusBadge from '@/components/contracts/DocumentStatusBadge';
+import SendContractModal from '@/components/contracts/SendContractModal';
+import { DocumentRecord, DocumentStatus } from '@/lib/contracts/types';
 
 interface Partnership {
   id: string;
@@ -101,6 +104,10 @@ export default function PartnershipsPage() {
   const [invoicesList, setInvoicesList] = useState<StripeInvoice[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
 
+  // Contract state
+  const [contractStatuses, setContractStatuses] = useState<Record<string, DocumentStatus | null>>({});
+  const [sendContractPartnership, setSendContractPartnership] = useState<Partnership | null>(null);
+
   const fetchPartnerships = useCallback(async () => {
     try {
       const res = await fetch('/api/data/read/partnerships', { credentials: 'include' });
@@ -111,7 +118,36 @@ export default function PartnershipsPage() {
     finally { setLoading(false); }
   }, []);
 
+  const fetchContractStatuses = useCallback(async (partnershipList: Partnership[]) => {
+    const statuses: Record<string, DocumentStatus | null> = {};
+    for (const p of partnershipList) {
+      try {
+        const res = await fetch(`/api/contracts/status?partnership_id=${p.id}`, { credentials: 'include' });
+        if (res.ok) {
+          const { documents } = await res.json();
+          if (documents && documents.length > 0) {
+            if (documents.every((d: DocumentRecord) => d.status === 'fully_executed')) statuses[p.id] = 'fully_executed';
+            else if (documents.some((d: DocumentRecord) => d.status === 'client_signed')) statuses[p.id] = 'client_signed';
+            else if (documents.some((d: DocumentRecord) => d.status === 'pending')) statuses[p.id] = 'pending';
+            else statuses[p.id] = 'draft';
+          } else {
+            statuses[p.id] = null;
+          }
+        } else {
+          statuses[p.id] = null;
+        }
+      } catch {
+        statuses[p.id] = null;
+      }
+    }
+    setContractStatuses(statuses);
+  }, []);
+
   useEffect(() => { fetchPartnerships(); }, [fetchPartnerships]);
+
+  useEffect(() => {
+    if (partnerships.length > 0) fetchContractStatuses(partnerships);
+  }, [partnerships, fetchContractStatuses]);
 
   // Voice actions
   const { subscribe } = useVoiceAgentActions();
@@ -290,6 +326,9 @@ export default function PartnershipsPage() {
                         {statusLabels[partnership.status] || partnership.status}
                       </span>
                       {getBillingStatusTag(partnership.payment_status, t)}
+                      {contractStatuses[partnership.id] && (
+                        <DocumentStatusBadge status={contractStatuses[partnership.id]!} labels={t.documents.statuses} />
+                      )}
                     </div>
                     <p className="text-xs md:text-sm text-white/50 mt-1">
                       {t.partnerships.started} {partnership.start_date}
@@ -329,7 +368,10 @@ export default function PartnershipsPage() {
                   <div className="sm:col-span-2 flex flex-wrap items-center gap-2 md:gap-3 lg:justify-end">
                     <button onClick={() => setViewPartnership(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.viewDetails}</button>
                     <button onClick={() => handleScheduleMeeting(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.partnerships.scheduleMeeting}</button>
-                    {(partnership.status === 'active' || partnership.status === 'onboarding') && !partnership.payment_status && (
+                    {(partnership.status === 'active' || partnership.status === 'onboarding') && !contractStatuses[partnership.id] && (
+                      <button onClick={() => setSendContractPartnership(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.documents.sendContract}</button>
+                    )}
+                    {(partnership.status === 'active' || partnership.status === 'onboarding') && !partnership.payment_status && contractStatuses[partnership.id] === 'fully_executed' && (
                       <button onClick={() => openSendInvoice(partnership)} className="btn-primary text-sm flex-1 sm:flex-none">{t.billing.sendSetupInvoice}</button>
                     )}
                     <button onClick={() => openViewInvoices(partnership)} className="btn-secondary text-sm flex-1 sm:flex-none">{t.billing.viewInvoices}</button>
@@ -519,6 +561,21 @@ export default function PartnershipsPage() {
           </div>
         )}
       </Modal>
+      {/* Send Contract Modal */}
+      {sendContractPartnership && (
+        <SendContractModal
+          open={!!sendContractPartnership}
+          onClose={() => setSendContractPartnership(null)}
+          partnership={{
+            id: Number(sendContractPartnership.id),
+            company_name: sendContractPartnership.company_name || '',
+            contact_name: sendContractPartnership.company_name || '',
+            customer_email: sendContractPartnership.customer_email,
+            tier: sendContractPartnership.tier,
+          }}
+          onSuccess={() => fetchContractStatuses(partnerships)}
+        />
+      )}
     </DashboardLayout>
   );
 }
