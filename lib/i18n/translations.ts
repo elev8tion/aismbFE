@@ -428,6 +428,33 @@ export interface Translations {
     accessLevel: string;
     granting: string;
     accessGranted: string;
+    settings: {
+      profile: string;
+      displayName: string;
+      email: string;
+      phone: string;
+      timezone: string;
+      language: string;
+      notifications: string;
+      meetingReminders: string;
+      systemUpdates: string;
+      accountInfo: string;
+      partnershipTier: string;
+      partnershipStatus: string;
+      memberSince: string;
+      role: string;
+      security: string;
+      changePassword: string;
+      currentPassword: string;
+      newPassword: string;
+      confirmPassword: string;
+      passwordChanged: string;
+      passwordError: string;
+      updating: string;
+      support: string;
+      contactSupport: string;
+      contactSupportMessage: string;
+    };
   };
   // Unauthorized
   unauthorized: string;
@@ -918,6 +945,33 @@ export const translations: Record<'en' | 'es', Translations> = {
       accessLevel: 'Access Level',
       granting: 'Granting...',
       accessGranted: 'Access granted successfully',
+      settings: {
+        profile: 'Profile',
+        displayName: 'Display Name',
+        email: 'Email',
+        phone: 'Phone',
+        timezone: 'Timezone',
+        language: 'Language',
+        notifications: 'Notifications',
+        meetingReminders: 'Meeting reminders',
+        systemUpdates: 'System update notifications',
+        accountInfo: 'Account Information',
+        partnershipTier: 'Partnership Tier',
+        partnershipStatus: 'Partnership Status',
+        memberSince: 'Member Since',
+        role: 'Role',
+        security: 'Security',
+        changePassword: 'Change Password',
+        currentPassword: 'Current Password',
+        newPassword: 'New Password',
+        confirmPassword: 'Confirm New Password',
+        passwordChanged: 'Password changed successfully',
+        passwordError: 'Failed to change password. Check your current password.',
+        updating: 'Updating...',
+        support: 'Support',
+        contactSupport: 'Contact Support',
+        contactSupportMessage: 'Need help? Reach out to your partnership manager.',
+      },
     },
     unauthorized: 'Access Denied',
     unauthorizedMessage: 'Your account does not have permission to access this application. Please contact an administrator if you believe this is an error.',
@@ -1402,6 +1456,33 @@ export const translations: Record<'en' | 'es', Translations> = {
       accessLevel: 'Nivel de Acceso',
       granting: 'Otorgando...',
       accessGranted: 'Acceso otorgado exitosamente',
+      settings: {
+        profile: 'Perfil',
+        displayName: 'Nombre para Mostrar',
+        email: 'Correo Electrónico',
+        phone: 'Teléfono',
+        timezone: 'Zona Horaria',
+        language: 'Idioma',
+        notifications: 'Notificaciones',
+        meetingReminders: 'Recordatorios de reuniones',
+        systemUpdates: 'Notificaciones de actualizaciones del sistema',
+        accountInfo: 'Información de la Cuenta',
+        partnershipTier: 'Nivel de Asociación',
+        partnershipStatus: 'Estado de la Asociación',
+        memberSince: 'Miembro Desde',
+        role: 'Rol',
+        security: 'Seguridad',
+        changePassword: 'Cambiar Contraseña',
+        currentPassword: 'Contraseña Actual',
+        newPassword: 'Nueva Contraseña',
+        confirmPassword: 'Confirmar Nueva Contraseña',
+        passwordChanged: 'Contraseña cambiada exitosamente',
+        passwordError: 'Error al cambiar la contraseña. Verifica tu contraseña actual.',
+        updating: 'Actualizando...',
+        support: 'Soporte',
+        contactSupport: 'Contactar Soporte',
+        contactSupportMessage: 'Necesitas ayuda? Comunícate con tu gerente de asociación.',
+      },
     },
     unauthorized: 'Acceso Denegado',
     unauthorizedMessage: 'Tu cuenta no tiene permiso para acceder a esta aplicación. Contacta a un administrador si crees que esto es un error.',
