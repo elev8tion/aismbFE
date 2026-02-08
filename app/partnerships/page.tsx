@@ -16,6 +16,8 @@ import { DocumentRecord, DocumentStatus } from '@/lib/contracts/types';
 interface Partnership {
   id: string;
   company_name?: string;
+  company_id?: number;
+  opportunity_id?: number;
   tier: string;
   status: string;
   phase: string;
@@ -30,6 +32,14 @@ interface Partnership {
   payment_status?: string;
   customer_email?: string;
   stripe_customer_id?: string;
+}
+
+interface DeliveredSystem {
+  id: string;
+  partnership_id: number;
+  name: string;
+  status: string;
+  deployed_at?: string;
 }
 
 interface StripeInvoice {
@@ -114,11 +124,43 @@ export default function PartnershipsPage() {
   const [contractStatuses, setContractStatuses] = useState<Record<string, DocumentStatus | null>>({});
   const [sendContractPartnership, setSendContractPartnership] = useState<Partnership | null>(null);
 
+  // Cross-reference data
+  const [companyMap, setCompanyMap] = useState<Record<string, string>>({});
+  const [oppMap, setOppMap] = useState<Record<string, string>>({});
+  const [deliveredSystemsMap, setDeliveredSystemsMap] = useState<Record<string, DeliveredSystem[]>>({});
+
   const fetchPartnerships = useCallback(async () => {
     try {
-      const res = await fetch('/api/data/read/partnerships', { credentials: 'include' });
-      const data: { data?: Partnership[] } = await res.json();
-      if (data.data && data.data.length > 0) { setPartnerships(data.data); }
+      const [partnershipsRes, companiesRes, oppsRes, systemsRes] = await Promise.all([
+        fetch('/api/data/read/partnerships', { credentials: 'include' }),
+        fetch('/api/data/read/companies', { credentials: 'include' }),
+        fetch('/api/data/read/opportunities', { credentials: 'include' }),
+        fetch('/api/data/read/delivered_systems', { credentials: 'include' }),
+      ]);
+      const [partnershipsData, companiesData, oppsData, systemsData] = await Promise.all([
+        partnershipsRes.json(), companiesRes.json(), oppsRes.json(), systemsRes.json(),
+      ]);
+
+      // Build company map
+      const cMap: Record<string, string> = {};
+      (companiesData.data || []).forEach((c: any) => { cMap[String(c.id)] = c.name; });
+      setCompanyMap(cMap);
+
+      // Build opportunity map
+      const oMap: Record<string, string> = {};
+      (oppsData.data || []).forEach((o: any) => { oMap[String(o.id)] = o.name; });
+      setOppMap(oMap);
+
+      // Build delivered systems grouped by partnership_id
+      const sMap: Record<string, DeliveredSystem[]> = {};
+      (systemsData.data || []).forEach((s: any) => {
+        const key = String(s.partnership_id);
+        if (!sMap[key]) sMap[key] = [];
+        sMap[key].push(s);
+      });
+      setDeliveredSystemsMap(sMap);
+
+      if (partnershipsData.data && partnershipsData.data.length > 0) { setPartnerships(partnershipsData.data); }
       else { setPartnerships(MOCK_PARTNERSHIPS); }
     } catch { setPartnerships(MOCK_PARTNERSHIPS); }
     finally { setLoading(false); }
@@ -360,7 +402,7 @@ export default function PartnershipsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                      <h3 className="text-base md:text-lg font-semibold text-white">{partnership.company_name}</h3>
+                      <h3 className="text-base md:text-lg font-semibold text-white">{(partnership.company_id ? companyMap[String(partnership.company_id)] : null) || partnership.company_name}</h3>
                       <span className={`tag ${getTierClass(partnership.tier)}`}>
                         {partnership.tier}
                       </span>
@@ -428,9 +470,16 @@ export default function PartnershipsPage() {
       </div>
 
       {/* View Details Modal */}
-      <Modal open={!!viewPartnership} onClose={() => setViewPartnership(null)} title={viewPartnership?.company_name || ''}>
+      <Modal open={!!viewPartnership} onClose={() => setViewPartnership(null)} title={(viewPartnership?.company_id ? companyMap[String(viewPartnership.company_id)] : null) || viewPartnership?.company_name || ''}>
         {viewPartnership && (
           <div className="space-y-3">
+            {/* Originating Opportunity */}
+            {viewPartnership.opportunity_id && oppMap[String(viewPartnership.opportunity_id)] && (
+              <div className="bg-white/5 rounded-lg p-3">
+                <p className="text-xs text-white/50">Originating Opportunity</p>
+                <p className="text-sm font-medium text-white mt-1">{oppMap[String(viewPartnership.opportunity_id)]}</p>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/50">{t.pipeline.tier}</p>
@@ -457,6 +506,22 @@ export default function PartnershipsPage() {
                 <p className="text-sm font-medium text-white mt-1">{viewPartnership.start_date || '—'}</p>
               </div>
             </div>
+            {/* Delivered Systems */}
+            {deliveredSystemsMap[String(viewPartnership.id)] && deliveredSystemsMap[String(viewPartnership.id)].length > 0 && (
+              <div className="bg-white/5 rounded-lg p-3">
+                <p className="text-xs text-white/50 mb-2">{t.partnerships.systemsDelivered}</p>
+                <div className="space-y-2">
+                  {deliveredSystemsMap[String(viewPartnership.id)].map((sys) => (
+                    <div key={sys.id} className="flex items-center justify-between">
+                      <span className="text-sm text-white">{sys.name}</span>
+                      <span className={`tag text-xs ${sys.status === 'deployed' ? 'tag-success' : sys.status === 'in_progress' ? 'tag-warning' : ''}`}>
+                        {sys.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Billing Summary */}
             <div className="bg-white/5 rounded-lg p-3">
               <p className="text-xs text-white/50 mb-2">{t.billing.setupFee} / {t.billing.monthlyPartnership}</p>

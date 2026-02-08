@@ -5,8 +5,9 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatCard } from '@/components/ui/StatCard';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
-import { CalculatorIcon } from '@/components/icons';
+import { CalculatorIcon, LeadsStatIcon } from '@/components/icons';
 import { ROICalculation, ROIMetrics } from '@/types/roi';
+import Link from 'next/link';
 import { scoreROICalculation, LeadScore } from '@/lib/utils/leadScoring';
 import { getBenchmarkComparison } from '@/lib/utils/benchmarks';
 import { Modal } from '@/components/ui/Modal';
@@ -255,15 +256,31 @@ export default function ROICalculationsPage() {
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
   const [selectedProposalCalc, setSelectedProposalCalc] = useState<ROICalculation | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [roiToLeadMap, setRoiToLeadMap] = useState<Record<string, boolean>>({});
 
   useEngagement('ROICalculationsPage', { totalCalculations: calculations.length });
 
   const fetchCalculations = useCallback(async () => {
     try {
-      const res = await fetch('/api/data/read/roi_calculations', { credentials: 'include' });
-      const data: { data?: ROICalculation[] } = await res.json();
-      if (data.data && data.data.length > 0) {
-        const sorted = data.data.sort((a, b) => {
+      const [calcsRes, leadsRes] = await Promise.all([
+        fetch('/api/data/read/roi_calculations', { credentials: 'include' }),
+        fetch('/api/data/read/leads', { credentials: 'include' }),
+      ]);
+      const [calcsData, leadsData] = await Promise.all([
+        calcsRes.json(), leadsRes.json(),
+      ]);
+
+      // Build reverse lookup: which ROI calcs have generated leads
+      const leadMap: Record<string, boolean> = {};
+      (leadsData.data || []).forEach((lead: any) => {
+        if (lead.roi_calculation_id) {
+          leadMap[String(lead.roi_calculation_id)] = true;
+        }
+      });
+      setRoiToLeadMap(leadMap);
+
+      if (calcsData.data && calcsData.data.length > 0) {
+        const sorted = calcsData.data.sort((a: ROICalculation, b: ROICalculation) => {
           const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
           const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
           return dateB - dateA;
@@ -561,12 +578,26 @@ export default function ROICalculationsPage() {
                             {calc.email_captured ? (
                               <div>
                                 <p className="text-sm text-white truncate max-w-[160px]">{calc.email}</p>
-                                {calc.report_requested === 1 && (
-                                  <span className="tag tag-success text-[10px]">{t.roiCalculations.reportRequested}</span>
-                                )}
+                                <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                  {calc.report_requested === 1 && (
+                                    <span className="tag tag-success text-[10px]">{t.roiCalculations.reportRequested}</span>
+                                  )}
+                                  {roiToLeadMap[String(calc.id)] && (
+                                    <Link href="/leads" className="tag tag-success text-[10px] flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                                      <LeadsStatIcon className="w-3 h-3" /> Lead Created
+                                    </Link>
+                                  )}
+                                </div>
                               </div>
                             ) : (
-                              <span className="text-white/30 text-sm">—</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-white/30 text-sm">—</span>
+                                {roiToLeadMap[String(calc.id)] && (
+                                  <Link href="/leads" className="tag tag-success text-[10px] flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                                    <LeadsStatIcon className="w-3 h-3" /> Lead Created
+                                  </Link>
+                                )}
+                              </div>
                             )}
                           </td>
                           <td>

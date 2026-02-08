@@ -33,7 +33,9 @@ export default function PipelinePage() {
   const [createError, setCreateError] = useState('');
   const [viewDeal, setViewDeal] = useState<Opportunity | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: '', tier: 'discovery', stage: 'new-lead', setup_fee: 4000, monthly_fee: 750 });
+  const [form, setForm] = useState({ name: '', tier: 'discovery', stage: 'new-lead', setup_fee: 4000, monthly_fee: 750, company_id: '' });
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [companyMap, setCompanyMap] = useState<Record<string, string>>({});
 
   // Start Stripe Checkout for a deal
   const startCheckout = async (deal: Opportunity) => {
@@ -68,16 +70,31 @@ export default function PipelinePage() {
 
   const fetchOpportunities = useCallback(async () => {
     try {
-      const res = await fetch('/api/data/read/opportunities', { credentials: 'include' });
-      if (res.status === 401) {
-        // Not logged in — use mock data
+      const [oppsRes, companiesRes] = await Promise.all([
+        fetch('/api/data/read/opportunities', { credentials: 'include' }),
+        fetch('/api/data/read/companies', { credentials: 'include' }),
+      ]);
+
+      if (oppsRes.status === 401) {
         setOpportunities(MOCK_OPPORTUNITIES);
         setLoading(false);
         return;
       }
-      const data: { data?: Opportunity[] } = await res.json();
-      if (data.data && data.data.length > 0) {
-        setOpportunities(data.data);
+
+      const [oppsData, companiesData] = await Promise.all([
+        oppsRes.json(),
+        companiesRes.json(),
+      ]);
+
+      // Build company map
+      const compList = companiesData.data || [];
+      setCompanies(compList);
+      const map: Record<string, string> = {};
+      compList.forEach((c: any) => { map[String(c.id)] = c.name; });
+      setCompanyMap(map);
+
+      if (oppsData.data && oppsData.data.length > 0) {
+        setOpportunities(oppsData.data);
       } else {
         setOpportunities(MOCK_OPPORTUNITIES);
       }
@@ -116,13 +133,13 @@ export default function PipelinePage() {
     setCreateError('');
     try {
       const totalContractValue = form.setup_fee + (form.monthly_fee * 12);
+      const payload: any = { ...form, total_contract_value: totalContractValue };
+      if (payload.company_id) { payload.company_id = Number(payload.company_id); }
+      else { delete payload.company_id; }
       const res = await fetch('/api/data/create/opportunities', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          total_contract_value: totalContractValue,
-        }),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setShowCreate(false);
@@ -156,7 +173,7 @@ export default function PipelinePage() {
   const totalValue = opportunities.reduce((sum, o) => sum + Number(o.total_contract_value || o.setup_fee || 0), 0);
 
   const openCreateForStage = (stage: string) => {
-    setForm({ name: '', tier: 'discovery', stage, setup_fee: 4000, monthly_fee: 750 });
+    setForm({ name: '', tier: 'discovery', stage, setup_fee: 4000, monthly_fee: 750, company_id: '' });
     setCreateError('');
     setShowCreate(true);
   };
@@ -195,6 +212,9 @@ export default function PipelinePage() {
                     {stageDeals.map((deal) => (
                       <div key={deal.id} onClick={() => setViewDeal(deal)} className="card p-4 cursor-pointer hover:border-primary-electricBlue/50 transition-colors">
                         <h4 className="text-sm md:text-base font-medium text-white">{deal.name}</h4>
+                        {deal.company_id && companyMap[String(deal.company_id)] && (
+                          <p className="text-xs text-white/50 mt-0.5">{companyMap[String(deal.company_id)]}</p>
+                        )}
                         <div className="flex items-center justify-between mt-2 md:mt-3">
                           <span className="text-base md:text-lg font-semibold text-white">${Number(deal.total_contract_value || deal.setup_fee || 0).toLocaleString()}</span>
                           <span className={`tag text-xs ${getTierClass(deal.tier)}`}>{deal.tier}</span>
@@ -234,6 +254,13 @@ export default function PipelinePage() {
             <label className="block text-sm text-white/60 mb-1">{t.common.name} *</label>
             <input className="input-glass w-full" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. ABC Plumbing AI Package" />
           </div>
+          <div>
+            <label className="block text-sm text-white/60 mb-1">{t.contacts.company}</label>
+            <select className="select-glass w-full" value={form.company_id} onChange={e => setForm({ ...form, company_id: e.target.value })}>
+              <option value="">— Select Company —</option>
+              {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-white/60 mb-1">{t.pipeline.tier}</label>
@@ -269,6 +296,9 @@ export default function PipelinePage() {
       <Modal open={!!viewDeal} onClose={() => setViewDeal(null)} title={viewDeal?.name || ''}>
         {viewDeal && (
           <div className="space-y-3">
+            {viewDeal.company_id && companyMap[String(viewDeal.company_id)] && (
+              <p className="text-sm text-white/60">{companyMap[String(viewDeal.company_id)]}</p>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/50">{t.pipeline.tier}</p>

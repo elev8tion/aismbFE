@@ -30,6 +30,7 @@ export default function DashboardPage() {
     mrr: 0
   });
   const [activities, setActivities] = useState<any[]>([]);
+  const [oppsData, setOppsData] = useState<any[]>([]);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -46,8 +47,8 @@ export default function DashboardPage() {
       ]);
 
       const activePartners = (partners.data || []).filter((p: any) => p.status === 'active');
-      const totalPipeline = (opps.data || []).reduce((sum: number, o: any) => sum + (o.value || 0), 0);
-      const totalMRR = activePartners.reduce((sum: number, p: any) => sum + (p.monthly_revenue || 0), 0);
+      const totalPipeline = (opps.data || []).reduce((sum: number, o: any) => sum + Number(o.total_contract_value || 0), 0);
+      const totalMRR = activePartners.reduce((sum: number, p: any) => sum + Number(p.monthly_revenue || 0), 0);
 
       setStats({
         leads: (leads.data || []).length,
@@ -55,7 +56,9 @@ export default function DashboardPage() {
         activePartners: activePartners.length,
         mrr: totalMRR
       });
-      
+
+      setOppsData(opps.data || []);
+
       if (acts.data && acts.data.length > 0) {
         setActivities(acts.data);
       }
@@ -74,14 +77,24 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [user, fetchDashboardData]);
 
-  const funnelData = [
-    { stage: t.pipeline.stages.newLead, count: 12, value: 48000, color: '#00E5FF' },
-    { stage: t.pipeline.stages.contacted, count: 8, value: 32000, color: '#00B0FF' },
-    { stage: t.pipeline.stages.discoveryCall, count: 6, value: 54000, color: '#2979FF' },
-    { stage: t.pipeline.stages.proposalSent, count: 5, value: 47500, color: '#651FFF' },
-    { stage: t.pipeline.stages.negotiation, count: 3, value: 63500, color: '#7C4DFF' },
-    { stage: t.pipeline.stages.closedWon, count: 4, value: 38000, color: '#00C853' },
+  const stageConfig = [
+    { key: 'new-lead', label: t.pipeline.stages.newLead, color: '#00E5FF' },
+    { key: 'contacted', label: t.pipeline.stages.contacted, color: '#00B0FF' },
+    { key: 'discovery-call', label: t.pipeline.stages.discoveryCall, color: '#2979FF' },
+    { key: 'proposal-sent', label: t.pipeline.stages.proposalSent, color: '#651FFF' },
+    { key: 'negotiation', label: t.pipeline.stages.negotiation, color: '#7C4DFF' },
+    { key: 'closed-won', label: t.pipeline.stages.closedWon, color: '#00C853' },
   ];
+
+  const funnelData = stageConfig.map(({ key, label, color }) => {
+    const stageOpps = oppsData.filter((o: any) => o.stage === key);
+    return {
+      stage: label,
+      count: stageOpps.length,
+      value: stageOpps.reduce((sum: number, o: any) => sum + Number(o.total_contract_value || 0), 0),
+      color,
+    };
+  });
 
   return (
     <DashboardLayout>
@@ -131,20 +144,19 @@ export default function DashboardPage() {
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base md:text-lg font-semibold text-white">{t.dashboard.recentActivity}</h2>
-              <Link href="/voice-sessions" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
+              <Link href="/leads" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
             </div>
             <div className="space-y-4">
               {activities.length > 0 ? activities.map((act, i) => (
                 <ActivityItem
                   key={act.id || i}
-                  icon={act.type === 'call' ? <PhoneIcon className="w-4 h-4" /> : 
-                        act.type === 'email' ? <EmailIcon className="w-4 h-4" /> : 
+                  icon={act.type === 'call' ? <PhoneIcon className="w-4 h-4" /> :
+                        act.type === 'email' ? <EmailIcon className="w-4 h-4" /> :
                         act.type === 'task' ? <ChartIcon className="w-4 h-4" /> :
                         <VoiceIcon className="w-4 h-4" />}
-                  title={act.title}
+                  title={act.subject || act.description || 'Activity'}
                   subtitle={act.description}
                   time={new Date(act.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  statusIcon={act.priority === 'high' ? <span className="text-sm">🔥</span> : undefined}
                 />
               )) : (
                 <>
@@ -174,26 +186,21 @@ export default function DashboardPage() {
               <Link href="/leads" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
             </div>
             <div className="space-y-3">
-              <TaskItem
-                title="Follow up: ABC Plumbing"
-                type="call"
-                priority="high"
-              />
-              <TaskItem
-                title="Discovery call: XYZ HVAC"
-                type="meeting"
-                priority="high"
-              />
-              <TaskItem
-                title="Send proposal: 123 Construction"
-                type="email"
-                priority="medium"
-              />
-              <TaskItem
-                title="Review contract: Miller Services"
-                type="task"
-                priority="low"
-              />
+              {activities.filter((act: any) => act.type === 'task' || act.type === 'call' || act.type === 'meeting').length > 0 ? (
+                activities
+                  .filter((act: any) => act.type === 'task' || act.type === 'call' || act.type === 'meeting')
+                  .slice(0, 4)
+                  .map((act: any, i: number) => (
+                    <TaskItem
+                      key={act.id || i}
+                      title={act.subject || act.description || 'Task'}
+                      type={act.type === 'call' ? 'call' : act.type === 'meeting' ? 'meeting' : 'task'}
+                      priority={act.status === 'pending' ? 'high' : 'medium'}
+                    />
+                  ))
+              ) : (
+                <p className="text-sm text-white/40 py-4 text-center">{t.common.noData}</p>
+              )}
             </div>
           </div>
         </div>

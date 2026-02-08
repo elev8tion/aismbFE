@@ -34,14 +34,30 @@ export default function ContactsPage() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
 
-  const emptyForm = { first_name: '', last_name: '', email: '', phone: '', role: '', decision_maker: 0 };
+  const emptyForm = { first_name: '', last_name: '', email: '', phone: '', role: '', decision_maker: 0, company_id: '' };
   const [form, setForm] = useState(emptyForm);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [companyMap, setCompanyMap] = useState<Record<string, string>>({});
 
   const fetchContacts = useCallback(async () => {
     try {
-      const res = await fetch('/api/data/read/contacts', { credentials: 'include' });
-      const data: { data?: Contact[] } = await res.json();
-      if (data.data && data.data.length > 0) { setContacts(data.data); }
+      const [contactsRes, companiesRes] = await Promise.all([
+        fetch('/api/data/read/contacts', { credentials: 'include' }),
+        fetch('/api/data/read/companies', { credentials: 'include' }),
+      ]);
+      const [contactsData, companiesData] = await Promise.all([
+        contactsRes.json(),
+        companiesRes.json(),
+      ]);
+
+      // Build company map
+      const compList = companiesData.data || [];
+      setCompanies(compList);
+      const map: Record<string, string> = {};
+      compList.forEach((c: any) => { map[String(c.id)] = c.name; });
+      setCompanyMap(map);
+
+      if (contactsData.data && contactsData.data.length > 0) { setContacts(contactsData.data); }
       else { setContacts(MOCK_CONTACTS); }
     } catch { setContacts(MOCK_CONTACTS); }
     finally { setLoading(false); }
@@ -82,19 +98,23 @@ export default function ContactsPage() {
   const filtered = contacts.filter(c => {
     if (!search) return true;
     const q = search.toLowerCase();
+    const resolvedCompany = (c.company_id ? companyMap[String(c.company_id)] : null) || c.company_name || '';
     return `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) ||
            c.email.toLowerCase().includes(q) ||
-           (c.company_name || '').toLowerCase().includes(q);
+           resolvedCompany.toLowerCase().includes(q);
   });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
+      const payload: any = { ...form };
+      if (payload.company_id) { payload.company_id = Number(payload.company_id); }
+      else { delete payload.company_id; }
       const res = await fetch('/api/data/create/contacts', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (res.ok) { setShowCreate(false); setForm(emptyForm); fetchContacts(); }
     } catch (err) { console.error('Failed to create contact:', err); }
@@ -106,10 +126,13 @@ export default function ContactsPage() {
     if (!editContact) return;
     setSaving(true);
     try {
+      const payload: any = { ...form };
+      if (payload.company_id) { payload.company_id = Number(payload.company_id); }
+      else { delete payload.company_id; }
       const res = await fetch(`/api/data/update/contacts?id=${editContact.id}`, {
         method: 'PUT', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (res.ok) { setEditContact(null); fetchContacts(); }
     } catch (err) { console.error('Failed to update contact:', err); }
@@ -121,6 +144,7 @@ export default function ContactsPage() {
       first_name: contact.first_name, last_name: contact.last_name,
       email: contact.email, phone: contact.phone || '',
       role: contact.role || '', decision_maker: contact.decision_maker,
+      company_id: contact.company_id ? String(contact.company_id) : '',
     });
     setEditContact(contact);
   };
@@ -140,6 +164,13 @@ export default function ContactsPage() {
       <div>
         <label className="block text-sm text-white/60 mb-1">{t.common.email} *</label>
         <input type="email" className="input-glass w-full" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+      </div>
+      <div>
+        <label className="block text-sm text-white/60 mb-1">{t.contacts.company}</label>
+        <select className="select-glass w-full" value={form.company_id} onChange={e => setForm({ ...form, company_id: e.target.value })}>
+          <option value="">— Select Company —</option>
+          {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -216,7 +247,7 @@ export default function ContactsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="text-white/80">{contact.company_name || '—'}</td>
+                      <td className="text-white/80">{(contact.company_id ? companyMap[String(contact.company_id)] : null) || contact.company_name || '—'}</td>
                       <td className="text-white/80">{contact.role || '—'}</td>
                       <td>
                         {contact.decision_maker ? (

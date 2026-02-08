@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
 import { PlusIcon } from '@/components/icons';
+import Link from 'next/link';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DotRating } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
@@ -32,12 +33,46 @@ export default function CompaniesPage() {
   const [viewCompany, setViewCompany] = useState<Company | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', industry: '', employee_count: '1-5', website: '' });
+  const [entityCounts, setEntityCounts] = useState<Record<string, { contacts: number; deals: number; partnerships: number }>>({});
 
   const fetchCompanies = useCallback(async () => {
     try {
-      const res = await fetch('/api/data/read/companies', { credentials: 'include' });
-      const data: { data?: Company[] } = await res.json();
-      if (data.data && data.data.length > 0) { setCompanies(data.data); }
+      const [companiesRes, contactsRes, oppsRes, partnershipsRes] = await Promise.all([
+        fetch('/api/data/read/companies', { credentials: 'include' }),
+        fetch('/api/data/read/contacts', { credentials: 'include' }),
+        fetch('/api/data/read/opportunities', { credentials: 'include' }),
+        fetch('/api/data/read/partnerships', { credentials: 'include' }),
+      ]);
+      const [companiesData, contactsData, oppsData, partnershipsData] = await Promise.all([
+        companiesRes.json(), contactsRes.json(), oppsRes.json(), partnershipsRes.json(),
+      ]);
+
+      // Build entity counts per company_id
+      const counts: Record<string, { contacts: number; deals: number; partnerships: number }> = {};
+      (contactsData.data || []).forEach((c: any) => {
+        if (c.company_id) {
+          const key = String(c.company_id);
+          if (!counts[key]) counts[key] = { contacts: 0, deals: 0, partnerships: 0 };
+          counts[key].contacts++;
+        }
+      });
+      (oppsData.data || []).forEach((o: any) => {
+        if (o.company_id) {
+          const key = String(o.company_id);
+          if (!counts[key]) counts[key] = { contacts: 0, deals: 0, partnerships: 0 };
+          counts[key].deals++;
+        }
+      });
+      (partnershipsData.data || []).forEach((p: any) => {
+        if (p.company_id) {
+          const key = String(p.company_id);
+          if (!counts[key]) counts[key] = { contacts: 0, deals: 0, partnerships: 0 };
+          counts[key].partnerships++;
+        }
+      });
+      setEntityCounts(counts);
+
+      if (companiesData.data && companiesData.data.length > 0) { setCompanies(companiesData.data); }
       else { setCompanies(MOCK_COMPANIES); }
     } catch { setCompanies(MOCK_COMPANIES); }
     finally { setLoading(false); }
@@ -109,6 +144,33 @@ export default function CompaniesPage() {
                   </div>
                   <span className="tag shrink-0">{company.employee_count} {t.companies.employees}</span>
                 </div>
+
+                {/* Related entity counts */}
+                {entityCounts[String(company.id)] && (
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    {entityCounts[String(company.id)].contacts > 0 && (
+                      <Link href="/contacts" onClick={e => e.stopPropagation()} className="text-primary-electricBlue hover:underline">
+                        {entityCounts[String(company.id)].contacts} Contacts
+                      </Link>
+                    )}
+                    {entityCounts[String(company.id)].deals > 0 && (
+                      <>
+                        {entityCounts[String(company.id)].contacts > 0 && <span className="text-white/20">&middot;</span>}
+                        <Link href="/pipeline" onClick={e => e.stopPropagation()} className="text-primary-electricBlue hover:underline">
+                          {entityCounts[String(company.id)].deals} Deals
+                        </Link>
+                      </>
+                    )}
+                    {entityCounts[String(company.id)].partnerships > 0 && (
+                      <>
+                        {(entityCounts[String(company.id)].contacts > 0 || entityCounts[String(company.id)].deals > 0) && <span className="text-white/20">&middot;</span>}
+                        <Link href="/partnerships" onClick={e => e.stopPropagation()} className="text-primary-electricBlue hover:underline">
+                          {entityCounts[String(company.id)].partnerships} Partnerships
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-4 pt-4 border-t border-white/10">
                   <div className="flex items-center justify-between text-sm">

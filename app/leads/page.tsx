@@ -3,7 +3,8 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
-import { PlusIcon, EyeIcon, EditIcon } from '@/components/icons';
+import { PlusIcon, EyeIcon, EditIcon, VoiceIcon, CalculatorIcon } from '@/components/icons';
+import Link from 'next/link';
 import { getLeadStatusClass } from '@/lib/utils/statusClasses';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { FilterTabs } from '@/components/ui/FilterTabs';
@@ -272,7 +273,21 @@ export default function LeadsPage() {
                         </div>
                       </td>
                       <td className="text-white/80">{lead.company_name || '—'}</td>
-                      <td><span className="tag">{lead.source}</span></td>
+                      <td>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="tag">{lead.source}</span>
+                          {lead.voice_session_id && (
+                            <Link href="/voice-sessions" className="tag tag-info text-xs flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                              <VoiceIcon className="w-3 h-3" /> Voice
+                            </Link>
+                          )}
+                          {lead.roi_calculation_id && (
+                            <Link href="/roi-calculations" className="tag tag-warning text-xs flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                              <CalculatorIcon className="w-3 h-3" /> ROI
+                            </Link>
+                          )}
+                        </div>
+                      </td>
                       <td><ScoreBar score={lead.lead_score} /></td>
                       <td><span className={`tag ${getLeadStatusClass(lead.status)}`}>{lead.status}</span></td>
                       <td>
@@ -334,6 +349,24 @@ export default function LeadsPage() {
               <p className="text-xs text-white/50 mb-1">{t.leads.score}</p>
               <ScoreBar score={viewLead.lead_score} />
             </div>
+            {/* Source Links */}
+            {(viewLead.voice_session_id || viewLead.roi_calculation_id) && (
+              <div className="bg-white/5 rounded-lg p-3">
+                <p className="text-xs text-white/50 mb-2">Source</p>
+                <div className="flex flex-wrap gap-2">
+                  {viewLead.voice_session_id && (
+                    <Link href="/voice-sessions" className="tag tag-info text-xs flex items-center gap-1.5 hover:opacity-80">
+                      <VoiceIcon className="w-3.5 h-3.5" /> Voice Session #{viewLead.voice_session_id}
+                    </Link>
+                  )}
+                  {viewLead.roi_calculation_id && (
+                    <Link href="/roi-calculations" className="tag tag-warning text-xs flex items-center gap-1.5 hover:opacity-80">
+                      <CalculatorIcon className="w-3.5 h-3.5" /> ROI Calculation #{viewLead.roi_calculation_id}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Modal>

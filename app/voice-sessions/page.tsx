@@ -5,8 +5,9 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatCard } from '@/components/ui/StatCard';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
-import { VoiceIcon } from '@/components/icons';
+import { VoiceIcon, LeadsStatIcon } from '@/components/icons';
 import { VoiceSession, ConversationMessage } from '@/types/voice';
+import Link from 'next/link';
 import { generateSessionInsights, AIInsight } from '@/lib/utils/aiInsights';
 import { scoreVoiceSession, LeadScore } from '@/lib/utils/leadScoring';
 import { createTaskFromSession } from '@/lib/utils/taskAutomation';
@@ -253,13 +254,29 @@ export default function VoiceSessionsPage() {
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [creatingTaskId, setCreatingTaskId] = useState<string | null>(null);
+  const [sessionToLeadMap, setSessionToLeadMap] = useState<Record<string, boolean>>({});
 
   const fetchSessions = useCallback(async () => {
     try {
-      const res = await fetch('/api/data/read/voice_sessions', { credentials: 'include' });
-      const data: { data?: VoiceSession[] } = await res.json();
-      if (data.data && data.data.length > 0) {
-        const sorted = data.data.sort((a, b) =>
+      const [sessionsRes, leadsRes] = await Promise.all([
+        fetch('/api/data/read/voice_sessions', { credentials: 'include' }),
+        fetch('/api/data/read/leads', { credentials: 'include' }),
+      ]);
+      const [sessionsData, leadsData] = await Promise.all([
+        sessionsRes.json(), leadsRes.json(),
+      ]);
+
+      // Build reverse lookup: which sessions have generated leads
+      const leadMap: Record<string, boolean> = {};
+      (leadsData.data || []).forEach((lead: any) => {
+        if (lead.voice_session_id) {
+          leadMap[String(lead.voice_session_id)] = true;
+        }
+      });
+      setSessionToLeadMap(leadMap);
+
+      if (sessionsData.data && sessionsData.data.length > 0) {
+        const sorted = sessionsData.data.sort((a: VoiceSession, b: VoiceSession) =>
           new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
         );
         setSessions(sorted);
@@ -582,9 +599,16 @@ export default function VoiceSessionsPage() {
                             </span>
                           </td>
                           <td>
-                            <span className={`tag text-xs ${getOutcomeClass(session.outcome)}`}>
-                              {getOutcomeLabel(session.outcome)}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`tag text-xs ${getOutcomeClass(session.outcome)}`}>
+                                {getOutcomeLabel(session.outcome)}
+                              </span>
+                              {sessionToLeadMap[String(session.id)] && (
+                                <Link href="/leads" className="tag tag-success text-[10px] flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                                  <LeadsStatIcon className="w-3 h-3" /> Lead Created
+                                </Link>
+                              )}
+                            </div>
                           </td>
                           <td>
                             <div className="flex items-center gap-2" title={leadScore.reasons.join(', ')}>
