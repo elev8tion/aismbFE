@@ -1,9 +1,10 @@
-import { ncbCreate } from '@/lib/agent/ncbClient';
+import { ncbCreate, type NCBEnv } from '@/lib/agent/ncbClient';
 
 export async function draft_email(
   params: { to: string; subject: string; context: string },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
   const recipientName = params.to.includes('@')
     ? params.to.split('@')[0].replace(/[._-]/g, ' ')
@@ -11,7 +12,7 @@ export async function draft_email(
 
   const body = `Hi ${recipientName},\n\n${params.context}\n\nBest regards`;
 
-  await ncbCreate('drafts', {
+  await ncbCreate(env, 'drafts', {
     type: 'email',
     to_recipient: params.to,
     subject: params.subject,
@@ -33,9 +34,10 @@ export async function draft_email(
 export async function draft_sms(
   params: { to: string; context: string },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
-  await ncbCreate('drafts', {
+  await ncbCreate(env, 'drafts', {
     type: 'sms',
     to_recipient: params.to,
     subject: null,

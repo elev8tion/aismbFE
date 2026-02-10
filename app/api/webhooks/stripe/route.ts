@@ -1,24 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import Stripe from 'stripe';
 import { getTierPricing, getPriceEnvVar, type TierKey } from '@/lib/stripe/pricing';
 import { sendWelcomeEmail, sendPaymentFailedAlert } from '@/lib/email/sendEmail';
 
 export const runtime = 'edge';
 
-const NCB_INSTANCE = process.env.NCB_INSTANCE!;
-const NCB_DATA_API_URL = process.env.NCB_DATA_API_URL!;
-
 /**
  * Direct NCB write for webhook context (no user session available).
  * Stripe webhooks are server-to-server — we call NCB data API directly.
  */
-async function ncbCreate(table: string, data: Record<string, unknown>) {
-  const url = `${NCB_DATA_API_URL}/create/${table}?instance=${NCB_INSTANCE}`;
+async function ncbCreate(instance: string, dataApiUrl: string, table: string, data: Record<string, unknown>) {
+  const url = `${dataApiUrl}/create/${table}?instance=${instance}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Database-instance': NCB_INSTANCE,
+      'X-Database-instance': instance,
     },
     body: JSON.stringify(data),
   });
@@ -29,13 +27,13 @@ async function ncbCreate(table: string, data: Record<string, unknown>) {
   return res;
 }
 
-async function ncbUpdate(table: string, id: string, data: Record<string, unknown>) {
-  const url = `${NCB_DATA_API_URL}/update/${table}/${id}?instance=${NCB_INSTANCE}`;
+async function ncbUpdate(instance: string, dataApiUrl: string, table: string, id: string, data: Record<string, unknown>) {
+  const url = `${dataApiUrl}/update/${table}/${id}?instance=${instance}`;
   const res = await fetch(url, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'X-Database-instance': NCB_INSTANCE,
+      'X-Database-instance': instance,
     },
     body: JSON.stringify(data),
   });
@@ -47,8 +45,13 @@ async function ncbUpdate(table: string, id: string, data: Record<string, unknown
 }
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.STRIPE_SECRET_KEY;
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+
+  const NCB_INSTANCE = env.NCB_INSTANCE;
+  const NCB_DATA_API_URL = env.NCB_DATA_API_URL;
+  const secret = env.STRIPE_SECRET_KEY;
+  const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
   if (!secret || !webhookSecret) {
     return NextResponse.json({ error: 'Stripe webhook not configured' }, { status: 500 });
@@ -98,7 +101,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Record payment in NCB
-        await ncbCreate('payments', {
+        await ncbCreate(NCB_INSTANCE, NCB_DATA_API_URL, 'payments', {
           type: isSetup ? 'setup' : 'subscription',
           amount: invoice.amount_paid / 100,
           currency: invoice.currency,
@@ -113,14 +116,14 @@ export async function POST(req: NextRequest) {
 
         if (isSetup && partnershipId) {
           // Update partnership status
-          await ncbUpdate('partnerships', partnershipId, {
+          await ncbUpdate(NCB_INSTANCE, NCB_DATA_API_URL, 'partnerships', partnershipId, {
             payment_status: 'setup_paid',
           });
 
           // Create monthly subscription
           if (tier) {
             const envVar = getPriceEnvVar(tier);
-            const priceId = envVar ? process.env[envVar] : null;
+            const priceId = envVar ? env[envVar] : null;
             const customerId = typeof invoice.customer === 'string' ? invoice.customer : '';
 
             if (priceId && customerId) {
@@ -134,7 +137,7 @@ export async function POST(req: NextRequest) {
                 console.log(`[Webhook] Subscription created: ${subscription.id}`);
 
                 // Record subscription in NCB
-                await ncbCreate('subscriptions', {
+                await ncbCreate(NCB_INSTANCE, NCB_DATA_API_URL, 'subscriptions', {
                   stripe_subscription_id: subscription.id,
                   stripe_customer_id: customerId,
                   partnership_id: partnershipId,
@@ -193,7 +196,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Record failed payment
-        await ncbCreate('payments', {
+        await ncbCreate(NCB_INSTANCE, NCB_DATA_API_URL, 'payments', {
           type: meta.type === 'setup' ? 'setup' : 'subscription',
           amount: invoice.amount_due / 100,
           currency: invoice.currency,
@@ -207,7 +210,7 @@ export async function POST(req: NextRequest) {
 
         // Flag partnership health if applicable
         if (partnershipId) {
-          await ncbUpdate('partnerships', partnershipId, {
+          await ncbUpdate(NCB_INSTANCE, NCB_DATA_API_URL, 'partnerships', partnershipId, {
             payment_status: 'past_due',
           });
         }
@@ -233,7 +236,7 @@ export async function POST(req: NextRequest) {
         console.log(`[Webhook] subscription.created: ${subscription.id}`, meta);
 
         // Record in NCB (may already be recorded from invoice.paid handler)
-        await ncbCreate('subscriptions', {
+        await ncbCreate(NCB_INSTANCE, NCB_DATA_API_URL, 'subscriptions', {
           stripe_subscription_id: subscription.id,
           stripe_customer_id: typeof subscription.customer === 'string' ? subscription.customer : '',
           partnership_id: meta.partnership_id || null,
@@ -254,7 +257,7 @@ export async function POST(req: NextRequest) {
         // We log the update — full NCB sync would require finding the record by stripe_subscription_id
         // For now, record the status change
         if (meta.partnership_id && subscription.status === 'past_due') {
-          await ncbUpdate('partnerships', meta.partnership_id, {
+          await ncbUpdate(NCB_INSTANCE, NCB_DATA_API_URL, 'partnerships', meta.partnership_id, {
             payment_status: 'past_due',
           });
         }
@@ -268,7 +271,7 @@ export async function POST(req: NextRequest) {
         console.log(`[Webhook] subscription.deleted: ${subscription.id}`);
 
         if (meta.partnership_id) {
-          await ncbUpdate('partnerships', meta.partnership_id, {
+          await ncbUpdate(NCB_INSTANCE, NCB_DATA_API_URL, 'partnerships', meta.partnership_id, {
             payment_status: 'cancelled',
           });
         }

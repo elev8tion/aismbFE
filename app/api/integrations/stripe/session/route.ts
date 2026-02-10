@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import Stripe from 'stripe';
 
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.STRIPE_SECRET_KEY;
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+
+  const secret = env.STRIPE_SECRET_KEY;
   if (!secret) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
   }

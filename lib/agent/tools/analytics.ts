@@ -1,4 +1,4 @@
-import { ncbRead, ncbCreate } from '../ncbClient';
+import { ncbRead, ncbCreate, type NCBEnv } from '../ncbClient';
 
 interface Lead { id: string; first_name?: string; last_name?: string; email?: string; status: string; created_at?: string; updated_at?: string; lead_score?: number }
 interface Booking { id: string; status: string; booking_date: string; guest_name?: string; guest_email?: string }
@@ -11,11 +11,11 @@ function todayStr(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-export async function get_dashboard_stats(_params: Record<string, never>, cookies: string) {
+export async function get_dashboard_stats(_params: Record<string, never>, cookies: string, env: NCBEnv) {
   const [leads, bookings, opps] = await Promise.all([
-    ncbRead<Lead>('leads', cookies),
-    ncbRead<Booking>('bookings', cookies),
-    ncbRead<Opportunity>('opportunities', cookies),
+    ncbRead<Lead>(env, 'leads', cookies),
+    ncbRead<Booking>(env, 'bookings', cookies),
+    ncbRead<Opportunity>(env, 'opportunities', cookies),
   ]);
 
   const leadsData = leads.data || [];
@@ -35,12 +35,12 @@ export async function get_dashboard_stats(_params: Record<string, never>, cookie
   };
 }
 
-export async function get_daily_summary(_params: Record<string, never>, cookies: string) {
+export async function get_daily_summary(_params: Record<string, never>, cookies: string, env: NCBEnv) {
   const today = todayStr();
   const [leads, bookings, activities] = await Promise.all([
-    ncbRead<Lead>('leads', cookies),
-    ncbRead<Booking>('bookings', cookies),
-    ncbRead<Activity>('activities', cookies),
+    ncbRead<Lead>(env, 'leads', cookies),
+    ncbRead<Booking>(env, 'bookings', cookies),
+    ncbRead<Activity>(env, 'activities', cookies),
   ]);
 
   const todayLeads = (leads.data || []).filter(l => l.created_at?.startsWith(today));
@@ -56,16 +56,16 @@ export async function get_daily_summary(_params: Record<string, never>, cookies:
   };
 }
 
-export async function get_recent_activities(params: { limit?: number }, cookies: string) {
-  const result = await ncbRead<Activity>('activities', cookies);
+export async function get_recent_activities(params: { limit?: number }, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Activity>(env, 'activities', cookies);
   const activities = (result.data || [])
     .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
     .slice(0, params.limit || 10);
   return { activities };
 }
 
-export async function get_voice_session_insights(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<VoiceSession>('voice_sessions', cookies);
+export async function get_voice_session_insights(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<VoiceSession>(env, 'voice_sessions', cookies);
   const sessions = result.data || [];
 
   const sentiments: Record<string, number> = {};
@@ -89,8 +89,8 @@ export async function get_voice_session_insights(_params: Record<string, never>,
   };
 }
 
-export async function get_roi_calculation_insights(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<RoiCalculation>('roi_calculations', cookies);
+export async function get_roi_calculation_insights(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<RoiCalculation>(env, 'roi_calculations', cookies);
   const calcs = result.data || [];
 
   const industries: Record<string, number> = {};
@@ -113,9 +113,10 @@ export async function get_roi_calculation_insights(_params: Record<string, never
 export async function log_activity(
   params: { type: string; subject: string; description?: string; company_id?: string; contact_id?: string; opportunity_id?: string; partnership_id?: string },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
-  const result = await ncbCreate('activities', {
+  const result = await ncbCreate(env, 'activities', {
     type: params.type,
     subject: params.subject,
     description: params.description || null,
@@ -130,9 +131,10 @@ export async function log_activity(
 export async function schedule_followup(
   params: { subject: string; description?: string; company_id?: string; contact_id?: string; partnership_id?: string },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
-  const result = await ncbCreate('activities', {
+  const result = await ncbCreate(env, 'activities', {
     type: 'followup',
     subject: params.subject,
     description: params.description || null,
@@ -145,8 +147,8 @@ export async function schedule_followup(
 
 // ─── Smart Queries ─────────────────────────────────────────────────────────
 
-export async function get_conversion_rate(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<Lead>('leads', cookies);
+export async function get_conversion_rate(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Lead>(env, 'leads', cookies);
   const leads = result.data || [];
   const total = leads.length;
   const converted = leads.filter(l => l.status === 'converted').length;
@@ -154,8 +156,8 @@ export async function get_conversion_rate(_params: Record<string, never>, cookie
   return { total_leads: total, converted, conversion_rate_percent: rate };
 }
 
-export async function get_revenue_forecast(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<Opportunity>('opportunities', cookies);
+export async function get_revenue_forecast(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Opportunity>(env, 'opportunities', cookies);
   const opps = result.data || [];
 
   const stageProbability: Record<string, number> = {
@@ -188,13 +190,13 @@ export async function get_revenue_forecast(_params: Record<string, never>, cooki
   return { total_pipeline: rawTotal, weighted_forecast: weightedTotal, by_stage: byStage };
 }
 
-export async function get_stale_leads(params: { days_inactive?: number }, cookies: string) {
+export async function get_stale_leads(params: { days_inactive?: number }, cookies: string, env: NCBEnv) {
   const days = params.days_inactive || 14;
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
   const cutoffStr = cutoff.toISOString();
 
-  const result = await ncbRead<Lead>('leads', cookies);
+  const result = await ncbRead<Lead>(env, 'leads', cookies);
   const leads = result.data || [];
 
   const stale = leads.filter(l => {
@@ -215,9 +217,9 @@ export async function get_stale_leads(params: { days_inactive?: number }, cookie
   };
 }
 
-export async function get_top_opportunities(params: { limit?: number }, cookies: string) {
+export async function get_top_opportunities(params: { limit?: number }, cookies: string, env: NCBEnv) {
   const limit = params.limit || 10;
-  const result = await ncbRead<Opportunity>('opportunities', cookies);
+  const result = await ncbRead<Opportunity>(env, 'opportunities', cookies);
   const opps = (result.data || [])
     .filter(o => o.stage !== 'closed-lost')
     .sort((a, b) => (Number(b.total_contract_value) || 0) - (Number(a.total_contract_value) || 0))

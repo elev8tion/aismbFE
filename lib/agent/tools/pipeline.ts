@@ -1,4 +1,4 @@
-import { ncbRead, ncbCreate, ncbUpdate } from '../ncbClient';
+import { ncbRead, ncbCreate, ncbUpdate, type NCBEnv } from '../ncbClient';
 
 interface Opportunity {
   id: string;
@@ -18,10 +18,10 @@ interface Opportunity {
 // Valid stages: new-lead → contacted → discovery-call → proposal-sent → negotiation → closed-won/closed-lost
 const VALID_STAGES = ['new-lead', 'contacted', 'discovery-call', 'proposal-sent', 'negotiation', 'closed-won', 'closed-lost'];
 
-export async function list_opportunities(params: { stage?: string }, cookies: string) {
+export async function list_opportunities(params: { stage?: string }, cookies: string, env: NCBEnv) {
   const filters: Record<string, string> = {};
   if (params.stage) filters.stage = params.stage;
-  const result = await ncbRead<Opportunity>('opportunities', cookies, filters);
+  const result = await ncbRead<Opportunity>(env, 'opportunities', cookies, filters);
   return {
     opportunities: (result.data || []).map(o => ({
       ...o,
@@ -33,8 +33,8 @@ export async function list_opportunities(params: { stage?: string }, cookies: st
   };
 }
 
-export async function get_pipeline_summary(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<Opportunity>('opportunities', cookies);
+export async function get_pipeline_summary(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Opportunity>(env, 'opportunities', cookies);
   const opps = result.data || [];
 
   const byStage: Record<string, { count: number; value: number }> = {};
@@ -55,9 +55,10 @@ export async function get_pipeline_summary(_params: Record<string, never>, cooki
 export async function create_opportunity(
   params: { name: string; tier: string; setup_fee: number; monthly_fee?: number; stage?: string; company_id?: string; primary_contact_id?: string; expected_close_date?: string },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
-  const result = await ncbCreate<Opportunity>('opportunities', {
+  const result = await ncbCreate<Opportunity>(env, 'opportunities', {
     name: params.name,
     tier: params.tier || 'foundation',
     setup_fee: params.setup_fee,
@@ -70,10 +71,10 @@ export async function create_opportunity(
   return { success: true, opportunity: result };
 }
 
-export async function move_deal(params: { opportunity_id: string; stage: string }, cookies: string) {
+export async function move_deal(params: { opportunity_id: string; stage: string }, cookies: string, env: NCBEnv) {
   if (!VALID_STAGES.includes(params.stage)) {
     return { success: false, error: `Invalid stage. Must be one of: ${VALID_STAGES.join(', ')}` };
   }
-  const result = await ncbUpdate<Opportunity>('opportunities', params.opportunity_id, { stage: params.stage }, cookies);
+  const result = await ncbUpdate<Opportunity>(env, 'opportunities', params.opportunity_id, { stage: params.stage }, cookies);
   return { success: true, opportunity: result };
 }

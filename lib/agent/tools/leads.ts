@@ -1,4 +1,4 @@
-import { ncbRead, ncbCreate, ncbUpdate, ncbReadOne } from '../ncbClient';
+import { ncbRead, ncbCreate, ncbUpdate, ncbReadOne, type NCBEnv } from '../ncbClient';
 
 interface Lead {
   id: string;
@@ -21,10 +21,10 @@ function leadName(l: Lead): string {
   return `${l.first_name || ''} ${l.last_name || ''}`.trim() || l.email;
 }
 
-export async function list_leads(params: { status?: string; limit?: number }, cookies: string) {
+export async function list_leads(params: { status?: string; limit?: number }, cookies: string, env: NCBEnv) {
   const filters: Record<string, string> = {};
   if (params.status) filters.status = params.status;
-  const result = await ncbRead<Lead>('leads', cookies, filters);
+  const result = await ncbRead<Lead>(env, 'leads', cookies, filters);
   const leads = result.data || [];
   const limited = leads.slice(0, params.limit || 20);
   return {
@@ -33,8 +33,8 @@ export async function list_leads(params: { status?: string; limit?: number }, co
   };
 }
 
-export async function search_leads(params: { query: string }, cookies: string) {
-  const result = await ncbRead<Lead>('leads', cookies);
+export async function search_leads(params: { query: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Lead>(env, 'leads', cookies);
   const q = params.query.toLowerCase();
   const matches = (result.data || []).filter(l =>
     l.first_name?.toLowerCase().includes(q) ||
@@ -49,8 +49,8 @@ export async function search_leads(params: { query: string }, cookies: string) {
   };
 }
 
-export async function count_leads(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<Lead>('leads', cookies);
+export async function count_leads(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Lead>(env, 'leads', cookies);
   const leads = result.data || [];
   const counts: Record<string, number> = {};
   for (const lead of leads) {
@@ -63,9 +63,10 @@ export async function count_leads(_params: Record<string, never>, cookies: strin
 export async function create_lead(
   params: { email: string; first_name?: string; last_name?: string; company_name?: string; phone?: string; source: string; industry?: string; employee_count?: string },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
-  const result = await ncbCreate<Lead>('leads', {
+  const result = await ncbCreate<Lead>(env, 'leads', {
     email: params.email,
     first_name: params.first_name || null,
     last_name: params.last_name || null,
@@ -80,13 +81,13 @@ export async function create_lead(
   return { success: true, lead: result };
 }
 
-export async function update_lead_status(params: { lead_id: string; status: string }, cookies: string) {
-  const result = await ncbUpdate<Lead>('leads', params.lead_id, { status: params.status }, cookies);
+export async function update_lead_status(params: { lead_id: string; status: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbUpdate<Lead>(env, 'leads', params.lead_id, { status: params.status }, cookies);
   return { success: true, lead: result };
 }
 
-export async function score_lead(params: { lead_id: string }, cookies: string) {
-  const result = await ncbReadOne<Lead>('leads', params.lead_id, cookies);
+export async function score_lead(params: { lead_id: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbReadOne<Lead>(env, 'leads', params.lead_id, cookies);
   const lead = result.data;
   // Simple scoring based on available data
   let score = 20;
@@ -99,8 +100,8 @@ export async function score_lead(params: { lead_id: string }, cookies: string) {
   return { lead_id: params.lead_id, score, tier, name: leadName(lead) };
 }
 
-export async function get_lead_summary(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<Lead>('leads', cookies);
+export async function get_lead_summary(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Lead>(env, 'leads', cookies);
   const leads = result.data || [];
   const counts: Record<string, number> = {};
   for (const lead of leads) {

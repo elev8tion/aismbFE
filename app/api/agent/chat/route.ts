@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import { createOpenAI, buildChatParams } from '@/lib/openai/config';
 import { validateQuestion, detectPromptInjection } from '@/lib/security/requestValidator';
-import { getSessionUser, extractAuthCookies } from '@/lib/agent/ncbClient';
+import { getSessionUser, extractAuthCookies, type NCBEnv } from '@/lib/agent/ncbClient';
 import { selectModel } from '@/lib/agent/modelRouter';
 import { getSession, addMessage } from '@/lib/agent/session';
 import { ALL_CRM_FUNCTIONS } from '@/lib/agent/functions';
@@ -286,15 +287,17 @@ const MAX_TOOL_ROUNDS = 5;
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   // Auth check
   const cookieHeader = request.headers.get('cookie') || '';
-  const user = await getSessionUser(cookieHeader);
+  const user = await getSessionUser(env, cookieHeader);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'OpenAI not configured' }, { status: 500 });
   }
@@ -380,7 +383,8 @@ export async function POST(request: NextRequest) {
           toolCall.function.name,
           params,
           user.id,
-          authCookies
+          authCookies,
+          env
         );
 
         currentMessages.push({

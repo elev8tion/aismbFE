@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { extractAuthCookies, getSessionUser, type NCBEnv } from "@/lib/agent/ncbClient";
 
 export const runtime = 'edge';
-
-const CONFIG = {
-  instance: process.env.NCB_INSTANCE!,
-  dataApiUrl: process.env.NCB_DATA_API_URL!,
-  authApiUrl: process.env.NCB_AUTH_API_URL!,
-  secretKey: process.env.NCB_SECRET_KEY || '',
-};
 
 // Tables any authenticated user can access (public booking data + own profile via RLS)
 const PUBLIC_TABLES = new Set([
@@ -34,60 +29,33 @@ const NO_USER_ID_TABLES = new Set([
   'blocked_dates',
 ]);
 
-function extractAuthCookies(cookieHeader: string): string {
-  if (!cookieHeader) return "";
-
-  const cookies = cookieHeader.split(";");
-  const authCookies: string[] = [];
-
-  for (const cookie of cookies) {
-    const trimmed = cookie.trim();
-    if (
-      trimmed.startsWith("better-auth.session_token=") ||
-      trimmed.startsWith("better-auth.session_data=")
-    ) {
-      authCookies.push(trimmed);
-    }
-  }
-
-  return authCookies.join("; ");
+interface DataProxyConfig {
+  instance: string;
+  dataApiUrl: string;
+  authApiUrl: string;
+  secretKey: string;
 }
 
-async function getSessionUser(
-  cookieHeader: string
-): Promise<{ id: string; email?: string } | null> {
+function buildConfig(env: NCBEnv): DataProxyConfig {
+  return {
+    instance: env.NCB_INSTANCE,
+    dataApiUrl: env.NCB_DATA_API_URL,
+    authApiUrl: env.NCB_AUTH_API_URL,
+    secretKey: env.NCB_SECRET_KEY || '',
+  };
+}
+
+async function getUserRole(config: DataProxyConfig, cookieHeader: string): Promise<string | null> {
   const authCookies = extractAuthCookies(cookieHeader);
   if (!authCookies) return null;
 
-  const url = `${CONFIG.authApiUrl}/get-session?Instance=${CONFIG.instance}`;
+  const url = `${config.dataApiUrl}/read/user_profiles?Instance=${config.instance}`;
 
   const res = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "X-Database-Instance": CONFIG.instance,
-      Cookie: authCookies,
-    },
-  });
-
-  if (res.ok) {
-    const data = await res.json();
-    return data.user || null;
-  }
-  return null;
-}
-
-async function getUserRole(cookieHeader: string): Promise<string | null> {
-  const authCookies = extractAuthCookies(cookieHeader);
-  if (!authCookies) return null;
-
-  const url = `${CONFIG.dataApiUrl}/read/user_profiles?Instance=${CONFIG.instance}`;
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Database-Instance": CONFIG.instance,
+      "X-Database-Instance": config.instance,
       Cookie: authCookies,
     },
   });
@@ -139,26 +107,26 @@ function forbidden() {
   });
 }
 
-async function proxyToNCB(req: NextRequest, path: string, body?: string, bypassRLS = false) {
+async function proxyToNCB(config: DataProxyConfig, req: NextRequest, path: string, body?: string, bypassRLS = false) {
   const searchParams = new URLSearchParams();
-  searchParams.set("Instance", CONFIG.instance);
+  searchParams.set("Instance", config.instance);
 
   req.nextUrl.searchParams.forEach((val, key) => {
     if (key !== "Instance" && key !== "instance" && key !== "path") searchParams.append(key, val);
   });
 
-  const url = `${CONFIG.dataApiUrl}/${path}?${searchParams.toString()}`;
+  const url = `${config.dataApiUrl}/${path}?${searchParams.toString()}`;
   const origin = req.headers.get("origin") || req.nextUrl.origin;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "X-Database-Instance": CONFIG.instance,
+    "X-Database-Instance": config.instance,
     Origin: origin,
   };
 
-  if (bypassRLS && CONFIG.secretKey) {
+  if (bypassRLS && config.secretKey) {
     // Use secret key to bypass RLS for customer reads of shared data
-    headers["Authorization"] = `Bearer ${CONFIG.secretKey}`;
+    headers["Authorization"] = `Bearer ${config.secretKey}`;
   } else {
     const cookieHeader = req.headers.get("cookie") || "";
     headers["Cookie"] = extractAuthCookies(cookieHeader);
@@ -191,13 +159,17 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as NCBEnv;
+  const config = buildConfig(env);
+
   const { path } = await params;
   const pathStr = path.join("/");
   const cookieHeader = req.headers.get("cookie") || "";
 
   const [user, role] = await Promise.all([
-    getSessionUser(cookieHeader),
-    getUserRole(cookieHeader),
+    getSessionUser(env, cookieHeader),
+    getUserRole(config, cookieHeader),
   ]);
 
   if (!user) {
@@ -223,21 +195,25 @@ export async function GET(
     (role === 'customer' && CUSTOMER_TABLES.has(table)) ||
     NO_USER_ID_TABLES.has(table)
   );
-  return proxyToNCB(req, pathStr, undefined, bypassRLS);
+  return proxyToNCB(config, req, pathStr, undefined, bypassRLS);
 }
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as NCBEnv;
+  const config = buildConfig(env);
+
   const { path } = await params;
   const pathStr = path.join("/");
   const body = await req.text();
   const cookieHeader = req.headers.get("cookie") || "";
 
   const [user, role] = await Promise.all([
-    getSessionUser(cookieHeader),
-    getUserRole(cookieHeader),
+    getSessionUser(env, cookieHeader),
+    getUserRole(config, cookieHeader),
   ]);
 
   if (!user) {
@@ -258,27 +234,31 @@ export async function POST(
       const parsed = JSON.parse(body);
       delete parsed.user_id;
       parsed.user_id = user.id;
-      return proxyToNCB(req, pathStr, JSON.stringify(parsed));
+      return proxyToNCB(config, req, pathStr, JSON.stringify(parsed));
     } catch {
       // Continue without modification
     }
   }
 
-  return proxyToNCB(req, pathStr, body);
+  return proxyToNCB(config, req, pathStr, body);
 }
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as NCBEnv;
+  const config = buildConfig(env);
+
   const { path } = await params;
   const pathStr = path.join("/");
   const body = await req.text();
   const cookieHeader = req.headers.get("cookie") || "";
 
   const [user, role] = await Promise.all([
-    getSessionUser(cookieHeader),
-    getUserRole(cookieHeader),
+    getSessionUser(env, cookieHeader),
+    getUserRole(config, cookieHeader),
   ]);
 
   if (!user) {
@@ -298,26 +278,30 @@ export async function PUT(
     try {
       const parsed = JSON.parse(body);
       delete parsed.user_id;
-      return proxyToNCB(req, pathStr, JSON.stringify(parsed));
+      return proxyToNCB(config, req, pathStr, JSON.stringify(parsed));
     } catch {
       // Continue without modification
     }
   }
 
-  return proxyToNCB(req, pathStr, body);
+  return proxyToNCB(config, req, pathStr, body);
 }
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as NCBEnv;
+  const config = buildConfig(env);
+
   const { path } = await params;
   const pathStr = path.join("/");
   const cookieHeader = req.headers.get("cookie") || "";
 
   const [user, role] = await Promise.all([
-    getSessionUser(cookieHeader),
-    getUserRole(cookieHeader),
+    getSessionUser(env, cookieHeader),
+    getUserRole(config, cookieHeader),
   ]);
 
   if (!user) {
@@ -333,5 +317,5 @@ export async function DELETE(
     return forbidden();
   }
 
-  return proxyToNCB(req, pathStr);
+  return proxyToNCB(config, req, pathStr);
 }

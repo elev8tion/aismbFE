@@ -1,63 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
+import { extractAuthCookies, getSessionUser, type NCBEnv } from '@/lib/agent/ncbClient';
 
 export const runtime = 'edge';
 
-const CONFIG = {
-  instance: process.env.NCB_INSTANCE!,
-  dataApiUrl: process.env.NCB_DATA_API_URL!,
-  authApiUrl: process.env.NCB_AUTH_API_URL!,
-};
-
-function extractAuthCookies(cookieHeader: string): string {
-  if (!cookieHeader) return '';
-  return cookieHeader
-    .split(';')
-    .map((c) => c.trim())
-    .filter(
-      (c) =>
-        c.startsWith('better-auth.session_token=') ||
-        c.startsWith('better-auth.session_data=')
-    )
-    .join('; ');
-}
-
-async function getSessionUser(cookieHeader: string): Promise<{ id: string; email?: string } | null> {
+async function getUserRole(instance: string, dataApiUrl: string, cookieHeader: string): Promise<string | null> {
   const authCookies = extractAuthCookies(cookieHeader);
   if (!authCookies) return null;
 
-  const url = `${CONFIG.authApiUrl}/get-session?Instance=${CONFIG.instance}`;
+  const url = `${dataApiUrl}/read/user_profiles?Instance=${instance}`;
   const res = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'X-Database-Instance': CONFIG.instance,
+      'X-Database-Instance': instance,
       Cookie: authCookies,
     },
   });
 
   if (res.ok) {
-    const data = await res.json();
-    return data.user || null;
-  }
-  return null;
-}
-
-async function getUserRole(cookieHeader: string): Promise<string | null> {
-  const authCookies = extractAuthCookies(cookieHeader);
-  if (!authCookies) return null;
-
-  const url = `${CONFIG.dataApiUrl}/read/user_profiles?Instance=${CONFIG.instance}`;
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Database-Instance': CONFIG.instance,
-      Cookie: authCookies,
-    },
-  });
-
-  if (res.ok) {
-    const data = await res.json();
+    const data: any = await res.json();
     if (data.data && data.data.length > 0) {
       return data.data[0].role;
     }
@@ -66,11 +28,22 @@ async function getUserRole(cookieHeader: string): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+  const instance = env.NCB_INSTANCE;
+  const dataApiUrl = env.NCB_DATA_API_URL;
+
+  const ncbEnv: NCBEnv = {
+    NCB_INSTANCE: instance,
+    NCB_DATA_API_URL: dataApiUrl,
+    NCB_AUTH_API_URL: env.NCB_AUTH_API_URL,
+  };
+
   const cookieHeader = req.headers.get('cookie') || '';
 
   const [user, role] = await Promise.all([
-    getSessionUser(cookieHeader),
-    getUserRole(cookieHeader),
+    getSessionUser(ncbEnv, cookieHeader),
+    getUserRole(instance, dataApiUrl, cookieHeader),
   ]);
 
   if (!user) {
@@ -81,7 +54,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  let body;
+  let body: any;
   try {
     body = await req.json();
   } catch {
@@ -98,13 +71,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Create customer_access record directly via NCB with customer's user_id
-  const createUrl = `${CONFIG.dataApiUrl}/create/customer_access?Instance=${CONFIG.instance}`;
+  const createUrl = `${dataApiUrl}/create/customer_access?Instance=${instance}`;
 
   const res = await fetch(createUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Database-Instance': CONFIG.instance,
+      'X-Database-Instance': instance,
     },
     body: JSON.stringify({
       user_id: customer_user_id,

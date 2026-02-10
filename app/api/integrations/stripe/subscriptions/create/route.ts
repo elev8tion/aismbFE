@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import Stripe from 'stripe';
 import { getPriceEnvVar, type TierKey } from '@/lib/stripe/pricing';
 
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.STRIPE_SECRET_KEY;
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+
+  const secret = env.STRIPE_SECRET_KEY;
   if (!secret) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
   }
@@ -32,7 +36,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Invalid tier: ${tier}` }, { status: 400 });
     }
 
-    const priceId = process.env[envVar];
+    const priceId = env[envVar];
     if (!priceId) {
       return NextResponse.json(
         { error: `Price ID not configured for tier ${tier} (env: ${envVar})` },

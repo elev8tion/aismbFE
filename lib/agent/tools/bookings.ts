@@ -1,4 +1,4 @@
-import { ncbRead, ncbCreate, ncbUpdate, ncbDelete } from '../ncbClient';
+import { ncbRead, ncbCreate, ncbUpdate, ncbDelete, type NCBEnv } from '../ncbClient';
 
 interface Booking {
   id: string;
@@ -39,57 +39,57 @@ function futureDate(days: number): string {
   return d.toISOString().split('T')[0];
 }
 
-export async function get_todays_bookings(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<Booking>('bookings', cookies);
+export async function get_todays_bookings(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Booking>(env, 'bookings', cookies);
   const today = todayStr();
   const todays = (result.data || []).filter(b => b.booking_date === today);
   return { date: today, bookings: todays, count: todays.length };
 }
 
-export async function get_upcoming_bookings(params: { days?: number }, cookies: string) {
+export async function get_upcoming_bookings(params: { days?: number }, cookies: string, env: NCBEnv) {
   const days = params.days || 7;
-  const result = await ncbRead<Booking>('bookings', cookies);
+  const result = await ncbRead<Booking>(env, 'bookings', cookies);
   const today = todayStr();
   const end = futureDate(days);
   const upcoming = (result.data || []).filter(b => b.booking_date >= today && b.booking_date <= end && b.status !== 'cancelled');
   return { from: today, to: end, bookings: upcoming, count: upcoming.length };
 }
 
-export async function list_bookings(params: { status?: string }, cookies: string) {
+export async function list_bookings(params: { status?: string }, cookies: string, env: NCBEnv) {
   const filters: Record<string, string> = {};
   if (params.status) filters.status = params.status;
-  const result = await ncbRead<Booking>('bookings', cookies, filters);
+  const result = await ncbRead<Booking>(env, 'bookings', cookies, filters);
   return { bookings: result.data || [], total: (result.data || []).length };
 }
 
-export async function confirm_booking(params: { booking_id: string }, cookies: string) {
-  const result = await ncbUpdate<Booking>('bookings', params.booking_id, { status: 'confirmed' }, cookies);
+export async function confirm_booking(params: { booking_id: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbUpdate<Booking>(env, 'bookings', params.booking_id, { status: 'confirmed' }, cookies);
   return { success: true, booking: result };
 }
 
-export async function cancel_booking(params: { booking_id: string; reason?: string }, cookies: string) {
+export async function cancel_booking(params: { booking_id: string; reason?: string }, cookies: string, env: NCBEnv) {
   const data: Record<string, unknown> = { status: 'cancelled' };
   if (params.reason) data.notes = params.reason;
-  const result = await ncbUpdate<Booking>('bookings', params.booking_id, data, cookies);
+  const result = await ncbUpdate<Booking>(env, 'bookings', params.booking_id, data, cookies);
   return { success: true, booking: result };
 }
 
-export async function block_date(params: { date: string; reason?: string }, userId: string, cookies: string) {
-  const result = await ncbCreate<BlockedDate>('blocked_dates', { date: params.date, reason: params.reason || '' }, userId, cookies);
+export async function block_date(params: { date: string; reason?: string }, userId: string, cookies: string, env: NCBEnv) {
+  const result = await ncbCreate<BlockedDate>(env, 'blocked_dates', { date: params.date, reason: params.reason || '' }, userId, cookies);
   return { success: true, blocked_date: result };
 }
 
-export async function unblock_date(params: { date: string }, cookies: string) {
-  const result = await ncbRead<BlockedDate>('blocked_dates', cookies);
+export async function unblock_date(params: { date: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<BlockedDate>(env, 'blocked_dates', cookies);
   const match = (result.data || []).find(bd => bd.date === params.date);
   if (!match) return { success: false, error: 'Date not found in blocked dates' };
-  await ncbDelete('blocked_dates', match.id, cookies);
+  await ncbDelete(env, 'blocked_dates', match.id, cookies);
   return { success: true, date: params.date };
 }
 
-export async function get_availability(params: { date: string }, cookies: string) {
+export async function get_availability(params: { date: string }, cookies: string, env: NCBEnv) {
   // Check if date is blocked
-  const blocked = await ncbRead<BlockedDate>('blocked_dates', cookies);
+  const blocked = await ncbRead<BlockedDate>(env, 'blocked_dates', cookies);
   if ((blocked.data || []).some(bd => bd.date === params.date)) {
     return { date: params.date, available: false, reason: 'Date is blocked', slots: [] };
   }
@@ -97,7 +97,7 @@ export async function get_availability(params: { date: string }, cookies: string
   // Get weekday settings
   const d = new Date(params.date + 'T12:00:00');
   const weekday = d.getDay();
-  const settings = await ncbRead<AvailabilitySetting>('availability_settings', cookies);
+  const settings = await ncbRead<AvailabilitySetting>(env, 'availability_settings', cookies);
   const daySetting = (settings.data || []).find(s => s.weekday === weekday);
 
   if (!daySetting) {
@@ -122,8 +122,8 @@ export async function get_availability(params: { date: string }, cookies: string
   };
 }
 
-export async function get_booking_summary(_params: Record<string, never>, cookies: string) {
-  const result = await ncbRead<Booking>('bookings', cookies);
+export async function get_booking_summary(_params: Record<string, never>, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Booking>(env, 'bookings', cookies);
   const bookings = result.data || [];
   const counts: Record<string, number> = {};
   for (const b of bookings) {

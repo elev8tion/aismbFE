@@ -1,12 +1,13 @@
-import { ncbUpdate } from '../ncbClient';
+import { ncbUpdate, type NCBEnv } from '../ncbClient';
 
 export async function bulk_update_lead_status(
   params: { lead_ids: string[]; status: string },
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
   const results = await Promise.all(
     params.lead_ids.map(id =>
-      ncbUpdate('leads', id, { status: params.status }, cookies)
+      ncbUpdate(env, 'leads', id, { status: params.status }, cookies)
     )
   );
   return { success: true, updated: results.length, status: params.status };
@@ -14,11 +15,12 @@ export async function bulk_update_lead_status(
 
 export async function bulk_assign_leads(
   params: { lead_ids: string[]; assignee: string },
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
   const results = await Promise.all(
     params.lead_ids.map(id =>
-      ncbUpdate('leads', id, { assigned_to: params.assignee }, cookies)
+      ncbUpdate(env, 'leads', id, { assigned_to: params.assignee }, cookies)
     )
   );
   return { success: true, assigned: results.length, assignee: params.assignee };

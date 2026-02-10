@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import Stripe from 'stripe';
 
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.STRIPE_SECRET_KEY;
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+
+  const secret = env.STRIPE_SECRET_KEY;
   if (!secret) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 });
   }
@@ -12,9 +16,9 @@ export async function POST(req: NextRequest) {
   const stripe = new Stripe(secret, { apiVersion: '2023-10-16' });
 
   try {
-    const body = await req.json();
+    const body: any = await req.json();
 
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const origin = req.headers.get('origin') || env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const {
       mode = 'payment',
       priceId,

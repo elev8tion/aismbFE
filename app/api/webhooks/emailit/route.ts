@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import { sendViaEmailIt } from '@/lib/email/sendEmail';
 
 export const runtime = 'edge';
@@ -31,6 +32,9 @@ interface EmailItEvent {
 }
 
 export async function POST(req: NextRequest) {
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+
   try {
     const payload: EmailItEvent = await req.json();
     const eventType = payload.event;
@@ -58,7 +62,7 @@ export async function POST(req: NextRequest) {
         console.warn(`[EmailIt CRM] Bounce for ${payload.email}: ${payload.reason}`);
 
         // Alert admin about CRM email bounces (important — partnership emails failing)
-        const apiKey = process.env.EMAILIT_API_KEY;
+        const apiKey = env.EMAILIT_API_KEY;
         if (apiKey) {
           try {
             await sendViaEmailIt({

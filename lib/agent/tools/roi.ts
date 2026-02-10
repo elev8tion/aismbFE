@@ -1,4 +1,4 @@
-import { ncbCreate } from '../ncbClient';
+import { ncbCreate, type NCBEnv } from '../ncbClient';
 
 export async function run_roi_calculation(
   params: {
@@ -8,12 +8,13 @@ export async function run_roi_calculation(
     industry?: string;
   },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
   const savings = Math.round(Number(params.monthly_revenue) * 0.15);
   const efficiency = Math.round(Number(params.employee_count) * 5);
 
-  const result = await ncbCreate('roi_calculations', {
+  const result = await ncbCreate(env, 'roi_calculations', {
     business_name: params.business_name,
     monthly_revenue: params.monthly_revenue,
     employee_count: params.employee_count,

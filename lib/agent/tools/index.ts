@@ -1,5 +1,6 @@
 // Tool Registry — routes function calls to domain handlers
 
+import type { NCBEnv } from '../ncbClient';
 import * as leads from './leads';
 import * as bookings from './bookings';
 import * as pipeline from './pipeline';
@@ -20,7 +21,12 @@ const CREATE_TOOLS = new Set([
   'log_partner_interaction', 'draft_email', 'draft_sms',
 ]);
 
-type ToolHandler = (params: Record<string, unknown>, cookiesOrUserId: string, cookies?: string) => Promise<unknown>;
+// Tools that are client-side only (no env needed)
+const CLIENT_TOOLS = new Set([
+  'navigate', 'ui_set_filter', 'ui_search', 'ui_open_new', 'ui_open_edit', 'ui_open_view',
+]);
+
+type ToolHandler = (params: Record<string, unknown>, cookiesOrUserId: string, cookiesOrEnv?: string | NCBEnv, env?: NCBEnv) => Promise<unknown>;
 
 const registry: Record<string, ToolHandler> = {
   // Leads
@@ -106,7 +112,8 @@ export async function executeTool(
   name: string,
   params: Record<string, unknown>,
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ): Promise<unknown> {
   const handler = registry[name];
   if (!handler) {
@@ -114,12 +121,17 @@ export async function executeTool(
   }
 
   try {
-    if (CREATE_TOOLS.has(name)) {
-      // Create tools need userId as second arg, cookies as third
-      return await handler(params, userId, cookies);
+    // Client-side tools don't need env
+    if (CLIENT_TOOLS.has(name)) {
+      return await handler(params, cookies);
     }
-    // Read/update tools need cookies as second arg
-    return await handler(params, cookies);
+
+    if (CREATE_TOOLS.has(name)) {
+      // Create tools: (params, userId, cookies, env)
+      return await handler(params, userId, cookies, env);
+    }
+    // Read/update tools: (params, cookies, env)
+    return await handler(params, cookies, env);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Tool execution failed';
     console.error(`Tool ${name} error:`, error);

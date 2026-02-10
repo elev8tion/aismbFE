@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTierPricing, type TierKey } from '@/lib/stripe/pricing';
+import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getTierPricing } from '@/lib/stripe/pricing';
 import { DocumentType } from '@/lib/contracts/types';
 
 export const runtime = 'edge';
 
-const NCB_INSTANCE = process.env.NCB_INSTANCE!;
-const NCB_DATA_API_URL = process.env.NCB_DATA_API_URL!;
-
-async function ncbCreate(table: string, data: Record<string, unknown>) {
-  const url = `${NCB_DATA_API_URL}/create/${table}?instance=${NCB_INSTANCE}`;
+async function ncbCreate(instance: string, dataApiUrl: string, table: string, data: Record<string, unknown>) {
+  const url = `${dataApiUrl}/create/${table}?instance=${instance}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Database-instance': NCB_INSTANCE,
+      'X-Database-instance': instance,
     },
     body: JSON.stringify(data),
   });
@@ -26,6 +24,11 @@ async function ncbCreate(table: string, data: Record<string, unknown>) {
 }
 
 export async function POST(req: NextRequest) {
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+  const instance = env.NCB_INSTANCE;
+  const dataApiUrl = env.NCB_DATA_API_URL;
+
   try {
     const body = await req.json();
     const { partnership_id, client_name, client_email, company_name, tier } = body as {
@@ -55,7 +58,7 @@ export async function POST(req: NextRequest) {
     const documents = [];
 
     for (const docType of docTypes) {
-      const result = await ncbCreate('documents', {
+      const result = await ncbCreate(instance, dataApiUrl, 'documents', {
         partnership_id,
         document_type: docType,
         status: 'draft',

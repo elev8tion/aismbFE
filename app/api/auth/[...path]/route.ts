@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
 function getConfig() {
-  const instance = process.env.NCB_INSTANCE;
-  const apiUrl = process.env.NCB_AUTH_API_URL;
+  const { env: cfEnv } = getRequestContext();
+  const env = cfEnv as unknown as Record<string, string>;
+  const instance = env.NCB_INSTANCE;
+  const apiUrl = env.NCB_AUTH_API_URL;
 
   if (!instance || !apiUrl) {
     throw new Error(`Missing environment variables: NCB_INSTANCE=${instance ? 'set' : 'MISSING'}, NCB_AUTH_API_URL=${apiUrl ? 'set' : 'MISSING'}`);

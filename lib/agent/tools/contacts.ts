@@ -1,4 +1,4 @@
-import { ncbRead, ncbReadOne, ncbCreate } from '../ncbClient';
+import { ncbRead, ncbReadOne, ncbCreate, type NCBEnv } from '../ncbClient';
 
 interface Contact {
   id: string;
@@ -27,8 +27,8 @@ interface Company {
   created_at?: string;
 }
 
-export async function search_contacts(params: { query: string }, cookies: string) {
-  const result = await ncbRead<Contact>('contacts', cookies);
+export async function search_contacts(params: { query: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Contact>(env, 'contacts', cookies);
   const q = params.query.toLowerCase();
   const matches = (result.data || []).filter(c =>
     c.first_name?.toLowerCase().includes(q) ||
@@ -45,8 +45,8 @@ export async function search_contacts(params: { query: string }, cookies: string
   };
 }
 
-export async function get_contact(params: { contact_id: string }, cookies: string) {
-  const result = await ncbReadOne<Contact>('contacts', params.contact_id, cookies);
+export async function get_contact(params: { contact_id: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbReadOne<Contact>(env, 'contacts', params.contact_id, cookies);
   const c = result.data;
   return {
     contact: c ? { ...c, full_name: `${c.first_name} ${c.last_name}` } : null,
@@ -56,9 +56,10 @@ export async function get_contact(params: { contact_id: string }, cookies: strin
 export async function create_contact(
   params: { first_name: string; last_name: string; email: string; phone?: string; company_id: string; title?: string; role?: string; decision_maker?: number },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
-  const result = await ncbCreate<Contact>('contacts', {
+  const result = await ncbCreate<Contact>(env, 'contacts', {
     first_name: params.first_name,
     last_name: params.last_name,
     email: params.email,
@@ -71,8 +72,8 @@ export async function create_contact(
   return { success: true, contact: result };
 }
 
-export async function search_companies(params: { query: string }, cookies: string) {
-  const result = await ncbRead<Company>('companies', cookies);
+export async function search_companies(params: { query: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Company>(env, 'companies', cookies);
   const q = params.query.toLowerCase();
   const matches = (result.data || []).filter(c => c.name?.toLowerCase().includes(q));
   return { companies: matches, total: matches.length };
@@ -81,9 +82,10 @@ export async function search_companies(params: { query: string }, cookies: strin
 export async function create_company(
   params: { name: string; industry: string; employee_count: string; website?: string; city?: string; state?: string },
   userId: string,
-  cookies: string
+  cookies: string,
+  env: NCBEnv
 ) {
-  const result = await ncbCreate<Company>('companies', {
+  const result = await ncbCreate<Company>(env, 'companies', {
     name: params.name,
     industry: params.industry,
     employee_count: params.employee_count,
@@ -94,8 +96,8 @@ export async function create_company(
   return { success: true, company: result };
 }
 
-export async function get_company_contacts(params: { company_id: string }, cookies: string) {
-  const result = await ncbRead<Contact>('contacts', cookies);
+export async function get_company_contacts(params: { company_id: string }, cookies: string, env: NCBEnv) {
+  const result = await ncbRead<Contact>(env, 'contacts', cookies);
   const matches = (result.data || []).filter(c => String(c.company_id) === params.company_id);
   return {
     contacts: matches.map(c => ({
