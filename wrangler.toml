@@ -4,6 +4,28 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
+# ─── KV Namespace Bindings ─────────────────────────────────────────────────
+[[kv_namespaces]]
+binding = "AGENT_SESSIONS"
+id = "a2289519b47b4c3ea8e656d65c8c3432"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "3da863a3e1854b8f84c0066a37b6c847"
+
+# ─── Environment Variables (set in CF Pages dashboard as encrypted secrets) ─
+# [vars]
+# NCB_INSTANCE = "..."
+# NCB_DATA_API_URL = "..."
+# NCB_AUTH_API_URL = "..."
+# NCB_OPENAPI_URL = "..."
+# NCB_SECRET_KEY = "..."
+# OPENAI_API_KEY = "..."
+# STRIPE_SECRET_KEY = "..."
+# STRIPE_WEBHOOK_SECRET = "..."
+# EMAILIT_API_KEY = "..."
+# ADMIN_EMAIL = "..."
+
 # Production environment
 [env.production]
 name = "ai-smb-crm"
