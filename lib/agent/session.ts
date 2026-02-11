@@ -8,60 +8,92 @@ export interface AgentSession {
 }
 
 const MAX_TURNS = 20;
-const SESSION_TTL = 30 * 60 * 1000; // 30 minutes
+const SESSION_TTL_SECONDS = 1800; // 30 minutes
 
-// In-memory session store (KV integration later)
-const sessions = new Map<string, AgentSession>();
+// In-memory fallback for local dev (no KV binding)
+const fallbackSessions = new Map<string, AgentSession>();
 
-export function getSession(sessionId: string, userId: string): AgentSession {
-  cleanupExpired();
-  const existing = sessions.get(sessionId);
+function kvKey(sessionId: string): string {
+  return `session:${sessionId}`;
+}
 
-  if (existing && existing.user_id === userId) {
-    // Check TTL
-    if (Date.now() - existing.created_at > SESSION_TTL) {
-      sessions.delete(sessionId);
-    } else {
-      return existing;
-    }
-  }
-
-  const session: AgentSession = {
+function newSession(sessionId: string, userId: string): AgentSession {
+  return {
     session_id: sessionId,
     user_id: userId,
     conversation: [],
     created_at: Date.now(),
   };
-  sessions.set(sessionId, session);
+}
+
+export async function getSession(sessionId: string, userId: string, kv?: KVNamespace): Promise<AgentSession> {
+  if (!kv) {
+    console.warn('[session] AGENT_SESSIONS KV not available — using in-memory fallback');
+    const existing = fallbackSessions.get(sessionId);
+    if (existing && existing.user_id === userId) {
+      if (Date.now() - existing.created_at > SESSION_TTL_SECONDS * 1000) {
+        fallbackSessions.delete(sessionId);
+      } else {
+        return existing;
+      }
+    }
+    const session = newSession(sessionId, userId);
+    fallbackSessions.set(sessionId, session);
+    return session;
+  }
+
+  const raw = await kv.get(kvKey(sessionId));
+  if (raw) {
+    try {
+      const session: AgentSession = JSON.parse(raw);
+      if (session.user_id === userId) {
+        return session;
+      }
+    } catch {
+      // corrupted — create fresh
+    }
+  }
+
+  const session = newSession(sessionId, userId);
+  await kv.put(kvKey(sessionId), JSON.stringify(session), { expirationTtl: SESSION_TTL_SECONDS });
   return session;
 }
 
-export function addMessage(sessionId: string, message: ChatCompletionMessageParam): void {
-  const session = sessions.get(sessionId);
-  if (!session) return;
+export async function addMessage(sessionId: string, message: ChatCompletionMessageParam, kv?: KVNamespace): Promise<void> {
+  if (!kv) {
+    const session = fallbackSessions.get(sessionId);
+    if (!session) return;
+    session.conversation.push(message);
+    trimConversation(session);
+    return;
+  }
 
-  session.conversation.push(message);
+  const raw = await kv.get(kvKey(sessionId));
+  if (!raw) return;
 
-  // Keep last MAX_TURNS messages (system messages excluded from count)
-  const nonSystem = session.conversation.filter(m => m.role !== 'system');
-  if (nonSystem.length > MAX_TURNS * 2) {
-    // Keep system messages + last MAX_TURNS*2 non-system messages
-    const systemMsgs = session.conversation.filter(m => m.role === 'system');
-    const recentNonSystem = nonSystem.slice(-MAX_TURNS * 2);
-    session.conversation = [...systemMsgs, ...recentNonSystem];
+  try {
+    const session: AgentSession = JSON.parse(raw);
+    session.conversation.push(message);
+    trimConversation(session);
+    await kv.put(kvKey(sessionId), JSON.stringify(session), { expirationTtl: SESSION_TTL_SECONDS });
+  } catch {
+    // corrupted — skip
   }
 }
 
-export function clearSession(sessionId: string): void {
-  sessions.delete(sessionId);
+export async function clearSession(sessionId: string, kv?: KVNamespace): Promise<void> {
+  if (!kv) {
+    fallbackSessions.delete(sessionId);
+    return;
+  }
+  await kv.delete(kvKey(sessionId));
 }
 
-// Cleanup expired sessions on access (edge-safe — no global timers)
-function cleanupExpired() {
-  const now = Date.now();
-  for (const [id, session] of sessions.entries()) {
-    if (now - session.created_at > SESSION_TTL) {
-      sessions.delete(id);
-    }
+function trimConversation(session: AgentSession): void {
+  const nonSystem = session.conversation.filter(m => m.role !== 'system');
+  if (nonSystem.length > MAX_TURNS * 2) {
+    const systemMsgs = session.conversation.filter(m => m.role === 'system');
+    const recentNonSystem = nonSystem.slice(-MAX_TURNS * 2);
+    session.conversation = [...systemMsgs, ...recentNonSystem];
   }
 }

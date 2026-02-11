@@ -3,6 +3,7 @@ import { getRequestContext } from '@cloudflare/next-on-pages';
 import { createOpenAI, buildChatParams } from '@/lib/openai/config';
 import { validateQuestion, detectPromptInjection } from '@/lib/security/requestValidator';
 import { getSessionUser, extractAuthCookies, type NCBEnv } from '@/lib/agent/ncbClient';
+import { checkRateLimit, getClientIP } from '@/lib/security/rateLimiter.kv';
 import { selectModel } from '@/lib/agent/modelRouter';
 import { getSession, addMessage } from '@/lib/agent/session';
 import { ALL_CRM_FUNCTIONS } from '@/lib/agent/functions';
@@ -290,11 +291,35 @@ export async function POST(request: NextRequest) {
   const { env: cfEnv } = getRequestContext();
   const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
+  // Pre-auth IP rate limit (brute-force protection)
+  const rateLimitKv = (env as any).RATE_LIMIT_KV as KVNamespace | undefined;
+  if (rateLimitKv) {
+    const ip = getClientIP(request);
+    const ipCheck = await checkRateLimit(rateLimitKv, `ip:${ip}`);
+    if (!ipCheck.allowed) {
+      return NextResponse.json({ error: ipCheck.reason }, {
+        status: 429,
+        headers: { 'Retry-After': String(ipCheck.retryAfter) },
+      });
+    }
+  }
+
   // Auth check
   const cookieHeader = request.headers.get('cookie') || '';
   const user = await getSessionUser(env, cookieHeader);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Per-user rate limit (budget protection)
+  if (rateLimitKv) {
+    const userCheck = await checkRateLimit(rateLimitKv, `user:${user.id}`);
+    if (!userCheck.allowed) {
+      return NextResponse.json({ error: userCheck.reason }, {
+        status: 429,
+        headers: { 'Retry-After': String(userCheck.retryAfter) },
+      });
+    }
   }
 
   const apiKey = env.OPENAI_API_KEY;
@@ -327,8 +352,9 @@ export async function POST(request: NextRequest) {
       console.warn(`Agent prompt injection attempt: ${injection.pattern}`);
     }
 
-    // Get or create session
-    const session = getSession(sessionId, user.id);
+    // Get or create session (KV-backed with in-memory fallback)
+    const kv = (env as any).AGENT_SESSIONS as KVNamespace | undefined;
+    const session = await getSession(sessionId, user.id, kv);
 
     // Select model based on complexity
     const model = selectModel(sanitizedQuestion);
@@ -347,7 +373,7 @@ export async function POST(request: NextRequest) {
     ];
 
     // Add user message to session
-    addMessage(sessionId, { role: 'user', content: sanitizedQuestion });
+    await addMessage(sessionId, { role: 'user', content: sanitizedQuestion }, kv);
 
     const authCookies = extractAuthCookies(cookieHeader);
 
@@ -416,7 +442,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save assistant response to session
-    addMessage(sessionId, { role: 'assistant', content: response });
+    await addMessage(sessionId, { role: 'assistant', content: response }, kv);
 
     const duration = Date.now() - startTime;
     return NextResponse.json({ response, success: true, duration, model, clientActions });

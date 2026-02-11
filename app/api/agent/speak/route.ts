@@ -3,6 +3,7 @@ import { getRequestContext } from '@cloudflare/next-on-pages';
 import { createOpenAI, MODELS } from '@/lib/openai/config';
 import { validateText } from '@/lib/security/requestValidator';
 import { getSessionUser, type NCBEnv } from '@/lib/agent/ncbClient';
+import { checkRateLimit, getClientIP } from '@/lib/security/rateLimiter.kv';
 
 export const runtime = 'edge';
 
@@ -11,11 +12,35 @@ export async function POST(request: NextRequest) {
   const { env: cfEnv } = getRequestContext();
   const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
+  // Pre-auth IP rate limit (brute-force protection)
+  const rateLimitKv = (env as any).RATE_LIMIT_KV as KVNamespace | undefined;
+  if (rateLimitKv) {
+    const ip = getClientIP(request);
+    const ipCheck = await checkRateLimit(rateLimitKv, `ip:${ip}`);
+    if (!ipCheck.allowed) {
+      return NextResponse.json({ error: ipCheck.reason }, {
+        status: 429,
+        headers: { 'Retry-After': String(ipCheck.retryAfter) },
+      });
+    }
+  }
+
   // Auth check
   const cookieHeader = request.headers.get('cookie') || '';
   const user = await getSessionUser(env, cookieHeader);
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Per-user rate limit (budget protection)
+  if (rateLimitKv) {
+    const userCheck = await checkRateLimit(rateLimitKv, `user:${user.id}`);
+    if (!userCheck.allowed) {
+      return NextResponse.json({ error: userCheck.reason }, {
+        status: 429,
+        headers: { 'Retry-After': String(userCheck.retryAfter) },
+      });
+    }
   }
 
   const apiKey = env.OPENAI_API_KEY;
