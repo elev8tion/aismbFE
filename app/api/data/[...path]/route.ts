@@ -61,7 +61,7 @@ async function getUserRole(config: DataProxyConfig, cookieHeader: string): Promi
   });
 
   if (res.ok) {
-    const data = await res.json();
+    const data: any = await res.json();
     if (data.data && data.data.length > 0) {
       return data.data[0].role;
     }

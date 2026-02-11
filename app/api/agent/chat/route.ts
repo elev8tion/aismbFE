@@ -6,6 +6,7 @@ import { getSessionUser, extractAuthCookies, type NCBEnv } from '@/lib/agent/ncb
 import { checkRateLimit, getClientIP } from '@/lib/security/rateLimiter.kv';
 import { selectModel } from '@/lib/agent/modelRouter';
 import { getSession, addMessage } from '@/lib/agent/session';
+import { getCachedResponse, setCachedResponse } from '@/lib/agent/responseCache';
 import { ALL_CRM_FUNCTIONS } from '@/lib/agent/functions';
 import { executeTool } from '@/lib/agent/tools';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
@@ -372,6 +373,16 @@ export async function POST(request: NextRequest) {
       { role: 'user', content: sanitizedQuestion },
     ];
 
+    // Check response cache (only pure conversational responses are cached)
+    const cacheKv = (env as any).AGENT_SESSIONS as KVNamespace | undefined;
+    const cached = await getCachedResponse(user.id, sanitizedQuestion, pagePath || '', cacheKv);
+    if (cached) {
+      await addMessage(sessionId, { role: 'user', content: sanitizedQuestion }, kv);
+      await addMessage(sessionId, { role: 'assistant', content: cached.response }, kv);
+      const duration = Date.now() - startTime;
+      return NextResponse.json({ response: cached.response, success: true, duration, model: cached.model, clientActions: [], cached: true });
+    }
+
     // Add user message to session
     await addMessage(sessionId, { role: 'user', content: sanitizedQuestion }, kv);
 
@@ -380,6 +391,7 @@ export async function POST(request: NextRequest) {
     // Tool call loop
     let currentMessages = messages;
     let response = '';
+    let usedTools = false;
     const clientActions: Array<Record<string, unknown>> = [];
     const chatParams = buildChatParams(model);
 
@@ -400,6 +412,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Execute tool calls
+      usedTools = true;
       currentMessages = [...currentMessages, choice.message];
 
       for (const toolCall of choice.message.tool_calls) {
@@ -443,6 +456,11 @@ export async function POST(request: NextRequest) {
 
     // Save assistant response to session
     await addMessage(sessionId, { role: 'assistant', content: response }, kv);
+
+    // Cache pure conversational responses (no tool calls)
+    if (!usedTools && response) {
+      await setCachedResponse(user.id, sanitizedQuestion, pagePath || '', response, model, cacheKv);
+    }
 
     const duration = Date.now() - startTime;
     return NextResponse.json({ response, success: true, duration, model, clientActions });

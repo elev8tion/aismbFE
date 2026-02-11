@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const selectedVoice = language === 'es' ? MODELS.voice : MODELS.voice;
+    const selectedVoice = language === 'es' ? MODELS.voiceEs : MODELS.voice;
 
     const mp3 = await openai.audio.speech.create({
       model: MODELS.tts,

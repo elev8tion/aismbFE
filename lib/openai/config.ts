@@ -19,6 +19,7 @@ export const MODELS = {
   transcription: 'whisper-1',
   tts: 'gpt-4o-mini-tts',
   voice: 'echo',
+  voiceEs: 'nova',
 } as const;
 
 export type ModelTier = 'fast' | 'standard' | 'reasoning';
