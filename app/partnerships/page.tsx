@@ -137,7 +137,7 @@ export default function PartnershipsPage() {
         fetch('/api/data/read/opportunities', { credentials: 'include' }),
         fetch('/api/data/read/delivered_systems', { credentials: 'include' }),
       ]);
-      const [partnershipsData, companiesData, oppsData, systemsData] = await Promise.all([
+      const [partnershipsData, companiesData, oppsData, systemsData]: any[] = await Promise.all([
         partnershipsRes.json(), companiesRes.json(), oppsRes.json(), systemsRes.json(),
       ]);
 
@@ -172,7 +172,7 @@ export default function PartnershipsPage() {
       try {
         const res = await fetch(`/api/contracts/status?partnership_id=${p.id}`, { credentials: 'include' });
         if (res.ok) {
-          const { documents } = await res.json();
+          const { documents }: any = await res.json();
           if (documents && documents.length > 0) {
             if (documents.every((d: DocumentRecord) => d.status === 'fully_executed')) statuses[p.id] = 'fully_executed';
             else if (documents.some((d: DocumentRecord) => d.status === 'client_signed')) statuses[p.id] = 'client_signed';
@@ -294,7 +294,7 @@ export default function PartnershipsPage() {
           company_name: invoicePartnership.company_name || '',
         }),
       });
-      const data = await res.json();
+      const data: any = await res.json();
       if (data.success) {
         // Update partnership payment_status locally
         await fetch(`/api/data/update/partnerships?id=${invoicePartnership.id}`, {
@@ -328,7 +328,7 @@ export default function PartnershipsPage() {
       else params.set('partnership_id', p.id);
 
       const res = await fetch(`/api/integrations/stripe/invoices/list?${params.toString()}`);
-      const data = await res.json();
+      const data: any = await res.json();
       setInvoicesList(data.invoices || []);
     } catch {
       setInvoicesList([]);
@@ -354,7 +354,7 @@ export default function PartnershipsPage() {
           access_level: grantForm.access_level,
         }),
       });
-      const data = await res.json();
+      const data: any = await res.json();
       if (data.success) {
         setGrantSuccess(true);
         setTimeout(() => {

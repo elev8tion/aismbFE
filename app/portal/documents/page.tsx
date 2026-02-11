@@ -46,7 +46,7 @@ export default function PortalDocumentsPage() {
             credentials: 'include',
           });
           if (res.ok) {
-            const data = await res.json();
+            const data: any = await res.json();
             result[p.id] = data.documents || [];
           }
         } catch {

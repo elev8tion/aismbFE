@@ -30,7 +30,7 @@ export default function PortalMeetingsPage() {
         const res = await fetch(`/api/data/read/bookings?guest_email=${encodeURIComponent(user.email)}`, {
           credentials: 'include',
         });
-        const data = await res.json();
+        const data: any = await res.json();
         setBookings(data.data || []);
       } catch {
         setBookings([]);

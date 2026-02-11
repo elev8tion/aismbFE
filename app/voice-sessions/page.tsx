@@ -262,7 +262,7 @@ export default function VoiceSessionsPage() {
         fetch('/api/data/read/voice_sessions', { credentials: 'include' }),
         fetch('/api/data/read/leads', { credentials: 'include' }),
       ]);
-      const [sessionsData, leadsData] = await Promise.all([
+      const [sessionsData, leadsData]: any[] = await Promise.all([
         sessionsRes.json(), leadsRes.json(),
       ]);
 

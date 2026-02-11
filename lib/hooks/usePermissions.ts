@@ -40,7 +40,7 @@ export function usePermissions() {
       const res = await fetch('/api/data/read/user_profiles', {
         credentials: 'include',
       });
-      const data = await res.json();
+      const data: any = await res.json();
 
       if (data.data && data.data.length > 0) {
         setProfile(data.data[0]);
@@ -53,7 +53,7 @@ export function usePermissions() {
           const refetch = await fetch('/api/data/read/user_profiles', {
             credentials: 'include',
           });
-          const refetchData = await refetch.json();
+          const refetchData: any = await refetch.json();
           if (refetchData.data && refetchData.data.length > 0) {
             setProfile(refetchData.data[0]);
           } else {
@@ -84,7 +84,7 @@ export function usePermissions() {
           timezone: 'America/New_York',
         }),
       });
-      const data = await res.json();
+      const data: any = await res.json();
       return data.data || null;
     } catch (err) {
       console.error('Error creating profile:', err);

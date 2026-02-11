@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
       if (res.ok) {
-        const data = await res.json();
+        const data: any = await res.json();
         setUser(data.user || null);
       } else {
         setUser(null);
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!res.ok) {
-      const error = await res.json();
+      const error: any = await res.json();
       throw new Error(error.message || 'Failed to sign in');
     }
 
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!res.ok) {
-      const error = await res.json();
+      const error: any = await res.json();
       throw new Error(error.message || 'Failed to sign up');
     }
 

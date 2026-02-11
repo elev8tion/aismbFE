@@ -51,7 +51,7 @@ export default function PortalSettingsPage() {
   const fetchProfile = useCallback(async () => {
     try {
       const res = await fetch('/api/data/read/user_profiles', { credentials: 'include' });
-      const data = await res.json();
+      const data: any = await res.json();
       if (data.data && data.data.length > 0) {
         const p = data.data[0];
         setProfileId(p.id || null);

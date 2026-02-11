@@ -43,7 +43,7 @@ export default function CompaniesPage() {
         fetch('/api/data/read/opportunities', { credentials: 'include' }),
         fetch('/api/data/read/partnerships', { credentials: 'include' }),
       ]);
-      const [companiesData, contactsData, oppsData, partnershipsData] = await Promise.all([
+      const [companiesData, contactsData, oppsData, partnershipsData]: any[] = await Promise.all([
         companiesRes.json(), contactsRes.json(), oppsRes.json(), partnershipsRes.json(),
       ]);
 

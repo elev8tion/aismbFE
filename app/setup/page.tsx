@@ -119,7 +119,7 @@ export default function SetupWizardPage() {
 
       // Save profile and mark setup complete
       const profileRes = await fetch('/api/data/read/user_profiles', { credentials: 'include' });
-      const profileData = await profileRes.json();
+      const profileData: any = await profileRes.json();
       const profiles = profileData?.data || [];
       const existing = profiles[0];
 

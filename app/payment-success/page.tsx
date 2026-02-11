@@ -45,7 +45,7 @@ function PaymentSuccessContent() {
     }
     fetch(`/api/integrations/stripe/session?session_id=${sessionId}`)
       .then(res => res.json())
-      .then(data => {
+      .then((data: any) => {
         if (data.error) {
           setError(data.error);
         } else {

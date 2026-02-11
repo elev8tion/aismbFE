@@ -38,7 +38,7 @@ export default function CounterSignModal({ open, onClose, partnership, onSuccess
       });
 
       if (!res.ok) {
-        const result = await res.json();
+        const result: any = await res.json();
         throw new Error(result.error || 'Failed to countersign');
       }
 

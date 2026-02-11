@@ -48,11 +48,11 @@ export default function SendContractModal({ open, onClose, partnership, onSucces
       });
 
       if (!createRes.ok) {
-        const data = await createRes.json();
+        const data: any = await createRes.json();
         throw new Error(data.error || 'Failed to create documents');
       }
 
-      const { signing_token } = await createRes.json();
+      const { signing_token }: any = await createRes.json();
 
       // Step 2: Send signing request email
       const sendRes = await fetch('/api/contracts/send', {
@@ -62,7 +62,7 @@ export default function SendContractModal({ open, onClose, partnership, onSucces
       });
 
       if (!sendRes.ok) {
-        const data = await sendRes.json();
+        const data: any = await sendRes.json();
         throw new Error(data.error || 'Failed to send email');
       }
 

@@ -73,7 +73,7 @@ export default function DraftsPage() {
     try {
       const res = await fetch('/api/data/read/drafts', { credentials: 'include' });
       if (res.ok) {
-        const data = await res.json();
+        const data: any = await res.json();
         setDrafts(Array.isArray(data) ? data : data.data || []);
       }
     } catch { /* ignore */ }

@@ -42,7 +42,7 @@ export default function PortalDashboardPage() {
         const res = await fetch(`/api/data/read/bookings?guest_email=${encodeURIComponent(user.email)}`, {
           credentials: 'include',
         });
-        const data = await res.json();
+        const data: any = await res.json();
         const allBookings: Booking[] = data.data || [];
         const now = new Date().toISOString().split('T')[0];
         setBookings(allBookings.filter((b) => b.booking_date >= now).slice(0, 5));
@@ -63,7 +63,7 @@ export default function PortalDashboardPage() {
             credentials: 'include',
           });
           if (res.ok) {
-            const data = await res.json();
+            const data: any = await res.json();
             docs[p.id] = data.documents || [];
           }
         } catch {

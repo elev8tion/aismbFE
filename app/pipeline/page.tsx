@@ -56,7 +56,7 @@ export default function PipelinePage() {
           description: `Setup payment for ${deal.name}`,
         }),
       });
-      const data = await res.json();
+      const data: any = await res.json();
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -81,7 +81,7 @@ export default function PipelinePage() {
         return;
       }
 
-      const [oppsData, companiesData] = await Promise.all([
+      const [oppsData, companiesData]: any[] = await Promise.all([
         oppsRes.json(),
         companiesRes.json(),
       ]);
@@ -146,7 +146,7 @@ export default function PipelinePage() {
         setCreateError('');
         fetchOpportunities();
       } else {
-        const errData = await res.json().catch(() => null);
+        const errData: any = await res.json().catch(() => null);
         setCreateError(errData?.error || `Failed to create (${res.status}). Make sure you are logged in.`);
       }
     } catch (err) {

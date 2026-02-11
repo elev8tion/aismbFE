@@ -41,7 +41,7 @@ export default function SignPage() {
           setError('Invalid or expired signing link.');
           return;
         }
-        const result = await res.json();
+        const result: any = await res.json();
         setData(result);
         setStatus('ready');
       } catch {
@@ -68,7 +68,7 @@ export default function SignPage() {
       });
 
       if (!res.ok) {
-        const result = await res.json();
+        const result: any = await res.json();
         throw new Error(result.error || 'Failed to sign');
       }
 

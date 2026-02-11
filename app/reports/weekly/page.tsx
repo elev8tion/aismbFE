@@ -30,7 +30,7 @@ export default function WeeklyReportPage() {
         fetch('/api/data/read/leads', { credentials: 'include' }),
         fetch('/api/data/read/opportunities', { credentials: 'include' }),
       ]);
-      const [leadsData, oppsData] = await Promise.all([
+      const [leadsData, oppsData]: any[] = await Promise.all([
         leadsRes.json(), oppsRes.json(),
       ]);
 

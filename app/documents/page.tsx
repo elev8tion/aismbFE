@@ -53,7 +53,7 @@ export default function DocumentsPage() {
   const loadData = useCallback(async () => {
     try {
       const pRes = await fetch('/api/data/read/partnerships', { credentials: 'include' });
-      const pJson = await pRes.json();
+      const pJson: any = await pRes.json();
       const pData: Partnership[] = pJson?.data || [];
       setPartnerships(pData);
 
@@ -61,7 +61,7 @@ export default function DocumentsPage() {
       for (const p of pData) {
         const dRes = await fetch(`/api/contracts/status?partnership_id=${p.id}`);
         if (dRes.ok) {
-          const { documents } = await dRes.json();
+          const { documents }: any = await dRes.json();
           if (documents && documents.length > 0) {
             const overallStatus = getOverallStatus(documents);
             groups.push({ partnership: p, documents, overallStatus });

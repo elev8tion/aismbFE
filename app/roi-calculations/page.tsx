@@ -266,7 +266,7 @@ export default function ROICalculationsPage() {
         fetch('/api/data/read/roi_calculations', { credentials: 'include' }),
         fetch('/api/data/read/leads', { credentials: 'include' }),
       ]);
-      const [calcsData, leadsData] = await Promise.all([
+      const [calcsData, leadsData]: any[] = await Promise.all([
         calcsRes.json(), leadsRes.json(),
       ]);
 

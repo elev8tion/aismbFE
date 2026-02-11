@@ -54,7 +54,7 @@ export function useCustomerPortal() {
       const accessRes = await fetch('/api/data/read/customer_access', {
         credentials: 'include',
       });
-      const accessData = await accessRes.json();
+      const accessData: any = await accessRes.json();
       const records: CustomerAccess[] = accessData.data || [];
       setAccessRecords(records);
 
@@ -78,8 +78,8 @@ export function useCustomerPortal() {
         }),
       ]);
 
-      const partnershipsData = await partnershipsRes.json();
-      const systemsData = await systemsRes.json();
+      const partnershipsData: any = await partnershipsRes.json();
+      const systemsData: any = await systemsRes.json();
 
       const rawPartnerships: Partnership[] = partnershipsData.data || [];
 
@@ -91,7 +91,7 @@ export function useCustomerPortal() {
             `/api/data/read/companies?id__in=${companyIds.join(',')}`,
             { credentials: 'include' }
           );
-          const companiesData = await companiesRes.json();
+          const companiesData: any = await companiesRes.json();
           const companyMap: Record<number, string> = {};
           for (const c of companiesData.data || []) {
             companyMap[c.id] = c.name;

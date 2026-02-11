@@ -42,7 +42,7 @@ export default function DashboardPage() {
         fetch('/api/data/read/activities?limit=10', { credentials: 'include' }),
       ]);
 
-      const [leads, opps, partners, acts] = await Promise.all([
+      const [leads, opps, partners, acts]: any[] = await Promise.all([
         leadsRes.json(), oppsRes.json(), partnersRes.json(), activitiesRes.json()
       ]);
 

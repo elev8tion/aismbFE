@@ -91,7 +91,7 @@ export function OnboardingChecklist() {
     async function loadProgress() {
       try {
         const res = await fetch('/api/data/read/user_profiles', { credentials: 'include' });
-        const data = await res.json();
+        const data: any = await res.json();
         const profiles = data?.data || [];
         const profile = profiles.find(
           (p: Record<string, unknown>) => p.user_id === user?.id || p.email === user?.email
