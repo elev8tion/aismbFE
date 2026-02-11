@@ -73,9 +73,11 @@ export default function CompaniesPage() {
       });
       setEntityCounts(counts);
 
-      if (companiesData.data && companiesData.data.length > 0) { setCompanies(companiesData.data); }
-      else { setCompanies(MOCK_COMPANIES); }
-    } catch { setCompanies(MOCK_COMPANIES); }
+      setCompanies(companiesData.data || []);
+    } catch (err) {
+      console.error('Failed to fetch companies:', err);
+      setCompanies([]);
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -261,9 +263,3 @@ export default function CompaniesPage() {
   );
 }
 
-const MOCK_COMPANIES: Company[] = [
-  { id: '1', name: 'ABC Plumbing LLC', industry: 'Plumbing', employee_count: '10-25', ai_maturity_score: 3, website: 'abcplumbing.com' },
-  { id: '2', name: 'XYZ Property Management', industry: 'Property Management', employee_count: '25-50', ai_maturity_score: 5, website: 'xyzproperties.com' },
-  { id: '3', name: 'Smith & Sons Construction', industry: 'Construction', employee_count: '25-50', ai_maturity_score: 2 },
-  { id: '4', name: 'Quick Fix HVAC', industry: 'HVAC', employee_count: '5-10', ai_maturity_score: 4, website: 'quickfixhvac.com' },
-];

@@ -52,17 +52,15 @@ export default function LeadsPage() {
     try {
       const res = await fetch('/api/data/read/leads', { credentials: 'include' });
       const data: { data?: Lead[] } = await res.json();
-      if (data.data && data.data.length > 0) {
-        setLeads(data.data.sort((a, b) => {
-          const da = a.created_at ? new Date(a.created_at).getTime() : 0;
-          const db = b.created_at ? new Date(b.created_at).getTime() : 0;
-          return db - da;
-        }));
-      } else {
-        setLeads(MOCK_LEADS);
-      }
-    } catch {
-      setLeads(MOCK_LEADS);
+      const sorted = (data.data || []).sort((a, b) => {
+        const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const db = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return db - da;
+      });
+      setLeads(sorted);
+    } catch (err) {
+      console.error('Failed to fetch leads:', err);
+      setLeads([]);
     } finally {
       setLoading(false);
     }
@@ -377,9 +375,3 @@ export default function LeadsPage() {
   );
 }
 
-const MOCK_LEADS: Lead[] = [
-  { id: '1', email: 'john@abcplumbing.com', first_name: 'John', last_name: 'Smith', company_name: 'ABC Plumbing', source: 'voice-agent', lead_score: 85, status: 'qualified', industry: 'Plumbing', phone: '(555) 123-4567' },
-  { id: '2', email: 'maria@xyzhvac.com', first_name: 'Maria', last_name: 'Garcia', company_name: 'XYZ HVAC', source: 'roi-calculator', lead_score: 72, status: 'new', industry: 'HVAC' },
-  { id: '3', email: 'robert@johnsonconstruction.com', first_name: 'Robert', last_name: 'Johnson', company_name: 'Johnson Construction', source: 'referral', lead_score: 90, status: 'qualified', industry: 'Construction', phone: '(555) 987-6543' },
-  { id: '4', email: 'sarah@smithproperties.com', first_name: 'Sarah', last_name: 'Williams', company_name: 'Smith Properties', source: 'voice-agent', lead_score: 65, status: 'contacted', industry: 'Property Management' },
-];

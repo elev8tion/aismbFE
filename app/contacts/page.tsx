@@ -58,9 +58,11 @@ export default function ContactsPage() {
       compList.forEach((c: any) => { map[String(c.id)] = c.name; });
       setCompanyMap(map);
 
-      if (contactsData.data && contactsData.data.length > 0) { setContacts(contactsData.data); }
-      else { setContacts(MOCK_CONTACTS); }
-    } catch { setContacts(MOCK_CONTACTS); }
+      setContacts(contactsData.data || []);
+    } catch (err) {
+      console.error('Failed to fetch contacts:', err);
+      setContacts([]);
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -288,10 +290,3 @@ export default function ContactsPage() {
   );
 }
 
-const MOCK_CONTACTS: Contact[] = [
-  { id: '1', first_name: 'John', last_name: 'Smith', email: 'john@abcplumbing.com', phone: '(555) 123-4567', company_name: 'ABC Plumbing LLC', role: 'Owner', decision_maker: 1 },
-  { id: '2', first_name: 'Maria', last_name: 'Garcia', email: 'maria@xyzproperty.com', phone: '(555) 234-5678', company_name: 'XYZ Property Management', role: 'Operations Manager', decision_maker: 1 },
-  { id: '3', first_name: 'Robert', last_name: 'Johnson', email: 'robert@smithconstruction.com', phone: '(555) 345-6789', company_name: 'Smith & Sons Construction', role: 'CEO', decision_maker: 1 },
-  { id: '4', first_name: 'Sarah', last_name: 'Williams', email: 'sarah@xyzproperty.com', company_name: 'XYZ Property Management', role: 'IT Manager', decision_maker: 0 },
-  { id: '5', first_name: 'David', last_name: 'Brown', email: 'david@quickfixhvac.com', phone: '(555) 456-7890', company_name: 'Quick Fix HVAC', role: 'Owner', decision_maker: 1 },
-];

@@ -161,9 +161,11 @@ export default function PartnershipsPage() {
       });
       setDeliveredSystemsMap(sMap);
 
-      if (partnershipsData.data && partnershipsData.data.length > 0) { setPartnerships(partnershipsData.data); }
-      else { setPartnerships(MOCK_PARTNERSHIPS); }
-    } catch { setPartnerships(MOCK_PARTNERSHIPS); }
+      setPartnerships(partnershipsData.data || []);
+    } catch (err) {
+      console.error('Failed to fetch partnerships:', err);
+      setPartnerships([]);
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -746,8 +748,3 @@ export default function PartnershipsPage() {
   );
 }
 
-const MOCK_PARTNERSHIPS: Partnership[] = [
-  { id: '1', company_name: 'Smith & Sons Construction', tier: 'architect', status: 'active', phase: 'co-create', health_score: 85, systems_delivered: 3, total_systems: 6, start_date: '2024-01-15', notes: 'Strong engagement. Currently building custom estimating AI and project management automation.', payment_status: 'setup_paid' },
-  { id: '2', company_name: 'XYZ Property Management', tier: 'foundation', status: 'active', phase: 'deploy', health_score: 92, systems_delivered: 2, total_systems: 3, start_date: '2024-02-01', notes: 'Tenant communication AI deployed and performing well. Maintenance scheduling next.', payment_status: 'invoice_sent' },
-  { id: '3', company_name: 'Quick Fix HVAC', tier: 'discovery', status: 'onboarding', phase: 'discover', health_score: 100, systems_delivered: 0, total_systems: 1, start_date: '2024-03-01', notes: 'Initial discovery phase. Evaluating AI-powered scheduling system.' },
-];

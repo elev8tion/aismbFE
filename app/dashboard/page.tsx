@@ -77,7 +77,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     fetchDashboardData();
-    // Poll every 30 seconds for live updates
+    // Poll every 60 seconds for live updates
     const interval = setInterval(fetchDashboardData, 60000);
     return () => clearInterval(interval);
   }, [user, fetchDashboardData]);

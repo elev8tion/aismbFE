@@ -77,7 +77,7 @@ export default function DraftsPage() {
         const data: any = await res.json();
         setDrafts(Array.isArray(data) ? data : data.data || []);
       }
-    } catch { /* ignore */ }
+    } catch (err) { console.error('Failed to fetch drafts:', err); }
     setLoading(false);
   }, []);
 
@@ -167,7 +167,7 @@ export default function DraftsPage() {
         setForm(emptyForm);
         fetchDrafts();
       }
-    } catch { /* ignore */ }
+    } catch (err) { console.error('Failed to create draft:', err); }
     setSaving(false);
   };
 
@@ -191,7 +191,7 @@ export default function DraftsPage() {
         setForm(emptyForm);
         fetchDrafts();
       }
-    } catch { /* ignore */ }
+    } catch (err) { console.error('Failed to update draft:', err); }
     setSaving(false);
   };
 
@@ -201,7 +201,7 @@ export default function DraftsPage() {
         method: 'DELETE', credentials: 'include',
       });
       if (res.ok) fetchDrafts();
-    } catch { /* ignore */ }
+    } catch (err) { console.error('Failed to delete draft:', err); }
   };
 
   const handleCopy = (text: string) => {

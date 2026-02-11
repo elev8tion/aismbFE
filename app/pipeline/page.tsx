@@ -78,7 +78,7 @@ export default function PipelinePage() {
       ]);
 
       if (oppsRes.status === 401) {
-        setOpportunities(MOCK_OPPORTUNITIES);
+        setOpportunities([]);
         setLoading(false);
         return;
       }
@@ -95,12 +95,11 @@ export default function PipelinePage() {
       compList.forEach((c: any) => { map[String(c.id)] = c.name; });
       setCompanyMap(map);
 
-      if (oppsData.data && oppsData.data.length > 0) {
-        setOpportunities(oppsData.data);
-      } else {
-        setOpportunities(MOCK_OPPORTUNITIES);
-      }
-    } catch { setOpportunities(MOCK_OPPORTUNITIES); }
+      setOpportunities(oppsData.data || []);
+    } catch (err) {
+      console.error('Failed to fetch opportunities:', err);
+      setOpportunities([]);
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -336,12 +335,3 @@ export default function PipelinePage() {
   );
 }
 
-const MOCK_OPPORTUNITIES: Opportunity[] = [
-  { id: '1', name: 'ABC Plumbing', tier: 'discovery', stage: 'new-lead', setup_fee: 2500, monthly_fee: 750, total_contract_value: 4000 },
-  { id: '2', name: 'Quick Fix HVAC', tier: 'foundation', stage: 'new-lead', setup_fee: 5000, monthly_fee: 1500, total_contract_value: 9500 },
-  { id: '3', name: 'XYZ Properties', tier: 'foundation', stage: 'contacted', setup_fee: 5000, monthly_fee: 1500, total_contract_value: 9500 },
-  { id: '4', name: 'Smith Construction', tier: 'architect', stage: 'discovery-call', setup_fee: 12000, monthly_fee: 3000, total_contract_value: 30000 },
-  { id: '5', name: 'Miller Services', tier: 'foundation', stage: 'discovery-call', setup_fee: 5000, monthly_fee: 1500, total_contract_value: 9500 },
-  { id: '6', name: 'Johnson Real Estate', tier: 'foundation', stage: 'proposal-sent', setup_fee: 5000, monthly_fee: 1500, total_contract_value: 9500 },
-  { id: '7', name: 'Brown HVAC Systems', tier: 'architect', stage: 'negotiation', setup_fee: 12000, monthly_fee: 3000, total_contract_value: 30000 },
-];
