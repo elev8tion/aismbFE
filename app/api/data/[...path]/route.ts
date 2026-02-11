@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
+import { checkRateLimit, getClientIP } from '@/lib/security/rateLimiter.kv';
 import { extractAuthCookies, getSessionUser, type NCBEnv } from "@/lib/agent/ncbClient";
 
 export const runtime = 'edge';
@@ -107,6 +108,23 @@ function forbidden() {
   });
 }
 
+async function rateLimit(req: NextRequest, env: Record<string, unknown>): Promise<NextResponse | null> {
+  const kv = env.RATE_LIMIT_KV as KVNamespace | undefined;
+  if (!kv) return null;
+  const ip = getClientIP(req);
+  const result = await checkRateLimit(kv, `data:${ip}`);
+  if (!result.allowed) {
+    return new NextResponse(JSON.stringify({ error: result.reason || 'Rate limit exceeded' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(result.retryAfter),
+      },
+    });
+  }
+  return null;
+}
+
 async function proxyToNCB(config: DataProxyConfig, req: NextRequest, path: string, body?: string, bypassRLS = false) {
   const searchParams = new URLSearchParams();
   searchParams.set("Instance", config.instance);
@@ -163,6 +181,9 @@ export async function GET(
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
 
+  const limited = await rateLimit(req, cfEnv as unknown as Record<string, unknown>);
+  if (limited) return limited;
+
   const { path } = await params;
   const pathStr = path.join("/");
   const cookieHeader = req.headers.get("cookie") || "";
@@ -205,6 +226,9 @@ export async function POST(
   const { env: cfEnv } = getRequestContext();
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
+
+  const limited = await rateLimit(req, cfEnv as unknown as Record<string, unknown>);
+  if (limited) return limited;
 
   const { path } = await params;
   const pathStr = path.join("/");
@@ -251,6 +275,9 @@ export async function PUT(
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
 
+  const limited = await rateLimit(req, cfEnv as unknown as Record<string, unknown>);
+  if (limited) return limited;
+
   const { path } = await params;
   const pathStr = path.join("/");
   const body = await req.text();
@@ -294,6 +321,9 @@ export async function DELETE(
   const { env: cfEnv } = getRequestContext();
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
+
+  const limited = await rateLimit(req, cfEnv as unknown as Record<string, unknown>);
+  if (limited) return limited;
 
   const { path } = await params;
   const pathStr = path.join("/");
