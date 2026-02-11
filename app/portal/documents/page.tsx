@@ -8,7 +8,11 @@ import { getContractBundle } from '@/lib/contracts/templates';
 import { TIER_PRICING, type TierKey } from '@/lib/stripe/pricing';
 import DocumentViewer from '@/components/contracts/DocumentViewer';
 import type { PortalContractsStatusResponse } from '@/lib/types/api';
-import ContractPDFRenderer from '@/components/contracts/ContractPDFRenderer';
+import dynamic from 'next/dynamic';
+const ContractPDFRenderer = dynamic(
+  () => import('@/components/contracts/ContractPDFRenderer'),
+  { ssr: false }
+);
 
 interface DocumentRecord {
   id: number;

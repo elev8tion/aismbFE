@@ -1,10 +1,6 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-
 /**
  * Generates a PDF from a specific DOM element ID.
- * @param elementId The ID of the HTML element to render
- * @param filename The desired output filename
+ * Lazy-loads jspdf + html2canvas only when called.
  */
 export async function generatePDF(elementId: string, filename: string) {
   const element = document.getElementById(elementId);
@@ -14,8 +10,13 @@ export async function generatePDF(elementId: string, filename: string) {
   }
 
   try {
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas'),
+    ]);
+
     const canvas = await html2canvas(element, {
-      scale: 2, // Higher scale for better quality
+      scale: 2,
       logging: false,
       useCORS: true,
       backgroundColor: '#ffffff',
@@ -28,17 +29,16 @@ export async function generatePDF(elementId: string, filename: string) {
       format: 'a4',
     });
 
-    const imgWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
+    const imgWidth = 210;
+    const pageHeight = 297;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
+
     let heightLeft = imgHeight;
     let position = 0;
 
     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
 
-    // Handle multi-page content if necessary
     while (heightLeft >= 0) {
       position = heightLeft - imgHeight;
       pdf.addPage();

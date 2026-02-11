@@ -6,7 +6,11 @@ import { useTranslations } from '@/contexts/LanguageContext';
 import DocumentStatusBadge from '@/components/contracts/DocumentStatusBadge';
 import SendContractModal from '@/components/contracts/SendContractModal';
 import CounterSignModal from '@/components/contracts/CounterSignModal';
-import ContractPDFRenderer from '@/components/contracts/ContractPDFRenderer';
+import dynamic from 'next/dynamic';
+const ContractPDFRenderer = dynamic(
+  () => import('@/components/contracts/ContractPDFRenderer'),
+  { ssr: false }
+);
 import { DocumentRecord, DocumentStatus } from '@/lib/contracts/types';
 import { getContractBundle } from '@/lib/contracts/templates';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';

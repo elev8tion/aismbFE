@@ -14,7 +14,11 @@ import { Modal } from '@/components/ui/Modal';
 
 import { generatePDF } from '@/lib/utils/pdfGenerator';
 import { useEngagement } from '@/lib/hooks/useEngagement';
-import { PaybackTrend } from '@/components/dashboard/PaybackTrend';
+import dynamic from 'next/dynamic';
+const PaybackTrend = dynamic(
+  () => import('@/components/dashboard/PaybackTrend').then(mod => ({ default: mod.PaybackTrend })),
+  { ssr: false, loading: () => <div className="h-48 animate-pulse bg-white/5 rounded-xl" /> }
+);
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 

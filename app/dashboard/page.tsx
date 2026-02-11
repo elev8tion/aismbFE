@@ -17,7 +17,11 @@ import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist
 import { useState, useEffect, useCallback } from 'react';
 import type { NCBListResponse } from '@/lib/types/api';
 
-import { PipelineFunnel } from '@/components/dashboard/PipelineFunnel';
+import dynamic from 'next/dynamic';
+const PipelineFunnel = dynamic(
+  () => import('@/components/dashboard/PipelineFunnel').then(mod => ({ default: mod.PipelineFunnel })),
+  { ssr: false, loading: () => <div className="h-48 animate-pulse bg-white/5 rounded-xl" /> }
+);
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function DashboardPage() {
