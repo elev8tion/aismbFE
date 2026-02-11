@@ -662,7 +662,7 @@ const roiFunctions: ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'run_roi_calculation',
-      description: 'Run an ROI calculation for a business and save the results',
+      description: 'Run a tier-aware ROI calculation for a business and save the results. Returns estimated savings, hours saved, tier cost, and payback period.',
       parameters: {
         type: 'object',
         properties: {
@@ -670,6 +670,7 @@ const roiFunctions: ChatCompletionTool[] = [
           monthly_revenue: { type: 'number', description: 'Monthly revenue in dollars' },
           employee_count: { type: 'number', description: 'Number of employees' },
           industry: { type: 'string', description: 'Industry category (optional)' },
+          selected_tier: { type: 'string', enum: ['discovery', 'foundation', 'architect'], description: 'Service tier for the calculation (default: foundation)' },
         },
         required: ['business_name', 'monthly_revenue', 'employee_count'],
       },
