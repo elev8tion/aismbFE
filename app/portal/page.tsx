@@ -7,6 +7,7 @@ import { useCustomerPortal } from '@/lib/hooks/useCustomerPortal';
 import { getTierClass, getHealthColor } from '@/lib/utils/statusClasses';
 import { useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import type { PortalBookingsResponse, PortalContractsStatusResponse } from '@/lib/types/api';
 
 const PHASES = ['discover', 'co-create', 'deploy', 'independent'];
 
@@ -43,7 +44,7 @@ export default function PortalDashboardPage() {
         const res = await fetch(`/api/data/read/bookings?guest_email=${encodeURIComponent(user.email)}`, {
           credentials: 'include',
         });
-        const data: any = await res.json();
+        const data = await res.json() as PortalBookingsResponse;
         const allBookings: Booking[] = data.data || [];
         const now = new Date().toISOString().split('T')[0];
         setBookings(allBookings.filter((b) => b.booking_date >= now).slice(0, 5));
@@ -64,11 +65,11 @@ export default function PortalDashboardPage() {
             credentials: 'include',
           });
           if (res.ok) {
-            const data: any = await res.json();
+            const data = await res.json() as PortalContractsStatusResponse;
             docs[p.id] = data.documents || [];
           }
-        } catch {
-          // ignore
+        } catch (err) {
+          console.error(`Failed to fetch contracts for partnership ${p.id}:`, err);
         }
       }
       setDocuments(docs);

@@ -39,3 +39,32 @@ export interface AuthSessionResponse {
   } | null;
   token?: string;
 }
+
+/** Portal API response shape for NCB list reads */
+export interface PortalBookingsResponse {
+  data: Array<{
+    id: number;
+    guest_name: string;
+    guest_email: string;
+    booking_date: string;
+    start_time: string;
+    end_time: string;
+    status: string;
+    notes?: string;
+  }>;
+}
+
+export interface PortalContractsStatusResponse {
+  documents: Array<{
+    id: number;
+    partnership_id: number;
+    document_type: string;
+    status: string;
+  }>;
+  signatures: Array<{
+    id: number;
+    document_id: number;
+    signer_type: string;
+    signed_at?: string;
+  }>;
+}

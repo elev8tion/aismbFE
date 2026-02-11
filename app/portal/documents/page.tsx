@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { getContractBundle } from '@/lib/contracts/templates';
 import { TIER_PRICING, type TierKey } from '@/lib/stripe/pricing';
 import DocumentViewer from '@/components/contracts/DocumentViewer';
+import type { PortalContractsStatusResponse } from '@/lib/types/api';
 import ContractPDFRenderer from '@/components/contracts/ContractPDFRenderer';
 
 interface DocumentRecord {
@@ -46,11 +47,11 @@ export default function PortalDocumentsPage() {
             credentials: 'include',
           });
           if (res.ok) {
-            const data: any = await res.json();
+            const data = await res.json() as PortalContractsStatusResponse;
             result[p.id] = data.documents || [];
           }
-        } catch {
-          // ignore
+        } catch (err) {
+          console.error(`Failed to fetch contracts for partnership ${p.id}:`, err);
         }
       }
       setDocumentsByPartnership(result);

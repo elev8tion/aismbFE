@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useCustomerPortal } from '@/lib/hooks/useCustomerPortal';
 import { useState, useEffect, useCallback } from 'react';
+import type { NCBListResponse } from '@/lib/types/api';
 import { getTierClass, getPartnershipStatusClass } from '@/lib/utils/statusClasses';
 
 const TIMEZONES = [
@@ -51,7 +52,13 @@ export default function PortalSettingsPage() {
   const fetchProfile = useCallback(async () => {
     try {
       const res = await fetch('/api/data/read/user_profiles', { credentials: 'include' });
-      const data: any = await res.json();
+      const data = await res.json() as NCBListResponse<{
+        id?: string;
+        display_name?: string;
+        phone?: string;
+        timezone?: string;
+        notification_preferences?: string | Record<string, boolean>;
+      }>;
       if (data.data && data.data.length > 0) {
         const p = data.data[0];
         setProfileId(p.id || null);
