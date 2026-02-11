@@ -24,6 +24,20 @@ const PipelineFunnel = dynamic(
 );
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
+interface Activity {
+  id?: number;
+  type?: string;
+  subject?: string;
+  description?: string;
+  status?: string;
+  created_at?: string;
+}
+
+interface Opportunity {
+  stage: string;
+  total_contract_value?: number | string;
+}
+
 export default function DashboardPage() {
   const { t } = useTranslations();
   const { user } = useAuth();
@@ -34,8 +48,8 @@ export default function DashboardPage() {
     activePartners: 0,
     mrr: 0
   });
-  const [activities, setActivities] = useState<any[]>([]);
-  const [oppsData, setOppsData] = useState<any[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [oppsData, setOppsData] = useState<Opportunity[]>([]);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -51,9 +65,15 @@ export default function DashboardPage() {
         leadsRes.json(), oppsRes.json(), partnersRes.json(), activitiesRes.json()
       ]) as [NCBListResponse, NCBListResponse, NCBListResponse, NCBListResponse];
 
-      const activePartners = (partners.data || []).filter((p: any) => p.status === 'active');
-      const totalPipeline = (opps.data || []).reduce((sum: number, o: any) => sum + Number(o.total_contract_value || 0), 0);
-      const totalMRR = activePartners.reduce((sum: number, p: any) => sum + Number(p.monthly_revenue || 0), 0);
+      interface PartnerRecord { status?: string; monthly_revenue?: number | string }
+      interface OppRecord { stage?: string; total_contract_value?: number | string }
+
+      const partnersArr = (partners.data || []) as PartnerRecord[];
+      const oppsArr = (opps.data || []) as OppRecord[];
+
+      const activePartners = partnersArr.filter((p) => p.status === 'active');
+      const totalPipeline = oppsArr.reduce((sum, o) => sum + Number(o.total_contract_value || 0), 0);
+      const totalMRR = activePartners.reduce((sum, p) => sum + Number(p.monthly_revenue || 0), 0);
 
       setStats({
         leads: (leads.data || []).length,
@@ -62,10 +82,10 @@ export default function DashboardPage() {
         mrr: totalMRR
       });
 
-      setOppsData(opps.data || []);
+      setOppsData(oppsArr as Opportunity[]);
 
       if (acts.data && acts.data.length > 0) {
-        setActivities(acts.data);
+        setActivities(acts.data as Activity[]);
       }
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
@@ -92,11 +112,11 @@ export default function DashboardPage() {
   ];
 
   const funnelData = useMemo(() => stageConfig.map(({ key, label, color }) => {
-    const stageOpps = oppsData.filter((o: any) => o.stage === key);
+    const stageOpps = oppsData.filter((o) => o.stage === key);
     return {
       stage: label,
       count: stageOpps.length,
-      value: stageOpps.reduce((sum: number, o: any) => sum + Number(o.total_contract_value || 0), 0),
+      value: stageOpps.reduce((sum, o) => sum + Number(o.total_contract_value || 0), 0),
       color,
     };
   }), [oppsData, stageConfig]);
@@ -161,7 +181,7 @@ export default function DashboardPage() {
                         act.type === 'task' ? <ChartIcon className="w-4 h-4" /> :
                         <VoiceIcon className="w-4 h-4" />}
                   title={act.subject || act.description || 'Activity'}
-                  subtitle={act.description}
+                  subtitle={act.description || ''}
                   time={new Date(act.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 />
               )) : (
@@ -177,11 +197,11 @@ export default function DashboardPage() {
               <Link href="/leads" className="btn-ghost text-sm">{t.dashboard.viewAll}</Link>
             </div>
             <div className="space-y-3">
-              {activities.filter((act: any) => act.type === 'task' || act.type === 'call' || act.type === 'meeting').length > 0 ? (
+              {activities.filter((act) => act.type === 'task' || act.type === 'call' || act.type === 'meeting').length > 0 ? (
                 activities
-                  .filter((act: any) => act.type === 'task' || act.type === 'call' || act.type === 'meeting')
+                  .filter((act) => act.type === 'task' || act.type === 'call' || act.type === 'meeting')
                   .slice(0, 4)
-                  .map((act: any, i: number) => (
+                  .map((act, i) => (
                     <TaskItem
                       key={act.id || i}
                       title={act.subject || act.description || 'Task'}

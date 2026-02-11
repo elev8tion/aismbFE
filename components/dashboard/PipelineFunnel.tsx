@@ -14,7 +14,12 @@ interface PipelineFunnelProps {
   data: PipelineData[];
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: PipelineData }>;
+}
+
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -62,7 +67,7 @@ export function PipelineFunnel({ data }: PipelineFunnelProps) {
             <LabelList 
               dataKey="value" 
               position="right" 
-              formatter={(val: any) => typeof val === 'number' ? `$${val.toLocaleString()}` : val}
+              formatter={(val) => typeof val === 'number' ? `$${val.toLocaleString()}` : String(val ?? '')}
               style={{ fill: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 500 }}
             />
           </Bar>

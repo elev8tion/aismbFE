@@ -27,7 +27,12 @@ export function PaybackTrend({ weeklySavings, investment }: PaybackTrendProps) {
 
   const paybackWeek = Math.ceil(investment / weeklySavings);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{ payload: { week: number; netValue: number } }>;
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const { week, netValue } = payload[0].payload;
       return (
