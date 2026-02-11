@@ -2,32 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getTierPricing } from '@/lib/stripe/pricing';
 import { DocumentType } from '@/lib/contracts/types';
+import { ncbServerCreate, type NCBEnv } from '@/lib/agent/ncbClient';
 
 export const runtime = 'edge';
 
-async function ncbCreate(instance: string, dataApiUrl: string, table: string, data: Record<string, unknown>) {
-  const url = `${dataApiUrl}/create/${table}?instance=${instance}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Database-instance': instance,
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    console.error(`[NCB] create ${table} failed (${res.status}): ${text}`);
-    return null;
-  }
-  return res.json();
-}
-
 export async function POST(req: NextRequest) {
   const { env: cfEnv } = getRequestContext();
-  const env = cfEnv as unknown as Record<string, string>;
-  const instance = env.NCB_INSTANCE;
-  const dataApiUrl = env.NCB_DATA_API_URL;
+  const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   try {
     const body = await req.json();
@@ -58,7 +39,7 @@ export async function POST(req: NextRequest) {
     const documents = [];
 
     for (const docType of docTypes) {
-      const result = await ncbCreate(instance, dataApiUrl, 'documents', {
+      const res = await ncbServerCreate(env, 'documents', {
         partnership_id,
         document_type: docType,
         status: 'draft',
@@ -72,7 +53,7 @@ export async function POST(req: NextRequest) {
         monthly_fee_cents: pricing.monthly,
         min_months: pricing.minMonths,
       });
-      if (result) documents.push(result);
+      if (res.ok) documents.push(await res.json());
     }
 
     return NextResponse.json({

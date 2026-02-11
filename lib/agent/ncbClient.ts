@@ -159,6 +159,78 @@ export async function ncbDelete(
   await ncbFetch(env, `delete/${table}/${id}`, { method: 'DELETE', cookies });
 }
 
+// ─── Server-only helpers (no user session) ─────────────────────────────────
+// Used by webhooks, contract signing routes, and other server-to-server contexts.
+
+export async function ncbServerRead(env: NCBEnv, table: string, filters?: Record<string, string>): Promise<any[]> {
+  const config = getConfig(env);
+  const params = new URLSearchParams({ instance: config.instance });
+  if (filters) {
+    Object.entries(filters).forEach(([k, v]) => params.append(k, v));
+  }
+  const url = `${config.dataApiUrl}/read/${table}?${params}`;
+  const res = await fetch(url, {
+    headers: { 'X-Database-instance': config.instance },
+  });
+  if (!res.ok) return [];
+  const data: any = await res.json();
+  return Array.isArray(data) ? data : data.data || [];
+}
+
+export async function ncbServerCreate(env: NCBEnv, table: string, data: Record<string, unknown>): Promise<Response> {
+  const config = getConfig(env);
+  const url = `${config.dataApiUrl}/create/${table}?instance=${config.instance}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Database-instance': config.instance,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`[NCB] create ${table} failed (${res.status}): ${text}`);
+  }
+  return res;
+}
+
+export async function ncbServerUpdate(env: NCBEnv, table: string, id: string, data: Record<string, unknown>): Promise<Response> {
+  const config = getConfig(env);
+  const url = `${config.dataApiUrl}/update/${table}/${id}?instance=${config.instance}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Database-instance': config.instance,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`[NCB] update ${table}/${id} failed (${res.status}): ${text}`);
+  }
+  return res;
+}
+
+export async function ncbOpenApiRead(env: NCBEnv, table: string, filters?: Record<string, string>): Promise<any[]> {
+  const config = getConfig(env);
+  const params = new URLSearchParams({ Instance: config.instance });
+  if (filters) {
+    Object.entries(filters).forEach(([k, v]) => params.append(k, v));
+  }
+  const url = `${config.openApiUrl}/read/${table}?${params}`;
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.secretKey}`,
+    },
+  });
+  if (!res.ok) return [];
+  const data: any = await res.json();
+  return data.data || [];
+}
+
 // Helper to extract auth cookies from request
 export function extractAuthCookies(cookieHeader: string): string {
   if (!cookieHeader) return '';
@@ -196,7 +268,7 @@ export async function getSessionUser(
   });
 
   if (res.ok) {
-    const data = await res.json();
+    const data: any = await res.json();
     return data.user || null;
   }
   return null;

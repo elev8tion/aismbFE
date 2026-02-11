@@ -1,49 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
+import { ncbServerRead, ncbServerCreate, ncbServerUpdate, type NCBEnv } from '@/lib/agent/ncbClient';
 
 export const runtime = 'edge';
 
-async function ncbQuery(instance: string, dataApiUrl: string, table: string, filters: Record<string, unknown>) {
-  const params = new URLSearchParams({ instance });
-  Object.entries(filters).forEach(([k, v]) => params.append(k, String(v)));
-  const url = `${dataApiUrl}/read/${table}?${params}`;
-  const res = await fetch(url, {
-    headers: { 'X-Database-instance': instance },
-  });
-  if (!res.ok) return [];
-  const data: any = await res.json();
-  return Array.isArray(data) ? data : data.data || [];
-}
-
-async function ncbCreate(instance: string, dataApiUrl: string, table: string, data: Record<string, unknown>) {
-  const url = `${dataApiUrl}/create/${table}?instance=${instance}`;
-  return fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Database-instance': instance,
-    },
-    body: JSON.stringify(data),
-  });
-}
-
-async function ncbUpdate(instance: string, dataApiUrl: string, table: string, id: string, data: Record<string, unknown>) {
-  const url = `${dataApiUrl}/update/${table}/${id}?instance=${instance}`;
-  return fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Database-instance': instance,
-    },
-    body: JSON.stringify(data),
-  });
-}
-
 export async function POST(req: NextRequest) {
   const { env: cfEnv } = getRequestContext();
-  const env = cfEnv as unknown as Record<string, string>;
-  const instance = env.NCB_INSTANCE;
-  const dataApiUrl = env.NCB_DATA_API_URL;
+  const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   try {
     const body = await req.json();
@@ -60,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get client-signed documents for this partnership
-    const docs = await ncbQuery(instance, dataApiUrl, 'documents', { partnership_id: String(partnership_id) });
+    const docs = await ncbServerRead(env, 'documents', { partnership_id: String(partnership_id) });
     const clientSignedDocs = docs.filter((d: { status: string }) => d.status === 'client_signed');
 
     if (!clientSignedDocs.length) {
@@ -70,7 +33,7 @@ export async function POST(req: NextRequest) {
     const signedAt = new Date().toISOString();
 
     for (const doc of clientSignedDocs) {
-      await ncbCreate(instance, dataApiUrl, 'document_signatures', {
+      await ncbServerCreate(env, 'document_signatures', {
         document_id: doc.id,
         partnership_id,
         signer_role: 'admin',
@@ -83,7 +46,7 @@ export async function POST(req: NextRequest) {
         user_agent: 'CRM',
       });
 
-      await ncbUpdate(instance, dataApiUrl, 'documents', doc.id, {
+      await ncbServerUpdate(env, 'documents', doc.id, {
         status: 'fully_executed',
         updated_at: signedAt,
       });

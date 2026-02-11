@@ -3,26 +3,13 @@ import { getRequestContext } from '@cloudflare/next-on-pages';
 import { getTierPricing } from '@/lib/stripe/pricing';
 import { ContractData } from '@/lib/contracts/types';
 import { getContractBundle } from '@/lib/contracts/templates';
+import { ncbServerRead, type NCBEnv } from '@/lib/agent/ncbClient';
 
 export const runtime = 'edge';
 
-async function ncbQuery(instance: string, dataApiUrl: string, table: string, filters: Record<string, unknown>) {
-  const params = new URLSearchParams({ instance });
-  Object.entries(filters).forEach(([k, v]) => params.append(k, String(v)));
-  const url = `${dataApiUrl}/read/${table}?${params}`;
-  const res = await fetch(url, {
-    headers: { 'X-Database-instance': instance },
-  });
-  if (!res.ok) return [];
-  const data: any = await res.json();
-  return Array.isArray(data) ? data : data.data || [];
-}
-
 export async function GET(req: NextRequest) {
   const { env: cfEnv } = getRequestContext();
-  const env = cfEnv as unknown as Record<string, string>;
-  const instance = env.NCB_INSTANCE;
-  const dataApiUrl = env.NCB_DATA_API_URL;
+  const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   try {
     const token = req.nextUrl.searchParams.get('token');
@@ -31,7 +18,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing token' }, { status: 400 });
     }
 
-    const docs = await ncbQuery(instance, dataApiUrl, 'documents', { signing_token: token });
+    const docs = await ncbServerRead(env, 'documents', { signing_token: token });
     if (!docs.length) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 404 });
     }
