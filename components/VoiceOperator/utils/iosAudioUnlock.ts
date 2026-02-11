@@ -11,33 +11,65 @@ export class IOSAudioPlayer {
   private onErrorCallback: ((error: Error) => void) | null = null;
   private readonly VOLUME_BOOST = 2.5;
 
+  /**
+   * Call this during a user interaction (tap/click) to unlock audio playback.
+   * MUST always resume AudioContext even if already unlocked — iOS can
+   * suspend it between gestures.
+   */
   unlock(): void {
-    if (this.isUnlocked && this.audio) return;
+    // Always resume AudioContext during user gesture (iOS can suspend it anytime)
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      try {
+        void this.audioContext.resume();
+      } catch (err) {
+        console.warn('AudioContext resume during unlock failed (non-fatal):', err);
+      }
+    }
 
+    if (this.isUnlocked && this.audio) {
+      return;
+    }
+
+    // Create audio element during user interaction
     this.audio = new Audio();
+
+    // iOS Safari needs these attributes
     this.audio.setAttribute('playsinline', 'true');
     this.audio.setAttribute('webkit-playsinline', 'true');
 
+    // Initialize Web Audio graph and try to resume the context while in a user gesture
+    // so iOS allows it. If it fails, fall back to normal <audio> playback.
     this.setupAudioContext();
     if (this.audioContext && this.audioContext.state === 'suspended') {
-      try { void this.audioContext.resume(); } catch { /* non-fatal */ }
+      try {
+        // Resume inside user gesture
+        void this.audioContext.resume();
+      } catch (err) {
+        console.warn('AudioContext resume during unlock failed (non-fatal):', err);
+      }
     }
 
+    // Play silent audio to unlock
+    // Create a tiny silent audio data URL (smallest valid MP3)
     const silentAudioBase64 = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwmHAAAAAAD/+9DEAAAIAAJQAAAAgAADSAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=';
 
     this.audio.src = silentAudioBase64;
-    this.audio.volume = 0.01;
+    this.audio.volume = 0.01; // Nearly silent
 
+    // Play to unlock
     const playPromise = this.audio.play();
     if (playPromise) {
       playPromise
         .then(() => {
           this.isUnlocked = true;
+          // Immediately pause after unlocking
           this.audio?.pause();
           this.audio!.currentTime = 0;
-          this.audio!.volume = 1;
+          this.audio!.volume = 1; // Reset volume
         })
-        .catch(() => { /* iOS unlock failed - non-fatal */ });
+        .catch((err) => {
+          console.warn('iOS audio unlock failed:', err);
+        });
     }
   }
 
