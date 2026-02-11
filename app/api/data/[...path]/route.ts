@@ -167,9 +167,14 @@ async function proxyToNCB(config: DataProxyConfig, req: NextRequest, path: strin
 
   const data = await res.text();
 
+  const isRead = path.startsWith("read/");
   return new NextResponse(data, {
     status: res.status,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(isRead && { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" }),
+      ...(!isRead && { "Cache-Control": "no-store" }),
+    },
   });
 }
 

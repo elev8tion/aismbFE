@@ -14,7 +14,7 @@ import {
   VoiceIcon, CalculatorIcon, PhoneIcon, EmailIcon, ChartIcon,
 } from '@/components/icons';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { NCBListResponse } from '@/lib/types/api';
 
 import dynamic from 'next/dynamic';
@@ -78,7 +78,7 @@ export default function DashboardPage() {
     if (!user) return;
     fetchDashboardData();
     // Poll every 30 seconds for live updates
-    const interval = setInterval(fetchDashboardData, 30000);
+    const interval = setInterval(fetchDashboardData, 60000);
     return () => clearInterval(interval);
   }, [user, fetchDashboardData]);
 
@@ -91,7 +91,7 @@ export default function DashboardPage() {
     { key: 'closed-won', label: t.pipeline.stages.closedWon, color: '#00C853' },
   ];
 
-  const funnelData = stageConfig.map(({ key, label, color }) => {
+  const funnelData = useMemo(() => stageConfig.map(({ key, label, color }) => {
     const stageOpps = oppsData.filter((o: any) => o.stage === key);
     return {
       stage: label,
@@ -99,7 +99,7 @@ export default function DashboardPage() {
       value: stageOpps.reduce((sum: number, o: any) => sum + Number(o.total_contract_value || 0), 0),
       color,
     };
-  });
+  }), [oppsData, stageConfig]);
 
   return (
     <DashboardLayout>
