@@ -201,7 +201,7 @@
 │  │   ├─ < 30 chars + greeting pattern ──▶ gpt-4.1-nano  (fast, cheap)    │ │
 │  │   │   /^(hi|hello|hey|good|what.*up|yo)/                               │ │
 │  │   │                                                                     │ │
-│  │   ├─ reasoning keywords ─────────────▶ gpt-4.1  (reasoning model)      │ │
+│  │   ├─ reasoning keywords ─────────────▶ o4-mini  (reasoning model)      │ │
 │  │   │   /analyze|why|explain|recommend|strategy|forecast|predict|trend/   │ │
 │  │   │                                                                     │ │
 │  │   ├─ > 200 chars OR multi-question ──▶ gpt-4.1-mini  (standard)       │ │
@@ -215,7 +215,8 @@
 │  └─ Chat: temperature varies by model, max 5 tool rounds                    │
 │                                                                              │
 │  buildChatParams(model):                                                    │
-│  └─ uses chat-completions params: { max_tokens, temperature }              │
+│  ├─ o-series → { max_completion_tokens: 1024 }  (no temperature)           │
+│  └─ others  → { max_tokens: 1024, temperature: 0.7 }                       │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 

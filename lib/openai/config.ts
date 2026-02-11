@@ -13,8 +13,8 @@ export const MODELS = {
   fast: 'gpt-4.1-nano',
   // Standard tier — multi-step queries, summaries
   standard: 'gpt-4.1-mini',
-  // Reasoning tier — analysis, "why" questions (use chat-completions compatible model)
-  reasoning: 'gpt-4.1',
+  // Reasoning tier — analysis, "why" questions
+  reasoning: 'o4-mini',
   // Speech
   transcription: 'whisper-1',
   tts: 'gpt-4o-mini-tts',
@@ -26,10 +26,12 @@ export type ModelTier = 'fast' | 'standard' | 'reasoning';
 
 // o-series models (o1, o3, o4) reject `temperature` and use `max_completion_tokens`.
 // Build the correct params object based on the model name.
-export function buildChatParams(_model: string, extra?: { temperature?: number; max_tokens?: number }) {
-  // Use chat-completions compatible params for all selected models
+export function buildChatParams(model: string, extra?: { temperature?: number; max_tokens?: number }) {
+  const isOSeries = /^o\d/.test(model);
   return {
-    temperature: extra?.temperature ?? 0.3,
-    max_tokens: extra?.max_tokens ?? 500,
+    ...(isOSeries ? {} : { temperature: extra?.temperature ?? 0.3 }),
+    ...(isOSeries
+      ? { max_completion_tokens: extra?.max_tokens ?? 500 }
+      : { max_tokens: extra?.max_tokens ?? 500 }),
   };
 }
