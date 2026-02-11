@@ -11,16 +11,26 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { token, signer_name, signer_title, signer_email, signature_data } = body as {
-      token: string;
-      signer_name: string;
-      signer_title: string;
-      signer_email: string;
-      signature_data: string;
-    };
+
+    // Sanitize inputs
+    function sanitize(val: unknown): string {
+      if (typeof val !== 'string') return '';
+      return val.trim().replace(/<[^>]*>/g, '').slice(0, 500);
+    }
+
+    const raw = body as Record<string, unknown>;
+    const token = sanitize(raw.token);
+    const signer_name = sanitize(raw.signer_name);
+    const signer_title = sanitize(raw.signer_title);
+    const signer_email = sanitize(raw.signer_email);
+    const signature_data = typeof raw.signature_data === 'string' ? raw.signature_data.slice(0, 50000) : '';
 
     if (!token || !signer_name || !signature_data) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    if (signer_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signer_email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
     // Verify token and get documents

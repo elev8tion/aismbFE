@@ -10,13 +10,19 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { partnership_id, signer_name, signer_title, signer_email, signature_data } = body as {
-      partnership_id: number;
-      signer_name: string;
-      signer_title: string;
-      signer_email: string;
-      signature_data: string;
-    };
+
+    // Sanitize inputs
+    function sanitize(val: unknown): string {
+      if (typeof val !== 'string') return '';
+      return val.trim().replace(/<[^>]*>/g, '').slice(0, 500);
+    }
+
+    const raw = body as Record<string, unknown>;
+    const partnership_id = typeof raw.partnership_id === 'number' ? raw.partnership_id : 0;
+    const signer_name = sanitize(raw.signer_name);
+    const signer_title = sanitize(raw.signer_title);
+    const signer_email = sanitize(raw.signer_email);
+    const signature_data = typeof raw.signature_data === 'string' ? raw.signature_data.slice(0, 50000) : '';
 
     if (!partnership_id || !signer_name || !signature_data) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
