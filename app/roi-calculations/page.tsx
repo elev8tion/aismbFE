@@ -16,6 +16,7 @@ import { generatePDF } from '@/lib/utils/pdfGenerator';
 import { useEngagement } from '@/lib/hooks/useEngagement';
 import { PaybackTrend } from '@/components/dashboard/PaybackTrend';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const MOCK_ROI_CALCULATIONS: ROICalculation[] = [
   {
@@ -447,6 +448,7 @@ export default function ROICalculationsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.roiCalculations.title}
@@ -858,6 +860,7 @@ export default function ROICalculationsPage() {
           </Modal>
         )}
       </div>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

@@ -5,6 +5,7 @@ import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Booking {
   id: string;
@@ -153,6 +154,7 @@ export default function BookingsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-[var(--space-section)]">
@@ -342,6 +344,7 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

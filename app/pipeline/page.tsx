@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 import type { NCBListResponse, CheckoutSessionResponse } from '@/lib/types/api';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Opportunity {
   id: string;
@@ -181,6 +182,7 @@ export default function PipelinePage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.pipeline.title}
@@ -329,6 +331,7 @@ export default function PipelinePage() {
           </div>
         )}
       </Modal>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

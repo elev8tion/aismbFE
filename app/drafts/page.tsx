@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { PlusIcon, EditIcon, EyeIcon, EmailIcon, PhoneIcon } from '@/components/icons';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Draft {
   id: string;
@@ -277,6 +278,7 @@ export default function DraftsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <PageHeader
         title={t.drafts.title}
         subtitle={
@@ -460,6 +462,7 @@ export default function DraftsPage() {
       <Modal open={!!editDraft} onClose={() => { setEditDraft(null); setForm(emptyForm); }} title={t.common.edit}>
         {draftForm(handleUpdate, t.common.save)}
       </Modal>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

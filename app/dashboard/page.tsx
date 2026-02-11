@@ -99,6 +99,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.dashboard.title}
@@ -217,6 +218,7 @@ export default function DashboardPage() {
           </ErrorBoundary>
         </div>
       </div>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

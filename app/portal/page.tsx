@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCustomerPortal } from '@/lib/hooks/useCustomerPortal';
 import { getTierClass, getHealthColor } from '@/lib/utils/statusClasses';
 import { useState, useEffect } from 'react';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const PHASES = ['discover', 'co-create', 'deploy', 'independent'];
 
@@ -109,6 +110,7 @@ export default function PortalDashboardPage() {
 
   return (
     <PortalLayout>
+      <ErrorBoundary>
       <div className="page-content">
         {/* Welcome Header */}
         <div className="mb-6">
@@ -253,6 +255,7 @@ export default function PortalDashboardPage() {
           </div>
         )}
       </div>
+      </ErrorBoundary>
     </PortalLayout>
   );
 }

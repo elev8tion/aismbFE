@@ -5,6 +5,7 @@ import { useTranslations } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useState, useEffect, useCallback } from 'react';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface UserProfile {
   id?: string;
@@ -88,6 +89,7 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content max-w-4xl">
         <PageHeader title={t.nav.settings} />
 
@@ -171,6 +173,7 @@ export default function SettingsPage() {
           {saving ? t.common.saving : saved ? t.common.saved : t.settings.saveChanges}
         </button>
       </div>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

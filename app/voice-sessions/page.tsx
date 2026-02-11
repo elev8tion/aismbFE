@@ -12,6 +12,7 @@ import { generateSessionInsights, AIInsight } from '@/lib/utils/aiInsights';
 import { scoreVoiceSession, LeadScore } from '@/lib/utils/leadScoring';
 import { createTaskFromSession } from '@/lib/utils/taskAutomation';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const MOCK_VOICE_SESSIONS: VoiceSession[] = [
   {
@@ -471,6 +472,7 @@ export default function VoiceSessionsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.voiceSessions.title}
@@ -803,6 +805,7 @@ export default function VoiceSessionsPage() {
           </div>
         )}
       </div>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

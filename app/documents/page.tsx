@@ -9,6 +9,7 @@ import CounterSignModal from '@/components/contracts/CounterSignModal';
 import ContractPDFRenderer from '@/components/contracts/ContractPDFRenderer';
 import { DocumentRecord, DocumentStatus } from '@/lib/contracts/types';
 import { getContractBundle } from '@/lib/contracts/templates';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Partnership {
   id: number;
@@ -91,6 +92,7 @@ export default function DocumentsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -237,6 +239,7 @@ export default function DocumentsPage() {
           onSuccess={loadData}
         />
       )}
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

@@ -7,6 +7,7 @@ import { PlusIcon, EmailIcon, PhoneIcon, EditIcon } from '@/components/icons';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Contact {
   id: string;
@@ -198,6 +199,7 @@ export default function ContactsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.nav.contacts}
@@ -281,6 +283,7 @@ export default function ContactsPage() {
       <Modal open={!!editContact} onClose={() => setEditContact(null)} title={`${t.common.edit} Contact`}>
         {renderForm(handleEdit)}
       </Modal>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

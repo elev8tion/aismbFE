@@ -12,6 +12,7 @@ import { TIER_PRICING, type TierKey } from '@/lib/stripe/pricing';
 import DocumentStatusBadge from '@/components/contracts/DocumentStatusBadge';
 import SendContractModal from '@/components/contracts/SendContractModal';
 import { DocumentRecord, DocumentStatus } from '@/lib/contracts/types';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Partnership {
   id: string;
@@ -385,6 +386,7 @@ export default function PartnershipsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.nav.partnerships}
@@ -739,6 +741,7 @@ export default function PartnershipsPage() {
           onSuccess={() => fetchContractStatuses(partnerships)}
         />
       )}
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

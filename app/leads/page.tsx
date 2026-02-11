@@ -11,6 +11,7 @@ import { FilterTabs } from '@/components/ui/FilterTabs';
 import { ScoreBar } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Lead {
   id: string;
@@ -221,6 +222,7 @@ export default function LeadsPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.leads.title}
@@ -370,6 +372,7 @@ export default function LeadsPage() {
           </div>
         )}
       </Modal>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }

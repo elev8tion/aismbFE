@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { DotRating } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Company {
   id: string;
@@ -119,6 +120,7 @@ export default function CompaniesPage() {
 
   return (
     <DashboardLayout>
+      <ErrorBoundary>
       <div className="page-content">
         <PageHeader
           title={t.nav.companies}
@@ -254,6 +256,7 @@ export default function CompaniesPage() {
           </div>
         )}
       </Modal>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 }
