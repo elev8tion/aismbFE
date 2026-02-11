@@ -16,8 +16,7 @@ export function useEngagement(componentName: string, data?: Record<string, any>)
       const endTime = Date.now();
       const duration = (endTime - startTime.current) / 1000; // seconds
 
-      if (duration > 2) { // Ignore fleeting interactions
-        console.log(`[Analytics] User spent ${duration.toFixed(1)}s on ${componentName}`, data);
+      if (duration > 2) {
         // Future: sendToAnalyticsAPI({ component: componentName, duration, ...data });
       }
     };

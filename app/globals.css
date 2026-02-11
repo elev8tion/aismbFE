@@ -11,12 +11,9 @@
   /* Brand Colors - Electric Blue */
   --brand-primary: #0EA5E9;
   --brand-secondary: #0284C7;
-  --brand-accent: #7DD3FC;
-  --brand-dark: #1a1a2e;
 
   /* Base Colors */
   --bg-primary: #000000;
-  --bg-secondary: #0A0A0A;
   --text-primary: #FFFFFF;
   --text-secondary: rgba(255, 255, 255, 0.7);
   --text-tertiary: rgba(255, 255, 255, 0.6);
@@ -34,7 +31,6 @@
   --accent-green: #22C55E;
   --accent-orange: #F97316;
   --accent-red: #EF4444;
-  --accent-cyan: #06B6D4;
 
   /* CRM-specific colors */
   --sidebar-bg: rgba(10, 10, 10, 0.95);
