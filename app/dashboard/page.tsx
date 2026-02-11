@@ -113,28 +113,28 @@ export default function DashboardPage() {
           <StatCard
             label={t.dashboard.newLeads}
             value={stats.leads.toString()}
-            change={12}
+            change={0}
             changeLabel={t.dashboard.vsLastMonth}
             icon={<LeadsStatIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.pipelineValue}
             value={`$${stats.pipelineValue.toLocaleString()}`}
-            change={15}
+            change={0}
             changeLabel={t.dashboard.vsLastMonth}
             icon={<PipelineStatIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.activePartners}
             value={stats.activePartners.toString()}
-            change={2}
+            change={0}
             changeLabel={t.dashboard.newThisMonth}
             icon={<PartnersStatIcon className="w-6 h-6" />}
           />
           <StatCard
             label={t.dashboard.mrr}
             value={`$${stats.mrr.toLocaleString()}`}
-            change={8}
+            change={0}
             changeLabel={t.dashboard.vsLastMonth}
             icon={<RevenueIcon className="w-6 h-6" />}
           />
@@ -161,22 +161,7 @@ export default function DashboardPage() {
                   time={new Date(act.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 />
               )) : (
-                <>
-                  <ActivityItem
-                    icon={<div className="relative"><VoiceIcon className="w-4 h-4" /><span className="absolute -top-1 -right-1 w-2 h-2 bg-functional-error rounded-full animate-pulse" /></div>}
-                    title="LIVE: Voice session - Miami Plumbing"
-                    subtitle="Customer asking about emergency rates"
-                    time="Just now"
-                    statusIcon={<span className="text-[10px] bg-functional-error/20 text-functional-error px-1.5 py-0.5 rounded font-bold animate-pulse">LIVE</span>}
-                  />
-                  <ActivityItem
-                    icon={<VoiceIcon className="w-4 h-4" />}
-                    title="Voice session - ABC Plumbing"
-                    subtitle="5 questions, Spanish"
-                    time="2m ago"
-                    statusIcon={<span title="Hot Lead" className="text-lg">🔥</span>}
-                  />
-                </>
+                <p className="text-sm text-white/40 py-6 text-center">{t.common.noData}</p>
               )}
             </div>
           </div>
