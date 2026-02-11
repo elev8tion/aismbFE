@@ -1,69 +1,60 @@
-/**
- * Session ID management utilities
- * Uses sessionStorage for client-side session persistence
- */
+// Session ID utility - generates and persists a session identifier
 
-const SESSION_STORAGE_KEY = 'voice_agent_session_id';
+const SESSION_KEY = 'voice_session_id';
 
 /**
- * Generate a cryptographically secure random session ID
+ * Generates a unique session ID using crypto API with timestamp prefix
  */
 export function generateSessionId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  const timestamp = Date.now().toString(36);
+  const randomPart = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID().slice(0, 8)
+    : Math.random().toString(36).substring(2, 10);
+  return `session_${timestamp}_${randomPart}`;
 }
 
 /**
- * Get or create session ID from sessionStorage
- * Session persists until browser tab is closed
+ * Gets the current session ID from sessionStorage, or creates a new one
  */
 export function getSessionId(): string {
   if (typeof window === 'undefined') {
-    return 'ssr-placeholder';
+    return generateSessionId();
   }
 
   try {
-    let sessionId = sessionStorage.getItem(SESSION_STORAGE_KEY);
-
-    if (!sessionId) {
-      sessionId = generateSessionId();
-      sessionStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+    const stored = sessionStorage.getItem(SESSION_KEY);
+    if (stored) {
+      return stored;
     }
 
-    return sessionId;
+    const newId = generateSessionId();
+    try {
+      sessionStorage.setItem(SESSION_KEY, newId);
+    } catch {
+      console.warn('sessionStorage unavailable — using ephemeral session ID');
+    }
+    return newId;
   } catch {
     return generateSessionId();
   }
 }
 
 /**
- * Clear session ID from sessionStorage
- * Call this when user explicitly closes the voice agent
+ * Clears the current session ID (forces new session on next call)
  */
 export function clearSessionId(): void {
   if (typeof window === 'undefined') return;
-
   try {
-    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
   } catch {
-    // noop
+    console.warn('Failed to clear session ID from sessionStorage');
   }
 }
 
 /**
- * Check if session ID exists
+ * Resets and returns a fresh session ID
  */
-export function hasSessionId(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  try {
-    return sessionStorage.getItem(SESSION_STORAGE_KEY) !== null;
-  } catch {
-    return false;
-  }
+export function resetSessionId(): string {
+  clearSessionId();
+  return getSessionId();
 }
