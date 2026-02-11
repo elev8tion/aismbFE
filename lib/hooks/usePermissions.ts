@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect, useCallback } from 'react';
+import type { NCBListResponse, NCBSingleResponse } from '@/lib/types/api';
 
 interface UserProfile {
   id: number;
@@ -40,7 +41,7 @@ export function usePermissions() {
       const res = await fetch('/api/data/read/user_profiles', {
         credentials: 'include',
       });
-      const data: any = await res.json();
+      const data: NCBListResponse<UserProfile> = await res.json();
 
       if (data.data && data.data.length > 0) {
         setProfile(data.data[0]);
@@ -53,7 +54,7 @@ export function usePermissions() {
           const refetch = await fetch('/api/data/read/user_profiles', {
             credentials: 'include',
           });
-          const refetchData: any = await refetch.json();
+          const refetchData: NCBListResponse<UserProfile> = await refetch.json();
           if (refetchData.data && refetchData.data.length > 0) {
             setProfile(refetchData.data[0]);
           } else {
@@ -84,7 +85,7 @@ export function usePermissions() {
           timezone: 'America/New_York',
         }),
       });
-      const data: any = await res.json();
+      const data: NCBSingleResponse<UserProfile> = await res.json();
       return data.data || null;
     } catch (err) {
       console.error('Error creating profile:', err);

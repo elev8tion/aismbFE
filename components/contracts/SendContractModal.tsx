@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { useTranslations } from '@/contexts/LanguageContext';
+import type { ApiErrorResponse, ContractCreateResponse } from '@/lib/types/api';
 
 interface SendContractModalProps {
   open: boolean;
@@ -47,12 +48,13 @@ export default function SendContractModal({ open, onClose, partnership, onSucces
         }),
       });
 
+      const createData: ContractCreateResponse & ApiErrorResponse = await createRes.json();
+
       if (!createRes.ok) {
-        const data: any = await createRes.json();
-        throw new Error(data.error || 'Failed to create documents');
+        throw new Error(createData.error || 'Failed to create documents');
       }
 
-      const { signing_token }: any = await createRes.json();
+      const { signing_token } = createData;
 
       // Step 2: Send signing request email
       const sendRes = await fetch('/api/contracts/send', {
@@ -62,7 +64,7 @@ export default function SendContractModal({ open, onClose, partnership, onSucces
       });
 
       if (!sendRes.ok) {
-        const data: any = await sendRes.json();
+        const data: ApiErrorResponse = await sendRes.json();
         throw new Error(data.error || 'Failed to send email');
       }
 

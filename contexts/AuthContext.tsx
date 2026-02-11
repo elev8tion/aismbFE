@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { AuthSessionResponse, ApiErrorResponse } from '@/lib/types/api';
 
 interface User {
   id: string;
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
       if (res.ok) {
-        const data: any = await res.json();
+        const data: AuthSessionResponse = await res.json();
         setUser(data.user || null);
       } else {
         setUser(null);
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!res.ok) {
-      const error: any = await res.json();
+      const error: ApiErrorResponse = await res.json();
       throw new Error(error.message || 'Failed to sign in');
     }
 
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!res.ok) {
-      const error: any = await res.json();
+      const error: ApiErrorResponse = await res.json();
       throw new Error(error.message || 'Failed to sign up');
     }
 

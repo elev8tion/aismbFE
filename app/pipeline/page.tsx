@@ -8,6 +8,7 @@ import { getTierClass } from '@/lib/utils/statusClasses';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
+import type { NCBListResponse, CheckoutSessionResponse } from '@/lib/types/api';
 
 interface Opportunity {
   id: string;
@@ -56,7 +57,7 @@ export default function PipelinePage() {
           description: `Setup payment for ${deal.name}`,
         }),
       });
-      const data: any = await res.json();
+      const data: CheckoutSessionResponse = await res.json();
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -81,10 +82,10 @@ export default function PipelinePage() {
         return;
       }
 
-      const [oppsData, companiesData]: any[] = await Promise.all([
+      const [oppsData, companiesData] = await Promise.all([
         oppsRes.json(),
         companiesRes.json(),
-      ]);
+      ]) as [NCBListResponse<Opportunity>, NCBListResponse<{ id: string; name: string }>];
 
       // Build company map
       const compList = companiesData.data || [];

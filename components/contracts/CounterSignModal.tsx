@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import SignaturePad from './SignaturePad';
+import type { ApiErrorResponse } from '@/lib/types/api';
 
 interface CounterSignModalProps {
   open: boolean;
@@ -38,7 +39,7 @@ export default function CounterSignModal({ open, onClose, partnership, onSuccess
       });
 
       if (!res.ok) {
-        const result: any = await res.json();
+        const result: ApiErrorResponse = await res.json();
         throw new Error(result.error || 'Failed to countersign');
       }
 

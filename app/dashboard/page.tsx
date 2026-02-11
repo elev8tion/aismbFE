@@ -15,6 +15,7 @@ import {
 } from '@/components/icons';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 import { useState, useEffect, useCallback } from 'react';
+import type { NCBListResponse } from '@/lib/types/api';
 
 import { PipelineFunnel } from '@/components/dashboard/PipelineFunnel';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -42,9 +43,9 @@ export default function DashboardPage() {
         fetch('/api/data/read/activities?limit=10', { credentials: 'include' }),
       ]);
 
-      const [leads, opps, partners, acts]: any[] = await Promise.all([
+      const [leads, opps, partners, acts] = await Promise.all([
         leadsRes.json(), oppsRes.json(), partnersRes.json(), activitiesRes.json()
-      ]);
+      ]) as [NCBListResponse, NCBListResponse, NCBListResponse, NCBListResponse];
 
       const activePartners = (partners.data || []).filter((p: any) => p.status === 'active');
       const totalPipeline = (opps.data || []).reduce((sum: number, o: any) => sum + Number(o.total_contract_value || 0), 0);

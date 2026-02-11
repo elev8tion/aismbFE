@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import type { NCBListResponse } from '@/lib/types/api';
 
 interface CustomerAccess {
   id: number;
@@ -54,7 +55,7 @@ export function useCustomerPortal() {
       const accessRes = await fetch('/api/data/read/customer_access', {
         credentials: 'include',
       });
-      const accessData: any = await accessRes.json();
+      const accessData: NCBListResponse<CustomerAccess> = await accessRes.json();
       const records: CustomerAccess[] = accessData.data || [];
       setAccessRecords(records);
 
@@ -78,8 +79,8 @@ export function useCustomerPortal() {
         }),
       ]);
 
-      const partnershipsData: any = await partnershipsRes.json();
-      const systemsData: any = await systemsRes.json();
+      const partnershipsData: NCBListResponse<Partnership> = await partnershipsRes.json();
+      const systemsData: NCBListResponse<DeliveredSystem> = await systemsRes.json();
 
       const rawPartnerships: Partnership[] = partnershipsData.data || [];
 
@@ -91,7 +92,7 @@ export function useCustomerPortal() {
             `/api/data/read/companies?id__in=${companyIds.join(',')}`,
             { credentials: 'include' }
           );
-          const companiesData: any = await companiesRes.json();
+          const companiesData: NCBListResponse<{ id: number; name: string }> = await companiesRes.json();
           const companyMap: Record<number, string> = {};
           for (const c of companiesData.data || []) {
             companyMap[c.id] = c.name;
