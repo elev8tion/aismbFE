@@ -37,17 +37,9 @@ export class IOSAudioPlayer {
     this.audio.setAttribute('playsinline', 'true');
     this.audio.setAttribute('webkit-playsinline', 'true');
 
-    // Initialize Web Audio graph and try to resume the context while in a user gesture
-    // so iOS allows it. If it fails, fall back to normal <audio> playback.
-    this.setupAudioContext();
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      try {
-        // Resume inside user gesture
-        void this.audioContext.resume();
-      } catch (err) {
-        console.warn('AudioContext resume during unlock failed (non-fatal):', err);
-      }
-    }
+    // DO NOT call setupAudioContext() here — createMediaElementSource()
+    // routes audio through a potentially-suspended AudioContext, causing
+    // AbortError on iOS Safari. Defer to play() instead.
 
     // Play silent audio to unlock
     // Create a tiny silent audio data URL (smallest valid MP3)
@@ -104,10 +96,15 @@ export class IOSAudioPlayer {
       this.audio.setAttribute('webkit-playsinline', 'true');
     }
 
+    // Set up Web Audio API gain boost (deferred from unlock to avoid AbortError)
     this.setupAudioContext();
 
     if (this.audioContext && this.audioContext.state === 'suspended') {
-      try { await this.audioContext.resume(); } catch { /* non-fatal */ }
+      try {
+        await this.audioContext.resume();
+      } catch (err) {
+        console.warn('AudioContext resume failed during play (non-fatal):', err);
+      }
     }
 
     this.audio.onended = () => { if (this.onEndedCallback) this.onEndedCallback(); };

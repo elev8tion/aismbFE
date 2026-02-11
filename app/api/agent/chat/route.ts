@@ -289,6 +289,7 @@ const MAX_TOOL_ROUNDS = 5;
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
+  try {
   const { env: cfEnv } = getRequestContext();
   const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
@@ -328,8 +329,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'OpenAI not configured' }, { status: 500 });
   }
   const openai = createOpenAI(apiKey);
-
-  try {
     const { question, sessionId, pagePath, language } = await request.json() as {
       question: string;
       sessionId: string;
@@ -465,9 +464,9 @@ export async function POST(request: NextRequest) {
     const duration = Date.now() - startTime;
     return NextResponse.json({ response, success: true, duration, model, clientActions });
   } catch (error) {
-    console.error('Agent chat error:', error);
+    console.error('Chat error:', error);
     return NextResponse.json(
-      { error: 'Failed to process request', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: `Failed to generate response: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
