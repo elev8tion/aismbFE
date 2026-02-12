@@ -9,15 +9,15 @@ export function createOpenAI(apiKey: string): OpenAI {
 
 // Three-tier model routing for CRM agent
 export const MODELS = {
-  // Fast tier — greetings, simple lookups
-  fast: 'gpt-4.1-nano',
-  // Standard tier — multi-step queries, summaries
-  standard: 'gpt-4.1-mini',
-  // Reasoning tier — analysis, "why" questions
-  reasoning: 'o4-mini',
+  // Fast tier — greetings, simple lookups ($0.15/$0.60 per 1M tokens)
+  fast: 'gpt-4o-mini',
+  // Standard tier — multi-step queries, summaries ($0.15/$0.60 per 1M tokens)
+  standard: 'gpt-4o-mini',
+  // Reasoning tier — analysis, "why" questions ($5/$15 per 1M tokens)
+  reasoning: 'gpt-4o',
   // Speech
   transcription: 'whisper-1',
-  tts: 'gpt-4o-mini-tts',
+  tts: 'tts-1', // $15/1M chars
   voice: 'echo',
   voiceEs: 'nova',
 } as const;

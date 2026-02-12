@@ -1,0 +1,42 @@
+name: Validate OpenAI Models
+
+on:
+  pull_request:
+    paths:
+      - 'lib/openai/config.ts'
+      - '__tests__/modelValidation.test.ts'
+  push:
+    branches:
+      - main
+    paths:
+      - 'lib/openai/config.ts'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --ignore-scripts
+
+      - name: Run model validation tests
+        run: npm test -- modelValidation.test.ts --passWithNoTests
+
+      - name: Report success
+        if: success()
+        run: echo "✅ All OpenAI models are valid!"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "❌ Invalid OpenAI model detected!"
+          echo "Please check lib/openai/config.ts and ensure all models are valid."
+          exit 1
