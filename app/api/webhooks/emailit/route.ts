@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getOptionalRequestContext } from '@cloudflare/next-on-pages';
 import { sendViaEmailIt } from '@/lib/email/sendEmail';
 
 export const runtime = 'edge';
@@ -32,7 +32,7 @@ interface EmailItEvent {
 }
 
 export async function POST(req: NextRequest) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext(); const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as Record<string, string>;
 
   try {

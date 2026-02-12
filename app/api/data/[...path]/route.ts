@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+import { getOptionalRequestContext } from "@cloudflare/next-on-pages";
 import { checkRateLimit, getClientIP } from '@/lib/security/rateLimiter.kv';
 import { extractAuthCookies, getSessionUser, type NCBEnv } from "@/lib/agent/ncbClient";
 
@@ -182,7 +182,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext();
+  const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
 
@@ -228,7 +229,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext();
+  const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
 
@@ -276,7 +278,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext();
+  const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
 
@@ -323,7 +326,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext();
+  const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as NCBEnv;
   const config = buildConfig(env);
 

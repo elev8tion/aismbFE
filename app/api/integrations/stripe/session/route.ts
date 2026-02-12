@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getOptionalRequestContext } from '@cloudflare/next-on-pages';
 import Stripe from 'stripe';
 
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext(); const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as Record<string, string>;
 
   const secret = env.STRIPE_SECRET_KEY;

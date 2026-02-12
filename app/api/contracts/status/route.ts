@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getOptionalRequestContext } from '@cloudflare/next-on-pages';
 import { ncbOpenApiRead, type NCBEnv } from '@/lib/agent/ncbClient';
 
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext(); const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   try {

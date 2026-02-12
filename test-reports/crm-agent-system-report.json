@@ -1,0 +1,328 @@
+{
+  "report": {
+    "totalScenarios": 7,
+    "totalSteps": 28,
+    "successSteps": 9,
+    "errorSteps": 3,
+    "warningSteps": 0,
+    "byScenario": {
+      "Authentication Required": {
+        "totalSteps": 3,
+        "success": 0,
+        "errors": 1,
+        "errorDetails": [
+          {
+            "step": "Authentication check",
+            "error": {
+              "status": 404
+            }
+          }
+        ]
+      },
+      "Model Tier Routing": {
+        "totalSteps": 8,
+        "success": 4,
+        "errors": 0,
+        "errorDetails": []
+      },
+      "Model Name Validation": {
+        "totalSteps": 3,
+        "success": 1,
+        "errors": 0,
+        "errorDetails": []
+      },
+      "CRM Tools Availability": {
+        "totalSteps": 3,
+        "success": 0,
+        "errors": 1,
+        "errorDetails": [
+          {
+            "step": "Tools format"
+          }
+        ]
+      },
+      "NCB Integration": {
+        "totalSteps": 3,
+        "success": 0,
+        "errors": 1,
+        "errorDetails": [
+          {
+            "step": "NCB client"
+          }
+        ]
+      },
+      "Spanish Mode Support": {
+        "totalSteps": 4,
+        "success": 2,
+        "errors": 0,
+        "errorDetails": []
+      },
+      "Cost Optimization": {
+        "totalSteps": 4,
+        "success": 2,
+        "errors": 0,
+        "errorDetails": []
+      }
+    }
+  },
+  "traces": [
+    {
+      "timestamp": "2026-02-12T23:07:06.413Z",
+      "scenario": "Authentication Required",
+      "step": "Initialize",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.413Z",
+      "scenario": "Authentication Required",
+      "step": "Attempt unauthenticated request",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.431Z",
+      "scenario": "Authentication Required",
+      "step": "Authentication check",
+      "status": "error",
+      "data": {
+        "note": "Unexpected response"
+      },
+      "error": {
+        "status": 404
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Initialize",
+      "status": "start",
+      "data": {
+        "note": "Testing model selection logic"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Fast tier pattern check",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Fast tier triggers",
+      "status": "success",
+      "data": {
+        "note": "Questions <50 chars with no tool calls should use gpt-4o-mini",
+        "examples": [
+          "Hi",
+          "Hello",
+          "Help"
+        ],
+        "expectedModel": "gpt-4o-mini"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Standard tier pattern check",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Standard tier triggers",
+      "status": "success",
+      "data": {
+        "note": "Multi-step queries should use gpt-4o-mini",
+        "examples": [
+          "Show me my leads",
+          "What tasks do I have today?",
+          "Give me a summary of the pipeline"
+        ],
+        "expectedModel": "gpt-4o-mini"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Reasoning tier pattern check",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Reasoning tier triggers",
+      "status": "success",
+      "data": {
+        "note": "Why/analyze/explain questions should use gpt-4o",
+        "examples": [
+          "Why haven't we closed more deals?",
+          "Analyze our sales performance",
+          "How does our pipeline compare to last month?"
+        ],
+        "expectedModel": "gpt-4o"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Tier Routing",
+      "step": "Model routing logic",
+      "status": "success",
+      "data": {
+        "note": "Model tier routing patterns verified in code",
+        "summary": {
+          "fast": "gpt-4o-mini (<50 chars, simple)",
+          "standard": "gpt-4o-mini (multi-step, tools)",
+          "reasoning": "gpt-4o (why/analyze questions)"
+        }
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Name Validation",
+      "step": "Initialize",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.432Z",
+      "scenario": "Model Name Validation",
+      "step": "Check model configuration",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.476Z",
+      "scenario": "Model Name Validation",
+      "step": "Model validation",
+      "status": "success",
+      "data": {
+        "note": "All models are valid",
+        "models": [
+          "fast: gpt-4o-mini",
+          "standard: gpt-4o-mini",
+          "reasoning: gpt-4o",
+          "transcription: whisper-1",
+          "tts: tts-1",
+          "voice: echo",
+          "voiceEs: nova"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.476Z",
+      "scenario": "CRM Tools Availability",
+      "step": "Initialize",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.476Z",
+      "scenario": "CRM Tools Availability",
+      "step": "Import tools module",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "CRM Tools Availability",
+      "step": "Tools format",
+      "status": "error",
+      "data": {
+        "note": "Tools not in expected array format",
+        "type": "object"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "NCB Integration",
+      "step": "Initialize",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "NCB Integration",
+      "step": "Check NCB client",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "NCB Integration",
+      "step": "NCB client",
+      "status": "error",
+      "data": {
+        "note": "NCB client module not found or invalid export"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "Spanish Mode Support",
+      "step": "Initialize",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "Spanish Mode Support",
+      "step": "Check Spanish support",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "Spanish Mode Support",
+      "step": "Spanish voice configured",
+      "status": "success",
+      "data": {
+        "voice": "nova",
+        "note": "Spanish voice model is configured"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "Spanish Mode Support",
+      "step": "Spanish mode implementation",
+      "status": "success",
+      "data": {
+        "note": "Spanish mode requires language param and system prompt updates",
+        "expectedBehavior": "Agent should respond in Spanish when language=es"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "Cost Optimization",
+      "step": "Initialize",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.521Z",
+      "scenario": "Cost Optimization",
+      "step": "Analyze model costs",
+      "status": "start"
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.522Z",
+      "scenario": "Cost Optimization",
+      "step": "Model costs",
+      "status": "success",
+      "data": {
+        "note": "Model costs documented",
+        "costs": {
+          "gpt-4o-mini": {
+            "input": 0.15,
+            "output": 0.6,
+            "note": "per 1M tokens"
+          },
+          "gpt-4o": {
+            "input": 5,
+            "output": 15,
+            "note": "per 1M tokens"
+          }
+        },
+        "strategy": "Use fast/standard (gpt-4o-mini) for most queries, reasoning (gpt-4o) sparingly"
+      }
+    },
+    {
+      "timestamp": "2026-02-12T23:07:06.522Z",
+      "scenario": "Cost Optimization",
+      "step": "Reasoning model check",
+      "status": "success",
+      "data": {
+        "note": "Using expensive model only for reasoning tier (good)"
+      }
+    }
+  ]
+}

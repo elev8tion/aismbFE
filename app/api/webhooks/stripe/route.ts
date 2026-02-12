@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getOptionalRequestContext } from '@cloudflare/next-on-pages';
 import Stripe from 'stripe';
 import { getTierPricing, getPriceEnvVar, type TierKey } from '@/lib/stripe/pricing';
 import { sendWelcomeEmail, sendPaymentFailedAlert } from '@/lib/email/sendEmail';
@@ -8,7 +8,7 @@ import { ncbServerCreate, ncbServerUpdate, type NCBEnv } from '@/lib/agent/ncbCl
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
-  const { env: cfEnv } = getRequestContext();
+  const ctx = getOptionalRequestContext(); const cfEnv = (ctx?.env || process.env) as any;
   const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   const secret = env.STRIPE_SECRET_KEY;

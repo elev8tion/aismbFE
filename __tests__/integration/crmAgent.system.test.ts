@@ -8,7 +8,7 @@
  * Run with tracing: TRACE=true npm test -- crmAgent.system.test.ts
  */
 
-import { describe, test, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 
 const TRACE = process.env.TRACE === 'true';
 const API_BASE = process.env.API_BASE || 'http://localhost:3000';
