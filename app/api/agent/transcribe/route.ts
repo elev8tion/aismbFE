@@ -4,6 +4,7 @@ import { createOpenAI, MODELS } from '@/lib/openai/config';
 import { validateAudioFile } from '@/lib/security/requestValidator';
 import { getSessionUser, type NCBEnv } from '@/lib/agent/ncbClient';
 import { checkRateLimit, getClientIP } from '@/lib/security/rateLimiter.kv';
+import { languageSchema } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -52,7 +53,11 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const audioFile = formData.get('audio') as File;
-    const language = (formData.get('language') as string | null)?.toLowerCase();
+    const languageRaw = (formData.get('language') as string | null)?.toLowerCase();
+
+    // Validate language
+    const languageResult = languageSchema.safeParse(languageRaw);
+    const validLanguage = languageResult.success ? languageResult.data : undefined;
 
     if (!audioFile) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
@@ -79,7 +84,7 @@ export async function POST(request: NextRequest) {
       file,
       model: MODELS.transcription,
       response_format: 'json',
-      ...(language === 'es' || language === 'en' ? { language } : {}),
+      ...(validLanguage ? { language: validLanguage } : {}),
     });
 
     const duration = Date.now() - startTime;

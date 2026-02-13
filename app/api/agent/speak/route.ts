@@ -4,6 +4,7 @@ import { createOpenAI, MODELS } from '@/lib/openai/config';
 import { validateText } from '@/lib/security/requestValidator';
 import { getSessionUser, type NCBEnv } from '@/lib/agent/ncbClient';
 import { checkRateLimit, getClientIP } from '@/lib/security/rateLimiter.kv';
+import { languageSchema } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -52,12 +53,16 @@ export async function POST(request: NextRequest) {
   try {
     const { text, language } = await request.json() as { text: string; language?: 'en' | 'es' };
 
+    // Validate language
+    const languageResult = languageSchema.safeParse(language);
+    const validLanguage = languageResult.success ? languageResult.data : 'en';
+
     const validation = validateText(text);
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const selectedVoice = language === 'es' ? MODELS.voiceEs : MODELS.voice;
+    const selectedVoice = validLanguage === 'es' ? MODELS.voiceEs : MODELS.voice;
 
     const mp3 = await openai.audio.speech.create({
       model: MODELS.tts,

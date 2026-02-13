@@ -10,6 +10,7 @@ import { getCachedResponse, setCachedResponse } from '@/lib/agent/responseCache'
 import { ALL_CRM_FUNCTIONS } from '@/lib/agent/functions';
 import { executeTool } from '@/lib/agent/tools';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import { languageSchema } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -340,6 +341,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
     }
 
+    // Validate language
+    const languageResult = languageSchema.safeParse(language);
+    const validLanguage = languageResult.success ? languageResult.data : 'en';
+
     // Input validation
     const validation = validateQuestion(question);
     if (!validation.valid) {
@@ -360,7 +365,7 @@ export async function POST(request: NextRequest) {
     const model = selectModel(sanitizedQuestion);
 
     // Build messages — select language-matched system prompt and few-shots based on UI toggle
-    const isSpanish = language === 'es';
+    const isSpanish = validLanguage === 'es';
     const systemPrompt = isSpanish ? SYSTEM_PROMPT_ES : SYSTEM_PROMPT_EN;
     const fewShots = isSpanish ? FEWSHOTS_ES : FEWSHOTS_EN;
 
