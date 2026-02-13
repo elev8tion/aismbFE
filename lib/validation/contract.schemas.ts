@@ -24,9 +24,7 @@ export const createContractSchema = z.object({
   client_name: z.string().min(1, 'Client name is required').max(500),
   client_email: z.string().email('Invalid email format'),
   company_name: z.string().min(1, 'Company name is required').max(500),
-  tier: z.enum(['discovery', 'foundation', 'architect'], {
-    errorMap: () => ({ message: 'Tier must be discovery, foundation, or architect' }),
-  }),
+  tier: z.enum(['discovery', 'foundation', 'architect']),
 });
 
 export type CreateContractInput = z.infer<typeof createContractSchema>;

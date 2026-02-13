@@ -63,7 +63,7 @@ export default function BookingsPage() {
             b.guest_name.toLowerCase().includes(q) || b.guest_email.toLowerCase().includes(q)
           ));
         }
-        if (match) setExpandedId(match.id);
+        if (match) setExpandedId(String(match.id));
       }
     });
     return () => { unsub(); };
@@ -241,7 +241,7 @@ export default function BookingsPage() {
                 <tbody>
                   {filtered.map((booking) => (
                     <>
-                      <tr key={booking.id} className="cursor-pointer" onClick={() => setExpandedId(expandedId === booking.id ? null : booking.id)}>
+                      <tr key={booking.id} className="cursor-pointer" onClick={() => setExpandedId(expandedId === String(booking.id) ? null : String(booking.id))}>
                         <td>
                           <div>
                             <p className="font-medium text-white">{booking.guest_name}</p>
@@ -262,7 +262,7 @@ export default function BookingsPage() {
                             {booking.status === 'pending' && (
                               <>
                                 <button
-                                  onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                                  onClick={() => updateBookingStatus(String(booking.id), 'confirmed')}
                                   disabled={updatingId === booking.id}
                                   className="btn-ghost p-2 text-[#22C55E] hover:bg-[#22C55E]/10"
                                   title={t.bookings.confirmBooking}
@@ -270,7 +270,7 @@ export default function BookingsPage() {
                                   <CheckIcon className="w-4 h-4" />
                                 </button>
                                 <button
-                                  onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                                  onClick={() => updateBookingStatus(String(booking.id), 'cancelled')}
                                   disabled={updatingId === booking.id}
                                   className="btn-ghost p-2 text-[#EF4444] hover:bg-[#EF4444]/10"
                                   title={t.bookings.cancelBooking}
@@ -281,7 +281,7 @@ export default function BookingsPage() {
                             )}
                             {booking.status === 'confirmed' && (
                               <button
-                                onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                                onClick={() => updateBookingStatus(String(booking.id), 'cancelled')}
                                 disabled={updatingId === booking.id}
                                 className="btn-ghost p-2 text-[#EF4444] hover:bg-[#EF4444]/10"
                                 title={t.bookings.cancelBooking}
@@ -290,7 +290,7 @@ export default function BookingsPage() {
                               </button>
                             )}
                             <button
-                              onClick={() => setExpandedId(expandedId === booking.id ? null : booking.id)}
+                              onClick={() => setExpandedId(expandedId === String(booking.id) ? null : String(booking.id))}
                               className="btn-ghost p-2"
                             >
                               <ChevronDownIcon className={`w-4 h-4 transition-transform ${expandedId === booking.id ? 'rotate-180' : ''}`} />

@@ -225,10 +225,10 @@ export default function PartnershipsPage() {
 
   const openUpdate = (p: Partnership) => {
     setUpdateForm({
-      phase: p.phase,
+      phase: p.phase || '',
       status: p.status,
-      health_score: p.health_score,
-      systems_delivered: p.systems_delivered,
+      health_score: p.health_score || 0,
+      systems_delivered: p.systems_delivered || 0,
     });
     setUpdatePartnership(p);
   };
@@ -250,7 +250,7 @@ export default function PartnershipsPage() {
 
   const handleScheduleMeeting = (p: Partnership) => {
     const subject = encodeURIComponent(`Strategy Meeting - ${p.company_name}`);
-    const body = encodeURIComponent(`Hi,\n\nI'd like to schedule our next strategy meeting for ${p.company_name}.\n\nCurrent phase: ${phaseLabels[p.phase] || p.phase}\nSystems delivered: ${p.systems_delivered} / ${p.total_systems}\n\nBest regards`);
+    const body = encodeURIComponent(`Hi,\n\nI'd like to schedule our next strategy meeting for ${p.company_name}.\n\nCurrent phase: ${p.phase ? (phaseLabels[p.phase] || p.phase) : 'N/A'}\nSystems delivered: ${p.systems_delivered} / ${p.total_systems}\n\nBest regards`);
     window.open(`mailto:?subject=${subject}&body=${body}`, '_self');
   };
 
@@ -308,7 +308,7 @@ export default function PartnershipsPage() {
     try {
       const params = new URLSearchParams();
       if (p.stripe_customer_id) params.set('customer_id', p.stripe_customer_id);
-      else params.set('partnership_id', p.id);
+      else params.set('partnership_id', String(p.id));
 
       const res = await fetch(`/api/integrations/stripe/invoices/list?${params.toString()}`);
       const data: any = await res.json();
@@ -393,7 +393,7 @@ export default function PartnershipsPage() {
                       <span className={`tag ${getPartnershipStatusClass(partnership.status)}`}>
                         {statusLabels[partnership.status] || partnership.status}
                       </span>
-                      {getBillingStatusTag(partnership.payment_status, t)}
+                      {getBillingStatusTag(partnership.payment_status || undefined, t)}
                       {contractStatuses[partnership.id] && (
                         <DocumentStatusBadge status={contractStatuses[partnership.id]!} labels={t.documents.statuses} />
                       )}
@@ -419,9 +419,11 @@ export default function PartnershipsPage() {
                     <p className="text-xs md:text-sm text-white/50 mb-2">{t.partnerships.currentPhase}</p>
                     <StepProgress
                       steps={PHASES}
-                      currentStep={partnership.phase}
+                      currentStep={partnership.phase || ''}
                     />
-                    <p className="text-xs md:text-sm text-white mt-1 capitalize">{phaseLabels[partnership.phase] || partnership.phase.replace('-', ' ')}</p>
+                    <p className="text-xs md:text-sm text-white mt-1 capitalize">
+                      {partnership.phase ? (phaseLabels[partnership.phase] || partnership.phase.replace('-', ' ')) : 'N/A'}
+                    </p>
                   </div>
 
                   {/* Systems Progress */}
@@ -475,7 +477,9 @@ export default function PartnershipsPage() {
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/50">{t.partnerships.currentPhase}</p>
-                <p className="text-sm font-medium text-white mt-1 capitalize">{phaseLabels[viewPartnership.phase] || viewPartnership.phase.replace('-', ' ')}</p>
+                <p className="text-sm font-medium text-white mt-1 capitalize">
+                  {viewPartnership.phase ? (phaseLabels[viewPartnership.phase] || viewPartnership.phase.replace('-', ' ')) : 'N/A'}
+                </p>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/50">{t.partnerships.healthScore}</p>
@@ -510,7 +514,7 @@ export default function PartnershipsPage() {
             <div className="bg-white/5 rounded-lg p-3">
               <p className="text-xs text-white/50 mb-2">{t.billing.setupFee} / {t.billing.monthlyPartnership}</p>
               <div className="flex items-center gap-3">
-                {getBillingStatusTag(viewPartnership.payment_status, t)}
+                {getBillingStatusTag(viewPartnership.payment_status || undefined, t)}
                 <span className="text-sm text-white/70">
                   {t.billing.setupFee}: {getTierSetupAmount(viewPartnership.tier)} | {t.billing.monthlyPartnership}: {getTierMonthlyAmount(viewPartnership.tier)}/mo
                 </span>
@@ -717,7 +721,7 @@ export default function PartnershipsPage() {
             id: Number(sendContractPartnership.id),
             company_name: sendContractPartnership.company_name || '',
             contact_name: sendContractPartnership.company_name || '',
-            customer_email: sendContractPartnership.customer_email,
+            customer_email: sendContractPartnership.customer_email || undefined,
             tier: sendContractPartnership.tier,
           }}
           onSuccess={() => fetchContractStatuses(partnerships)}

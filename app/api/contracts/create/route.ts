@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     if (!result.success) {
       return NextResponse.json({
         error: 'Validation failed',
-        details: formatZodErrors(result.error)
+        details: formatZodErrors(result.error as any)
       }, { status: 400 });
     }
 
