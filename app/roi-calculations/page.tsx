@@ -6,7 +6,10 @@ import { StatCard } from '@/components/ui/StatCard';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
 import { CalculatorIcon, LeadsStatIcon } from '@/components/icons';
-import { ROICalculation, ROIMetrics } from '@/types/roi';
+import { LandingPageROICalculation, ROIMetrics } from '@kre8tion/shared-types';
+
+// Type alias for clarity in this file
+type ROICalculation = LandingPageROICalculation;
 import Link from 'next/link';
 import { scoreROICalculation, LeadScore } from '@/lib/utils/leadScoring';
 import { getBenchmarkComparison } from '@/lib/utils/benchmarks';
