@@ -6,7 +6,7 @@ import { StatCard } from '@/components/ui/StatCard';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useState, useEffect, useCallback } from 'react';
 import { VoiceIcon, LeadsStatIcon } from '@/components/icons';
-import { VoiceSession, ConversationMessage } from '@/types/voice';
+import { VoiceSession, ConversationMessage, ParsedVoiceSession } from '@kre8tion/shared-types';
 import Link from 'next/link';
 import { generateSessionInsights, AIInsight } from '@/lib/utils/aiInsights';
 import { scoreVoiceSession, LeadScore } from '@/lib/utils/leadScoring';
