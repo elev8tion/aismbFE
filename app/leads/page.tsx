@@ -12,24 +12,7 @@ import { ScoreBar } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-
-interface Lead {
-  id: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  phone?: string;
-  company_name?: string;
-  source: string;
-  source_detail?: string;
-  industry?: string;
-  employee_count?: string;
-  status: string;
-  lead_score: number;
-  voice_session_id?: number;
-  roi_calculation_id?: number;
-  created_at?: string;
-}
+import { Lead } from '@kre8tion/shared-types';
 
 const INDUSTRIES = ['HVAC', 'Plumbing', 'Construction', 'Property Management', 'Electrical', 'Landscaping', 'Other'];
 const SOURCES = ['voice-agent', 'roi-calculator', 'referral', 'website', 'social-media', 'cold-outreach', 'other'];

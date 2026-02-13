@@ -8,21 +8,8 @@ import { getTierClass } from '@/lib/utils/statusClasses';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
-import type { NCBListResponse, CheckoutSessionResponse } from '@kre8tion/shared-types';
+import type { NCBListResponse, CheckoutSessionResponse, Opportunity } from '@kre8tion/shared-types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-
-interface Opportunity {
-  id: string;
-  name: string;
-  company_id?: number;
-  tier: string;
-  stage: string;
-  setup_fee: number;
-  monthly_fee?: number;
-  total_contract_value?: number;
-  expected_close_date?: string;
-  created_at?: string;
-}
 
 const STAGES = ['new-lead', 'contacted', 'discovery-call', 'proposal-sent', 'negotiation', 'closed-won'];
 const TIERS = ['discovery', 'foundation', 'architect'];

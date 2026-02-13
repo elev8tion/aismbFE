@@ -10,18 +10,7 @@ import { DotRating } from '@/components/ui/ProgressBar';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-
-interface Company {
-  id: string;
-  name: string;
-  industry: string;
-  employee_count: string;
-  website?: string;
-  ai_maturity_score: number;
-  city?: string;
-  state?: string;
-  created_at?: string;
-}
+import { Company } from '@kre8tion/shared-types';
 
 const INDUSTRIES = ['HVAC', 'Plumbing', 'Construction', 'Property Management', 'Electrical', 'Landscaping', 'Other'];
 const EMPLOYEE_COUNTS = ['1-5', '5-10', '10-25', '25-50', '50-100', '100+'];

@@ -8,19 +8,10 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import type { Contact as BaseContact } from '@kre8tion/shared-types';
 
-interface Contact {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  company_id?: number;
-  title?: string;
-  role?: string;
-  decision_maker: number;
-  created_at?: string;
-  // joined from mock
+// Extended with joined fields
+interface Contact extends BaseContact {
   company_name?: string;
 }
 

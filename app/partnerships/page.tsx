@@ -13,27 +13,7 @@ import DocumentStatusBadge from '@/components/contracts/DocumentStatusBadge';
 import SendContractModal from '@/components/contracts/SendContractModal';
 import { DocumentRecord, DocumentStatus } from '@/lib/contracts/types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-
-interface Partnership {
-  id: string;
-  company_name?: string;
-  company_id?: number;
-  opportunity_id?: number;
-  tier: string;
-  status: string;
-  phase: string;
-  health_score: number;
-  systems_delivered: number;
-  total_systems: number;
-  monthly_revenue?: number;
-  start_date?: string;
-  next_meeting?: string;
-  notes?: string;
-  created_at?: string;
-  payment_status?: string;
-  customer_email?: string;
-  stripe_customer_id?: string;
-}
+import { Partnership } from '@kre8tion/shared-types';
 
 interface DeliveredSystem {
   id: string;
