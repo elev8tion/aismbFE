@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cloudflare/env';
 import { sendSigningRequest } from '@/lib/email/sendEmail';
 import { ncbServerRead, ncbServerUpdate, type NCBEnv } from '@/lib/agent/ncbClient';
+import { sendContractSchema } from '@/lib/validation/contract.schemas';
+import { formatZodErrors } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -11,11 +13,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { signing_token } = body as { signing_token: string };
 
-    if (!signing_token) {
-      return NextResponse.json({ error: 'Missing signing_token' }, { status: 400 });
+    // Validate with Zod
+    const result = sendContractSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: formatZodErrors(result.error)
+      }, { status: 400 });
     }
+
+    const { signing_token } = result.data;
 
     // Find documents with this token
     const docs = await ncbServerRead(env, 'documents', { signing_token });

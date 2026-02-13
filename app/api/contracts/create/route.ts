@@ -3,6 +3,8 @@ import { getEnv } from '@/lib/cloudflare/env';
 import { getTierPricing } from '@/lib/stripe/pricing';
 import { DocumentType } from '@/lib/contracts/types';
 import { ncbServerCreate, type NCBEnv } from '@/lib/agent/ncbClient';
+import { createContractSchema } from '@/lib/validation/contract.schemas';
+import { formatZodErrors } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -12,20 +14,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { partnership_id, client_name, client_email, company_name, tier } = body as {
-      partnership_id: number;
-      client_name: string;
-      client_email: string;
-      company_name: string;
-      tier: string;
-    };
 
-    if (!partnership_id || !client_name || !client_email || !company_name || !tier) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+    // Validate with Zod
+    const result = createContractSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: formatZodErrors(result.error)
+      }, { status: 400 });
     }
+
+    const { partnership_id, client_name, client_email, company_name, tier } = result.data;
 
     const pricing = getTierPricing(tier);
     if (!pricing) {

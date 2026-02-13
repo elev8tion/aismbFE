@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cloudflare/env';
 import { sendContractSignedNotification } from '@/lib/email/sendEmail';
 import { ncbServerRead, ncbServerCreate, ncbServerUpdate, type NCBEnv } from '@/lib/agent/ncbClient';
+import { signContractSchema } from '@/lib/validation/contract.schemas';
+import { formatZodErrors } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -12,26 +14,16 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Sanitize inputs
-    function sanitize(val: unknown): string {
-      if (typeof val !== 'string') return '';
-      return val.trim().replace(/<[^>]*>/g, '').slice(0, 500);
+    // Validate with Zod
+    const result = signContractSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: formatZodErrors(result.error)
+      }, { status: 400 });
     }
 
-    const raw = body as Record<string, unknown>;
-    const token = sanitize(raw.token);
-    const signer_name = sanitize(raw.signer_name);
-    const signer_title = sanitize(raw.signer_title);
-    const signer_email = sanitize(raw.signer_email);
-    const signature_data = typeof raw.signature_data === 'string' ? raw.signature_data.slice(0, 50000) : '';
-
-    if (!token || !signer_name || !signature_data) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    if (signer_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signer_email)) {
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
-    }
+    const { token, signer_name, signer_title, signer_email, signature_data } = result.data;
 
     // Verify token and get documents
     const docs = await ncbServerRead(env, 'documents', { signing_token: token });
