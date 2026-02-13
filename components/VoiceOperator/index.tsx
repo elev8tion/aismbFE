@@ -25,6 +25,7 @@ export default function VoiceOperator() {
   const [isOpen, setIsOpen] = useState(false);
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [transcript, setTranscript] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
   const [displayError, setDisplayError] = useState<string | null>(null);
   const [browserSupported, setBrowserSupported] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -77,6 +78,7 @@ export default function VoiceOperator() {
           setIsOpen(false);
           setVoiceState('idle');
           setTranscript('');
+          setAiResponse('');
           setDisplayError(null);
           setShowAutoClosePrompt(false);
           setCountdown(null);
@@ -132,6 +134,9 @@ export default function VoiceOperator() {
       }
 
       const data = await response.json() as { response: string; clientActions?: Array<{ type: string; route?: string; target?: string; scope?: string; action?: string; payload?: Record<string, unknown> }> };
+
+      // Store AI response for display
+      setAiResponse(data.response);
 
       // Perform client actions. If a navigate action exists, run it first and
       // schedule remaining UI actions after navigation.
@@ -235,6 +240,7 @@ export default function VoiceOperator() {
       setIsOpen(true);
       setDisplayError(null);
       setTranscript('');
+      setAiResponse('');
       iosAudioPlayerRef.current.unlock();
       setTimeout(() => startRecording(), 500);
     } else {
@@ -248,6 +254,7 @@ export default function VoiceOperator() {
         setIsOpen(false);
         setVoiceState('idle');
         setTranscript('');
+        setAiResponse('');
         setDisplayError(null);
         clearSessionId();
         setSessionId(null);
@@ -367,11 +374,40 @@ export default function VoiceOperator() {
                 </p>
               </div>
 
-              {/* Transcript */}
-              {transcript && (
-                <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-white/50 mb-1">{t.voiceAgent.transcript}</p>
-                  <p className="text-sm text-white">{transcript}</p>
+              {/* Conversation Display */}
+              {(transcript || aiResponse) && (
+                <div className="mb-4 space-y-3 max-h-48 overflow-y-auto">
+                  {/* User Question */}
+                  {transcript && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 rounded-lg bg-white/5 border border-white/10"
+                    >
+                      <p className="text-xs text-white/50 mb-1">
+                        {t.voiceAgent.yourQuestion}
+                      </p>
+                      <p className="text-sm text-white leading-relaxed">{transcript}</p>
+                    </motion.div>
+                  )}
+
+                  {/* AI Response */}
+                  <AnimatePresence>
+                    {aiResponse && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                        className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30"
+                      >
+                        <p className="text-xs text-blue-400/80 mb-1">
+                          {t.voiceAgent.aiResponse}
+                        </p>
+                        <p className="text-sm text-white leading-relaxed">{aiResponse}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
 
@@ -400,6 +436,41 @@ export default function VoiceOperator() {
                       }}
                     />
                   ))}
+                </div>
+              )}
+
+              {/* Processing Animation */}
+              {voiceState === 'processing' && (
+                <div className="h-16 flex flex-col justify-center">
+                  {/* Progress Bar */}
+                  <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-4">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-orange-400 to-orange-600"
+                      initial={{ width: '0%' }}
+                      animate={{ width: '100%' }}
+                      transition={{ duration: 2.5, ease: 'easeOut' }}
+                    />
+                  </div>
+
+                  {/* Pulsing Dots */}
+                  <div className="flex items-center justify-center gap-2">
+                    {[...Array(3)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="w-3 h-3 bg-orange-400 rounded-full"
+                        animate={{
+                          scale: [1, 1.5, 1],
+                          opacity: [0.5, 1, 0.5],
+                        }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          delay: i * 0.2,
+                          ease: 'easeInOut',
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -466,6 +537,7 @@ export default function VoiceOperator() {
                     setIsOpen(false);
                     setVoiceState('idle');
                     setTranscript('');
+                    setAiResponse('');
                     setDisplayError(null);
                     clearSessionId();
                     setSessionId(null);

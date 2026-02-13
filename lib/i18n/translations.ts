@@ -514,6 +514,8 @@ export interface Translations {
       speaking: { title: string; description: string };
     };
     transcript: string;
+    aiResponse: string;
+    yourQuestion: string;
     autoClose: {
       prompt: string;
       seconds: string;
@@ -1023,10 +1025,12 @@ export const translations: Record<'en' | 'es', Translations> = {
       states: {
         idle: { title: 'Voice Operator', description: 'Tap to start speaking' },
         listening: { title: 'Listening...', description: 'Speak your command' },
-        processing: { title: 'Processing...', description: 'Getting your answer' },
-        speaking: { title: 'Speaking...', description: 'Playing response' },
+        processing: { title: 'Processing Your Question...', description: 'Analyzing and preparing response...' },
+        speaking: { title: 'AI Response', description: 'Listen or read below ↓' },
       },
       transcript: 'You said:',
+      aiResponse: 'AI Response:',
+      yourQuestion: 'Your Question:',
       autoClose: {
         prompt: 'Need anything else?',
         seconds: 'seconds',
@@ -1534,10 +1538,12 @@ export const translations: Record<'en' | 'es', Translations> = {
       states: {
         idle: { title: 'Operador de Voz', description: 'Toca para hablar' },
         listening: { title: 'Escuchando...', description: 'Di tu comando' },
-        processing: { title: 'Procesando...', description: 'Obteniendo respuesta' },
-        speaking: { title: 'Hablando...', description: 'Reproduciendo respuesta' },
+        processing: { title: 'Procesando Tu Pregunta...', description: 'Analizando y preparando respuesta...' },
+        speaking: { title: 'Respuesta de IA', description: 'Escucha o lee abajo ↓' },
       },
       transcript: 'Dijiste:',
+      aiResponse: 'Respuesta de IA:',
+      yourQuestion: 'Tu Pregunta:',
       autoClose: {
         prompt: 'Necesitas algo mas?',
         seconds: 'segundos',
