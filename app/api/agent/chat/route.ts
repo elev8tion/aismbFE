@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOptionalRequestContext } from '@cloudflare/next-on-pages';
+import { getEnv } from '@/lib/cloudflare/env';
 import { createOpenAI, buildChatParams } from '@/lib/openai/config';
 import { validateQuestion, detectPromptInjection } from '@/lib/security/requestValidator';
 import { getSessionUser, extractAuthCookies, type NCBEnv } from '@/lib/agent/ncbClient';
@@ -290,7 +290,7 @@ const MAX_TOOL_ROUNDS = 5;
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   try {
-  const ctx = getOptionalRequestContext(); const cfEnv = (ctx?.env || process.env) as any;
+  const cfEnv = getEnv();
   const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   // Pre-auth IP rate limit (brute-force protection)

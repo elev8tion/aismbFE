@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOptionalRequestContext } from '@cloudflare/next-on-pages';
+import { getEnv } from '@/lib/cloudflare/env';
 
 export const runtime = 'edge';
 
 function getConfig() {
-  const ctx = getOptionalRequestContext(); const cfEnv = (ctx?.env || process.env) as any;
+  const cfEnv = getEnv();
   const env = cfEnv as unknown as Record<string, string>;
   const instance = env.NCB_INSTANCE;
   const apiUrl = env.NCB_AUTH_API_URL;

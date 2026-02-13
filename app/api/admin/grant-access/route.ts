@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getOptionalRequestContext } from '@cloudflare/next-on-pages';
+import { getEnv } from '@/lib/cloudflare/env';
 import { extractAuthCookies, getSessionUser, type NCBEnv } from '@/lib/agent/ncbClient';
 
 export const runtime = 'edge';
@@ -28,7 +28,7 @@ async function getUserRole(instance: string, dataApiUrl: string, cookieHeader: s
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = getOptionalRequestContext(); const cfEnv = (ctx?.env || process.env) as any;
+  const cfEnv = getEnv();
   const env = cfEnv as unknown as Record<string, string>;
   const instance = env.NCB_INSTANCE;
   const dataApiUrl = env.NCB_DATA_API_URL;
