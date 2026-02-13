@@ -7,10 +7,11 @@ import { useCustomerPortal } from '@/lib/hooks/useCustomerPortal';
 import { getTierClass, getHealthColor } from '@/lib/utils/statusClasses';
 import { useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import type { PortalBookingsResponse, PortalContractsStatusResponse } from '@/lib/types/api';
+import type { PortalBookingsResponse, PortalContractsStatusResponse, LandingPageBooking } from '@kre8tion/shared-types';
 
 const PHASES = ['discover', 'co-create', 'deploy', 'independent'];
 
+// Simplified booking type for portal display
 interface Booking {
   id: number;
   guest_name: string;

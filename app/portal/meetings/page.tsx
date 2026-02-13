@@ -4,7 +4,9 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useTranslations } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
+import type { LandingPageBooking } from '@kre8tion/shared-types';
 
+// Simplified booking type for portal display
 interface Booking {
   id: number;
   guest_name: string;

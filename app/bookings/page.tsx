@@ -6,20 +6,10 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import type { LandingPageBooking, BookingStatus } from '@kre8tion/shared-types';
 
-interface Booking {
-  id: string;
-  guest_name: string;
-  guest_email: string;
-  guest_phone?: string;
-  booking_date: string;
-  start_time: string;
-  end_time: string;
-  timezone: string;
-  notes?: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  created_at: string;
-}
+// Type alias for clarity in this file
+type Booking = LandingPageBooking;
 
 export default function BookingsPage() {
   const { t } = useTranslations();
