@@ -19,6 +19,7 @@ export * from './email';
 export * from './payment';
 export * from './common';
 export * from './ncb';
+export * from './crm';
 
 // Validation schemas (export only schemas and utilities, not duplicate types)
 export {
