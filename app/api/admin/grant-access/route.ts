@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cloudflare/env';
 import { extractAuthCookies, getSessionUser, type NCBEnv } from '@/lib/agent/ncbClient';
+import { grantAccessSchema } from '@/lib/validation/admin.schemas';
+import { formatZodErrors } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -61,14 +63,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { customer_user_id, partnership_id, access_level } = body;
-
-  if (!customer_user_id || !partnership_id) {
-    return NextResponse.json(
-      { error: 'customer_user_id and partnership_id are required' },
-      { status: 400 }
-    );
+  // Validate with Zod
+  const result = grantAccessSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({
+      error: 'Validation failed',
+      details: formatZodErrors(result.error)
+    }, { status: 400 });
   }
+
+  const { customer_user_id, partnership_id, access_level } = result.data;
 
   // Create customer_access record directly via NCB with customer's user_id
   const createUrl = `${dataApiUrl}/create/customer_access?Instance=${instance}`;
@@ -82,7 +86,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       user_id: customer_user_id,
       partnership_id,
-      access_level: access_level || 'view',
+      access_level, // Zod provides default value 'read'
       granted_by: user.id,
     }),
   });
