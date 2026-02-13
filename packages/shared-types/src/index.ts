@@ -18,6 +18,7 @@ export * from './auth';
 export * from './email';
 export * from './payment';
 export * from './common';
+export * from './ncb';
 
 // Validation schemas (export only schemas and utilities, not duplicate types)
 export {

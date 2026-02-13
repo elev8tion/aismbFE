@@ -15,7 +15,7 @@ import {
 } from '@/components/icons';
 import { OnboardingChecklist } from '@/components/onboarding/OnboardingChecklist';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { NCBListResponse } from '@/lib/types/api';
+import type { NCBListResponse } from '@kre8tion/shared-types';
 
 import dynamic from 'next/dynamic';
 const PipelineFunnel = dynamic(

@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useCustomerPortal } from '@/lib/hooks/useCustomerPortal';
 import { useState, useEffect, useCallback } from 'react';
-import type { NCBListResponse } from '@/lib/types/api';
+import type { NCBListResponse } from '@kre8tion/shared-types';
 import { getTierClass, getPartnershipStatusClass } from '@/lib/utils/statusClasses';
 
 const TIMEZONES = [

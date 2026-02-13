@@ -8,7 +8,7 @@ import { getTierClass } from '@/lib/utils/statusClasses';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Modal } from '@/components/ui/Modal';
 import { useVoiceAgentActions } from '@/contexts/VoiceAgentActionsContext';
-import type { NCBListResponse, CheckoutSessionResponse } from '@/lib/types/api';
+import type { NCBListResponse, CheckoutSessionResponse } from '@kre8tion/shared-types';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 interface Opportunity {
