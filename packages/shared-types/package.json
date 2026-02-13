@@ -1,0 +1,48 @@
+{
+  "name": "@kre8tion/shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types and interfaces for KRE8TION platform (Landing Page + CRM)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "typescript",
+    "types",
+    "shared",
+    "kre8tion",
+    "crm",
+    "booking",
+    "roi",
+    "voice-agent"
+  ],
+  "author": "ELEV8TION",
+  "license": "MIT",
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "eslint": "^9.0.0",
+    "vitest": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ELEV8TION/kre8tion-workspace.git",
+    "directory": "packages/shared-types"
+  }
+}
