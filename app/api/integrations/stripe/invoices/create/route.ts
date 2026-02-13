@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cloudflare/env';
 import Stripe from 'stripe';
 import { getTierPricing, type TierKey } from '@/lib/stripe/pricing';
+import { createInvoiceSchema } from '@/lib/validation/stripe.schemas';
+import { formatZodErrors } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -18,26 +20,23 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+
+    // Validate with Zod
+    const result = createInvoiceSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: formatZodErrors(result.error)
+      }, { status: 400 });
+    }
+
     const {
       partnership_id,
       customer_email,
       customer_name,
       tier,
       company_name,
-    } = body as {
-      partnership_id: string;
-      customer_email: string;
-      customer_name: string;
-      tier: string;
-      company_name: string;
-    };
-
-    if (!partnership_id || !customer_email || !tier) {
-      return NextResponse.json(
-        { error: 'Missing required fields: partnership_id, customer_email, tier' },
-        { status: 400 }
-      );
-    }
+    } = result.data;
 
     const pricing = getTierPricing(tier);
     if (!pricing) {

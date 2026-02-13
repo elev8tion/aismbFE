@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cloudflare/env';
 import Stripe from 'stripe';
+import { createCheckoutSessionSchema } from '@/lib/validation/stripe.schemas';
+import { formatZodErrors } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -16,24 +18,33 @@ export async function POST(req: NextRequest) {
   const stripe = new Stripe(secret, { apiVersion: '2023-10-16' });
 
   try {
-    const body: any = await req.json();
+    const body = await req.json();
+
+    // Validate with Zod
+    const result = createCheckoutSessionSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: formatZodErrors(result.error)
+      }, { status: 400 });
+    }
 
     const origin = req.headers.get('origin') || env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const {
-      mode = 'payment',
+      mode,
       priceId,
       prices,
       amount,
-      currency = 'usd',
+      currency,
       customer_email,
-      metadata = {},
+      metadata,
       opportunity_id,
       partnership_id,
-      success_path = '/dashboard',
-      cancel_path = '/pipeline',
-      description = 'Checkout',
-      product_name = 'Payment',
-    } = body || {};
+      success_path,
+      cancel_path,
+      description,
+      product_name,
+    } = result.data;
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
@@ -57,9 +68,8 @@ export async function POST(req: NextRequest) {
         },
         quantity: 1,
       });
-    } else {
-      return NextResponse.json({ error: 'Missing priceId/prices or amount (in cents)' }, { status: 400 });
     }
+    // Note: Zod validation ensures at least one of priceId, prices, or amount is provided
 
     const session = await stripe.checkout.sessions.create({
       mode: mode as 'payment' | 'subscription',
