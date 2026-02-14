@@ -13,7 +13,20 @@ export const createCheckoutSessionSchema = z.object({
   priceId: z.string().optional(),
   prices: z.array(z.union([
     z.string(),
-    z.object({}).passthrough() // Allow any object for line item
+    z.object({
+      price: z.string().optional(),
+      quantity: z.number().int().positive().optional(),
+      price_data: z.object({
+        currency: z.string(),
+        product_data: z.object({
+          name: z.string().min(1, 'Product name required'),
+          description: z.string().optional(),
+        }),
+        unit_amount: z.number().int().positive('Amount must be positive'),
+      }).optional(),
+    }).refine((data) => data.price || data.price_data, {
+      message: 'Line item must have price or price_data',
+    })
   ])).optional(),
   amount: z.number().positive().max(10000000).optional(), // Max $100k in cents
   currency: z.enum(['usd', 'eur', 'gbp']).default('usd'),
@@ -28,7 +41,7 @@ export const createCheckoutSessionSchema = z.object({
 }).refine(
   (data) => data.priceId || data.prices || data.amount,
   {
-    message: 'Must provide either priceId, prices, or amount',
+    message: 'Must provide either priceId (string), prices (array), or amount (positive number up to $100,000)',
     path: ['priceId'],
   }
 );

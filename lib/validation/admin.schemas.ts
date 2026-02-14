@@ -11,7 +11,10 @@ import { z } from 'zod';
 export const grantAccessSchema = z.object({
   customer_user_id: z.number().positive('Customer user ID must be a positive number'),
   partnership_id: z.number().positive('Partnership ID must be a positive number'),
-  access_level: z.enum(['read', 'write', 'admin']).optional().default('read'),
+  access_level: z.enum(['read', 'write', 'admin'])
+    .optional()
+    .default('read')
+    .describe('Access level for customer partnership (defaults to read)'),
 });
 
 export type GrantAccessInput = z.infer<typeof grantAccessSchema>;

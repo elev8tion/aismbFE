@@ -48,10 +48,23 @@ export async function POST(req: NextRequest) {
         user_agent: 'CRM',
       });
 
-      await ncbServerUpdate(env, 'documents', doc.id, {
+      const updateRes = await ncbServerUpdate(env, 'documents', doc.id, {
         status: 'fully_executed',
         updated_at: signedAt,
       });
+
+      if (!updateRes.ok) {
+        const text = await updateRes.text();
+        console.error('[contracts/countersign] NCB update failed:', {
+          document_id: doc.id,
+          status: updateRes.status,
+          error: text,
+        });
+        return NextResponse.json({
+          error: 'Failed to update document status',
+          details: 'Document was countersigned but status update failed. Please contact support.',
+        }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ success: true });

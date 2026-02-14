@@ -60,10 +60,23 @@ export async function POST(req: NextRequest) {
         user_agent: userAgent,
       });
 
-      await ncbServerUpdate(env, 'documents', doc.id, {
+      const updateRes = await ncbServerUpdate(env, 'documents', doc.id, {
         status: 'client_signed',
         updated_at: signedAt,
       });
+
+      if (!updateRes.ok) {
+        const text = await updateRes.text();
+        console.error('[contracts/sign] NCB update failed:', {
+          document_id: doc.id,
+          status: updateRes.status,
+          error: text,
+        });
+        return NextResponse.json({
+          error: 'Failed to update document status',
+          details: 'Document was signed but status update failed. Please contact support.',
+        }, { status: 500 });
+      }
     }
 
     // Notify admin

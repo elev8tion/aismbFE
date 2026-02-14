@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cloudflare/env';
 import { ncbOpenApiRead, type NCBEnv } from '@/lib/agent/ncbClient';
+import { statusQuerySchema } from '@/lib/validation/contract.schemas';
+import { formatZodErrors } from '@kre8tion/shared-types';
 
 export const runtime = 'edge';
 
@@ -9,14 +11,21 @@ export async function GET(req: NextRequest) {
   const env = cfEnv as unknown as NCBEnv & Record<string, string>;
 
   try {
-    const partnershipId = req.nextUrl.searchParams.get('partnership_id');
+    const queryResult = statusQuerySchema.safeParse({
+      partnership_id: req.nextUrl.searchParams.get('partnership_id')
+    });
 
-    if (!partnershipId) {
-      return NextResponse.json({ error: 'Missing partnership_id' }, { status: 400 });
+    if (!queryResult.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: formatZodErrors(queryResult.error as any)
+      }, { status: 400 });
     }
 
-    const documents = await ncbOpenApiRead(env, 'documents', { partnership_id: partnershipId });
-    const signatures = await ncbOpenApiRead(env, 'document_signatures', { partnership_id: partnershipId });
+    const { partnership_id } = queryResult.data;
+
+    const documents = await ncbOpenApiRead(env, 'documents', { partnership_id });
+    const signatures = await ncbOpenApiRead(env, 'document_signatures', { partnership_id });
 
     return NextResponse.json({ documents, signatures });
   } catch (err) {

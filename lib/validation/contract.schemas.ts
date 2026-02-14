@@ -21,9 +21,9 @@ export function sanitizeString(val: unknown, maxLength = 500): string {
 
 export const createContractSchema = z.object({
   partnership_id: z.number().positive('Partnership ID must be a positive number'),
-  client_name: z.string().min(1, 'Client name is required').max(500),
+  client_name: z.string().min(1, 'Client name is required').max(500, 'Client name must be 500 characters or less'),
   client_email: z.string().email('Invalid email format'),
-  company_name: z.string().min(1, 'Company name is required').max(500),
+  company_name: z.string().min(1, 'Company name is required').max(500, 'Company name must be 500 characters or less'),
   tier: z.enum(['discovery', 'foundation', 'architect']),
 });
 
@@ -78,3 +78,11 @@ export const verifyTokenSchema = z.object({
 });
 
 export type VerifyTokenInput = z.infer<typeof verifyTokenSchema>;
+
+// ─── Contract Status Query ──────────────────────────────────────────────────
+
+export const statusQuerySchema = z.object({
+  partnership_id: z.string().min(1, 'Partnership ID is required').regex(/^\d+$/, 'Partnership ID must be numeric'),
+});
+
+export type StatusQueryInput = z.infer<typeof statusQuerySchema>;

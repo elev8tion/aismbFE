@@ -67,19 +67,19 @@
   },
   "traces": [
     {
-      "timestamp": "2026-02-12T23:07:06.413Z",
+      "timestamp": "2026-02-13T21:58:45.061Z",
       "scenario": "Authentication Required",
       "step": "Initialize",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.413Z",
+      "timestamp": "2026-02-13T21:58:45.061Z",
       "scenario": "Authentication Required",
       "step": "Attempt unauthenticated request",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.431Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Authentication Required",
       "step": "Authentication check",
       "status": "error",
@@ -91,7 +91,7 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Initialize",
       "status": "start",
@@ -100,13 +100,13 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Fast tier pattern check",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Fast tier triggers",
       "status": "success",
@@ -121,13 +121,13 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Standard tier pattern check",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Standard tier triggers",
       "status": "success",
@@ -142,13 +142,13 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Reasoning tier pattern check",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Reasoning tier triggers",
       "status": "success",
@@ -163,7 +163,7 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Tier Routing",
       "step": "Model routing logic",
       "status": "success",
@@ -177,19 +177,19 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Name Validation",
       "step": "Initialize",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.432Z",
+      "timestamp": "2026-02-13T21:58:45.103Z",
       "scenario": "Model Name Validation",
       "step": "Check model configuration",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.476Z",
+      "timestamp": "2026-02-13T21:58:45.158Z",
       "scenario": "Model Name Validation",
       "step": "Model validation",
       "status": "success",
@@ -207,19 +207,19 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.476Z",
+      "timestamp": "2026-02-13T21:58:45.159Z",
       "scenario": "CRM Tools Availability",
       "step": "Initialize",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.476Z",
+      "timestamp": "2026-02-13T21:58:45.159Z",
       "scenario": "CRM Tools Availability",
       "step": "Import tools module",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.324Z",
       "scenario": "CRM Tools Availability",
       "step": "Tools format",
       "status": "error",
@@ -229,19 +229,19 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "NCB Integration",
       "step": "Initialize",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "NCB Integration",
       "step": "Check NCB client",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "NCB Integration",
       "step": "NCB client",
       "status": "error",
@@ -250,19 +250,19 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Spanish Mode Support",
       "step": "Initialize",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Spanish Mode Support",
       "step": "Check Spanish support",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Spanish Mode Support",
       "step": "Spanish voice configured",
       "status": "success",
@@ -272,7 +272,7 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Spanish Mode Support",
       "step": "Spanish mode implementation",
       "status": "success",
@@ -282,19 +282,19 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Cost Optimization",
       "step": "Initialize",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.521Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Cost Optimization",
       "step": "Analyze model costs",
       "status": "start"
     },
     {
-      "timestamp": "2026-02-12T23:07:06.522Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Cost Optimization",
       "step": "Model costs",
       "status": "success",
@@ -316,7 +316,7 @@
       }
     },
     {
-      "timestamp": "2026-02-12T23:07:06.522Z",
+      "timestamp": "2026-02-13T21:58:45.325Z",
       "scenario": "Cost Optimization",
       "step": "Reasoning model check",
       "status": "success",
