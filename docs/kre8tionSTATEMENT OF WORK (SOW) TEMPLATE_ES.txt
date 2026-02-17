@@ -1,0 +1,271 @@
+📄 PLANTILLA DE DECLARACIÓN DE TRABAJO (SOW)
+
+ELEV8TION LLC
+
+Esta Declaración de Trabajo ("SOW") se celebra bajo el Acuerdo Marco de Servicios entre ELEV8TION LLC ("ELEV8TION") y el Cliente.
+
+⸻
+
+1. Descripción General del Proyecto
+
+ELEV8TION proporcionará servicios de consultoría, capacitación y arquitectura de sistemas inteligentes para apoyar el desarrollo e implementación de sistemas y flujos de trabajo habilitados con inteligencia artificial del Cliente.
+
+⸻
+
+2. Alcance de los Servicios
+
+ELEV8TION proporcionará los siguientes servicios:
+	•	Diseño y planificación de sistemas de IA
+	•	Arquitectura de flujos de trabajo
+	•	Configuración de agentes y automatización
+	•	Transferencia de capacidades y capacitación
+	•	Orientación de implementación
+	•	Soporte de asesoría
+
+Entregables específicos para este compromiso:
+
+[INSERTAR DETALLES DEL PROYECTO AQUÍ]
+
+Ejemplos:
+	•	Construir flujo de trabajo interno de IA
+	•	Diseñar canal de automatización
+	•	Capacitar al equipo en desarrollo de agentes
+	•	Configurar integraciones
+
+Cualquier trabajo fuera de este alcance requiere una enmienda por escrito.
+
+⸻
+
+3. Entregables
+
+ELEV8TION proporcionará:
+	•	Orientación sobre arquitectura del sistema
+	•	Flujos de trabajo configurados
+	•	Sesiones de capacitación
+	•	Documentación (si aplica)
+
+Entregables finales:
+
+[INSERTAR LISTA DE ENTREGABLES]
+
+⸻
+
+4. Cronograma
+
+Fecha de Inicio: ______
+Finalización Estimada: ______
+
+Los cronogramas dependen de la capacidad de respuesta y acceso del Cliente.
+
+Los retrasos en comentarios o acceso pueden extender el cronograma.
+
+⸻
+
+5. Honorarios
+
+Tarifa del Proyecto: $________
+Tarifa Mensual de Asociación: $________
+
+Programa de Pagos:
+	•	Depósito al firmar
+	•	Pagos restantes según el programa acordado
+
+Todo el trabajo completado y los depósitos son no reembolsables.
+
+Si el Cliente termina anticipadamente:
+	•	Las cuotas futuras no pagadas se cancelan
+	•	Las fases completadas siguen siendo exigibles
+
+Plazo mínimo de compromiso (si aplica): ______ meses
+
+⸻
+
+6. Responsabilidades del Cliente
+
+El Cliente se compromete a:
+	•	Proporcionar comentarios oportunos
+	•	Asistir a las sesiones de capacitación
+	•	Revisar los resultados
+	•	Supervisar el uso del sistema
+	•	Aprobar el despliegue de automatización
+
+⸻
+
+7. Acceso y Herramientas
+
+El Cliente puede proporcionar acceso al sistema o claves de API para propósitos de implementación.
+
+El Cliente sigue siendo responsable de:
+	•	Seguridad de credenciales
+	•	Alcance de permisos
+	•	Rotación de claves
+
+⸻
+
+8. Aceptación
+
+Los servicios se consideran aceptados al momento de la entrega de capacitación, sistemas o documentación según se define anteriormente.
+
+⸻
+
+9. Acuerdo Rector
+
+Esta SOW se rige por el Acuerdo Marco de Servicios y todos los addenda adjuntos.
+
+⸻
+
+Firmas
+
+ELEV8TION LLC
+
+Firma: __________________
+Nombre:
+Título:
+Fecha:
+
+CLIENTE
+
+Firma: __________________
+Nombre:
+Empresa:
+Título:
+Fecha:
+
+⸻
+
+🔁 ACUERDO DE ASOCIACIÓN MENSUAL / RETENCIÓN
+
+(Para sus precios escalonados)
+
+Esto puede incluirse como una sección dentro de la SOW o por separado.
+
+⸻
+
+Términos de Asociación Mensual
+
+El Cliente contrata a ELEV8TION para asesoría continua, capacitación y soporte de sistemas.
+
+Los servicios mensuales pueden incluir:
+	•	Sesiones de estrategia
+	•	Revisiones de sistemas
+	•	Orientación de arquitectura
+	•	Resolución de problemas
+	•	Recomendaciones de optimización
+
+Los servicios mensuales no incluyen construcciones completas de sistemas a menos que se especifique.
+
+⸻
+
+Plazo Mínimo
+
+El Cliente acepta un plazo mínimo de compromiso:
+	•	The Revenue Guard → 2 meses
+	•	The Operations Sovereign → 3 meses
+	•	The Enterprise Fortress → 6 meses
+
+Después del plazo mínimo, cualquiera de las partes puede cancelar con aviso por escrito.
+
+⸻
+
+Honorarios
+
+Tarifa Mensual: $________
+
+Las tarifas se facturan por adelantado cada mes.
+
+Si el Cliente cancela:
+	•	Los meses futuros no pagados se cancelan
+	•	Los meses pagados no son reembolsables
+
+⸻
+
+Tiempo de Respuesta
+
+ELEV8TION proporcionará tiempos de respuesta razonables pero no garantiza soporte inmediato.
+
+El soporte de emergencia no está incluido a menos que se especifique.
+
+⸻
+
+Límites del Alcance
+
+La asociación mensual incluye solo soporte de asesoría y capacitación.
+
+Las construcciones adicionales o trabajo de implementación mayor requieren una SOW separada.
+
+⸻
+
+Monitoreo Activo (Opción Post-Plazo)
+
+Después del plazo mínimo, el Cliente puede continuar mes a mes bajo el servicio de Monitoreo Activo.
+
+Incluye:
+	•	Revisiones del estado del sistema
+	•	Verificaciones del rendimiento de agentes
+	•	Respuesta a incidencias
+	•	Orientación de optimización
+
+Cualquiera de las partes puede cancelar con 30 días de aviso por escrito.
+
+Si el Cliente no elige el Monitoreo Activo, asume plena responsabilidad por la operación y supervisión continua del sistema.
+
+⸻
+
+🧾 LENGUAJE DE NIVELES DE PRECIOS PARA SUS CONTRATOS
+
+Puede pegar esto en propuestas o SOWs.
+
+⸻
+
+The Revenue Guard — Asociación de IA con Costos Incluidos
+
+Único: $2,500
+Mensual: $750
+Mínimo: 2 meses
+Modelo de Costos: Incluido (costos de API e infraestructura incluidos)
+Uso Mensual Permitido: 500 interacciones de IA
+Excedente: $0.08/interacción sobre el límite permitido
+
+Incluye:
+	•	Capacitación básica en IA
+	•	Identificación de flujos de trabajo
+	•	Configuración guiada del sistema
+	•	Sesiones de transferencia de capacidades
+	•	Costos de API e infraestructura incluidos — sin sorpresas en la factura
+
+⸻
+
+The Operations Sovereign — Asociación de IA con Costos Incluidos
+
+Único: $5,000
+Mensual: $1,500
+Mínimo: 3 meses
+Modelo de Costos: Incluido (costos de API e infraestructura incluidos)
+Uso Mensual Permitido: 1,500 interacciones de IA
+Excedente: $0.08/interacción sobre el límite permitido
+
+Incluye:
+	•	Arquitectura del sistema
+	•	Creación de flujos de trabajo de agentes
+	•	Capacitación avanzada
+	•	Orientación de implementación
+	•	Costos de API e infraestructura incluidos — sin sorpresas en la factura
+
+⸻
+
+The Enterprise Fortress — Asociación de IA con Costos Directos
+
+Único: $12,000
+Mensual: $3,000
+Mínimo: 6 meses
+Modelo de Costos: Directo (el cliente gestiona sus propias cuentas de API)
+Uso Mensual Permitido: Gestionado por el cliente
+Excedente: N/A
+
+Incluye:
+	•	Diseño avanzado de sistemas
+	•	Flujos de trabajo multiagente
+	•	Planificación de integraciones
+	•	Asesoría de alto nivel
+	•	Transferencia completa de capacidades
+	•	Modelo directo — el cliente gestiona sus propias cuentas de API

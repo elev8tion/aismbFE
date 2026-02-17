@@ -2,7 +2,7 @@ MASTER SERVICES AGREEMENT
 
 ELEV8TION LLC
 
-This Master Services Agreement (“Agreement”) is entered into between ELEV8TION LLC, a Connecticut limited liability company with a principal place of business in Waterbury, Connecticut (“ELEV8TION”), and the client identified in the applicable Statement of Work (“Client”).
+This Master Services Agreement ("Agreement") is entered into between ELEV8TION LLC, a Connecticut limited liability company with a principal place of business in Waterbury, Connecticut ("ELEV8TION"), and the client identified in the applicable Statement of Work ("Client").
 
 This Agreement governs all services provided by ELEV8TION to Client.
 
@@ -17,7 +17,7 @@ ELEV8TION provides consulting, training, and intelligent systems architecture se
 	•	Workflow and process architecture
 	•	Advisory and strategic consulting
 
-Specific deliverables, timelines, and fees will be defined in one or more Statements of Work (“SOW”).
+Specific deliverables, timelines, and fees will be defined in one or more Statements of Work ("SOW").
 
 ELEV8TION does not provide legal, financial, accounting, or regulatory advice.
 
@@ -62,11 +62,13 @@ ELEV8TION shall not be liable for damages arising from:
 
 5. Capability Transfer Model
 
-ELEV8TION’s services are designed to transfer knowledge and capability to Client.
+ELEV8TION's services are designed to transfer knowledge and capability to Client.
 
 Upon completion of training, system delivery, or implementation, Client assumes responsibility for operation, maintenance, and use of systems.
 
-ELEV8TION is not responsible for outcomes resulting from Client’s independent use of delivered systems.
+ELEV8TION is not responsible for outcomes resulting from Client's independent use of delivered systems.
+
+ELEV8TION offers optional month-to-month Active Monitoring after the minimum term, available to all tiers. Active Monitoring includes system health reviews, agent performance checks, and issue response. Details are defined in the applicable SOW. If Client does not elect Active Monitoring, Client assumes full responsibility for ongoing system operation and maintenance.
 
 ⸻
 
@@ -81,7 +83,11 @@ ELEV8TION is not responsible for:
 	•	discontinued services
 	•	third-party data handling
 
-Client agrees that use of such tools is subject to the respective provider’s terms.
+Client agrees that use of such tools is subject to the respective provider's terms.
+
+Bundled Tiers (The Revenue Guard, The Operations Sovereign): ELEV8TION manages API accounts and infrastructure on Client's behalf. Infrastructure and API costs are included in the monthly fee, subject to usage allowances defined in the SOW. Overages are billed at the rate specified in the SOW.
+
+Pass-Through Tier (The Enterprise Fortress): Client holds and manages their own API accounts directly with providers. Client is solely responsible for all API costs, usage, billing, and provider agreements. ELEV8TION is not responsible for Client's API costs.
 
 ⸻
 
@@ -94,7 +100,7 @@ Client remains responsible for:
 	•	key rotation
 	•	permission management
 
-ELEV8TION is not liable for damages resulting from compromised credentials or unauthorized access not caused by ELEV8TION’s gross negligence.
+ELEV8TION is not liable for damages resulting from compromised credentials or unauthorized access not caused by ELEV8TION's gross negligence.
 
 ⸻
 
@@ -108,6 +114,8 @@ Unless otherwise stated:
 	•	Completed work is non-refundable
 	•	If Client terminates, future unpaid installments are canceled
 	•	Minimum engagement terms remain due
+	•	For Bundled tiers, monthly fee includes a defined usage allowance; interactions above the allowance are billed at $0.08 per interaction
+	•	ELEV8TION will notify Client at 80% of allowance usage and may apply emergency rate limits at 100% to prevent unbudgeted overages
 
 Late payments may result in suspension of services.
 
@@ -130,7 +138,7 @@ ELEV8TION retains ownership of:
 	•	system architectures
 	•	proprietary processes
 
-Nothing in this Agreement transfers ownership of ELEV8TION’s underlying intellectual property.
+Nothing in this Agreement transfers ownership of ELEV8TION's underlying intellectual property.
 
 ELEV8TION may reuse general knowledge, skills, and techniques developed during the engagement.
 
@@ -158,7 +166,7 @@ Additional data terms may be included in a Data Processing Addendum.
 
 12. No Guarantee of Results
 
-Client acknowledges that business outcomes depend on many factors outside ELEV8TION’s control.
+Client acknowledges that business outcomes depend on many factors outside ELEV8TION's control.
 
 Any examples of ROI, savings, or performance improvements are illustrative only and not guaranteed.
 
@@ -168,7 +176,7 @@ Any examples of ROI, savings, or performance improvements are illustrative only 
 
 To the maximum extent permitted by law:
 
-ELEV8TION’s total liability under this Agreement shall not exceed the total amount paid by Client to ELEV8TION in the three (3) months preceding the claim.
+ELEV8TION's total liability under this Agreement shall not exceed the total amount paid by Client to ELEV8TION in the three (3) months preceding the claim.
 
 ELEV8TION shall not be liable for:
 	•	lost profits
@@ -182,7 +190,7 @@ ELEV8TION shall not be liable for:
 14. Indemnification
 
 Client agrees to indemnify and hold harmless ELEV8TION from claims arising from:
-	•	Client’s use of systems
+	•	Client's use of systems
 	•	deployment of automation
 	•	misuse of AI outputs
 	•	violation of third-party terms

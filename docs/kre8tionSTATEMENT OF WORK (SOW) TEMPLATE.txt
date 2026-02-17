@@ -2,13 +2,13 @@
 
 ELEV8TION LLC
 
-This Statement of Work (“SOW”) is entered into under the Master Services Agreement between ELEV8TION LLC (“ELEV8TION”) and Client.
+This Statement of Work ("SOW") is entered into under the Master Services Agreement between ELEV8TION LLC ("ELEV8TION") and Client.
 
 ⸻
 
 1. Project Overview
 
-ELEV8TION will provide consulting, training, and intelligent systems architecture services to support Client’s development and implementation of AI-enabled systems and workflows.
+ELEV8TION will provide consulting, training, and intelligent systems architecture services to support Client's development and implementation of AI-enabled systems and workflows.
 
 ⸻
 
@@ -159,9 +159,9 @@ Monthly services do not include full system builds unless specified.
 Minimum Term
 
 Client agrees to a minimum engagement term:
-	•	AI Discovery Tier → 2 months
-	•	Foundation Builder → 3 months
-	•	Systems Architect → 6 months
+	•	The Revenue Guard → 2 months
+	•	The Operations Sovereign → 3 months
+	•	The Enterprise Fortress → 6 months
 
 After minimum term, either party may cancel with written notice.
 
@@ -195,45 +195,72 @@ Additional builds or major implementation work require separate SOW.
 
 ⸻
 
+Active Monitoring (Post-Term Option)
+
+After the minimum term, Client may continue month-to-month under Active Monitoring.
+
+Includes:
+	•	system health reviews
+	•	agent performance checks
+	•	issue response
+	•	optimization guidance
+
+Either party may cancel with 30 days written notice.
+
+If Client does not elect Active Monitoring, Client assumes full responsibility for ongoing system operation and supervision.
+
+⸻
+
 🧾 PRICING TIER LANGUAGE FOR YOUR CONTRACTS
 
 You can paste this into proposals or SOWs.
 
 ⸻
 
-AI Discovery & Capability Transfer
+The Revenue Guard — Bundled AI Partnership
 
 One-time: $2,500
 Monthly: $750
 Minimum: 2 months
+Cost Model: Bundled (API & infrastructure costs included)
+Monthly Usage Allowance: 500 AI interactions
+Overage: $0.08/interaction above allowance
 
 Includes:
 	•	foundational AI training
 	•	workflow identification
 	•	guided system setup
 	•	capability transfer sessions
+	•	API & infrastructure costs bundled — no surprise bills
 
 ⸻
 
-Foundation Builder Capability Transfer
+The Operations Sovereign — Bundled AI Partnership
 
 One-time: $5,000
 Monthly: $1,500
 Minimum: 3 months
+Cost Model: Bundled (API & infrastructure costs included)
+Monthly Usage Allowance: 1,500 AI interactions
+Overage: $0.08/interaction above allowance
 
 Includes:
 	•	system architecture
 	•	agent workflow creation
 	•	deeper training
 	•	implementation guidance
+	•	API & infrastructure costs bundled — no surprise bills
 
 ⸻
 
-Systems Architect Capability Transfer
+The Enterprise Fortress — Pass-Through AI Partnership
 
 One-time: $12,000
 Monthly: $3,000
 Minimum: 6 months
+Cost Model: Pass-Through (client holds own API accounts)
+Monthly Usage Allowance: Client-managed
+Overage: N/A
 
 Includes:
 	•	advanced system design
@@ -241,3 +268,4 @@ Includes:
 	•	integration planning
 	•	high-level advisory
 	•	full capability transfer
+	•	pass-through model — client holds own API accounts

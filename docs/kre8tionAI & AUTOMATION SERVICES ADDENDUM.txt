@@ -2,7 +2,7 @@ AI & AUTOMATION SERVICES ADDENDUM
 
 ELEV8TION LLC
 
-This AI & Automation Addendum (“Addendum”) is incorporated into the Master Services Agreement between ELEV8TION LLC (“ELEV8TION”) and Client.
+This AI & Automation Addendum ("Addendum") is incorporated into the Master Services Agreement between ELEV8TION LLC ("ELEV8TION") and Client.
 
 This Addendum governs all services involving artificial intelligence systems, automations, and agent-based workflows.
 
@@ -67,7 +67,7 @@ Client assumes responsibility for:
 	•	supervising automations
 	•	updating workflows
 
-ELEV8TION does not provide ongoing monitoring unless explicitly defined in a separate agreement.
+ELEV8TION offers Active Monitoring as an optional continued engagement after the minimum term. Active Monitoring is available month-to-month and includes system health checks, agent performance review, and issue response. If Client does not elect Active Monitoring, Client assumes full responsibility for ongoing system operation, maintenance, and supervision of all deployed systems.
 
 ⸻
 
@@ -96,7 +96,24 @@ ELEV8TION is not responsible for:
 	•	discontinued services
 	•	provider data handling
 
-Client agrees use of such tools is subject to the provider’s terms.
+Client agrees use of such tools is subject to the provider's terms.
+
+Bundled Tiers: ELEV8TION manages API accounts and includes infrastructure costs within the monthly fee up to defined usage allowances. Usage above allowances is billed as overage.
+
+Pass-Through Tier: Client holds their own API accounts. Client is solely responsible for all API costs, usage limits, and provider relationships. ELEV8TION has no liability for Client's API expenses.
+
+⸻
+
+6.5 Usage Allowances & Overage (Bundled Tiers Only)
+
+For Bundled tier engagements, the monthly fee includes a usage allowance as defined in the SOW (500 or 1,500 AI interactions per month).
+
+	•	Usage above the allowance is billed at $0.08 per interaction
+	•	ELEV8TION will notify Client when usage reaches 80% of the monthly allowance
+	•	At 100% usage, ELEV8TION may apply emergency rate limits to prevent unbudgeted overages
+	•	Overage charges are billed on the following invoice cycle and are non-refundable
+
+This section does not apply to Pass-Through tier engagements.
 
 ⸻
 
@@ -122,7 +139,7 @@ ELEV8TION shall not be liable for any damages arising from:
 	•	data processed by AI systems
 	•	decisions made using AI tools
 
-All AI systems are provided “as is” without warranties of performance or accuracy.
+All AI systems are provided "as is" without warranties of performance or accuracy.
 
 ⸻
 
@@ -142,7 +159,7 @@ DATA PROCESSING ADDENDUM
 
 ELEV8TION LLC
 
-This Data Processing Addendum (“DPA”) forms part of the Master Services Agreement between ELEV8TION LLC and Client.
+This Data Processing Addendum ("DPA") forms part of the Master Services Agreement between ELEV8TION LLC and Client.
 
 ⸻
 
@@ -189,7 +206,7 @@ Client remains responsible for:
 	•	permission scope
 	•	key rotation
 
-ELEV8TION is not liable for damages resulting from compromised credentials not caused by ELEV8TION’s gross negligence.
+ELEV8TION is not liable for damages resulting from compromised credentials not caused by ELEV8TION's gross negligence.
 
 ⸻
 
@@ -226,7 +243,7 @@ Client is responsible for ensuring:
 
 9. Limitation of Liability
 
-ELEV8TION’s liability related to data processing is subject to the limitations set forth in the Master Services Agreement.
+ELEV8TION's liability related to data processing is subject to the limitations set forth in the Master Services Agreement.
 
 ⸻
 

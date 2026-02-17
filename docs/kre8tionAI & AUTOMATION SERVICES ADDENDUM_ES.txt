@@ -1,0 +1,254 @@
+ADDENDUM DE SERVICIOS DE IA Y AUTOMATIZACIÓN
+
+ELEV8TION LLC
+
+Este Addendum de IA y Automatización ("Addendum") se incorpora al Acuerdo Marco de Servicios entre ELEV8TION LLC ("ELEV8TION") y el Cliente.
+
+Este Addendum rige todos los servicios que involucran sistemas de inteligencia artificial, automatizaciones y flujos de trabajo basados en agentes.
+
+⸻
+
+1. Naturaleza de los Sistemas de IA
+
+El Cliente reconoce que los sistemas de inteligencia artificial:
+	•	Pueden producir resultados incorrectos o impredecibles
+	•	Pueden cambiar su comportamiento con el tiempo
+	•	Dependen de proveedores de modelos de terceros
+	•	Requieren supervisión humana
+	•	No deben utilizarse sin revisión previa
+
+Los sistemas de IA son herramientas que asisten en la toma de decisiones y la automatización, pero no reemplazan el juicio humano.
+
+⸻
+
+2. Requisito de Revisión Humana
+
+El Cliente acepta que todos los resultados de IA deben ser revisados por un humano calificado antes de:
+	•	Enviar comunicaciones
+	•	Ejecutar acciones financieras
+	•	Interactuar con clientes
+	•	Tomar decisiones operativas
+
+El Cliente asume la responsabilidad de revisar los resultados antes de su uso o dependencia.
+
+⸻
+
+3. Automatización y Agentes Autónomos
+
+Cuando los sistemas incluyen agentes automatizados o semi-autónomos:
+
+El Cliente es responsable de:
+	•	Aprobar el despliegue
+	•	Definir permisos
+	•	Supervisar la operación
+	•	Monitorear resultados
+	•	Deshabilitar sistemas si surgen problemas
+
+Una vez que un sistema es aprobado para uso en producción, el Cliente asume la responsabilidad de todas las acciones automatizadas tomadas por dicho sistema.
+
+ELEV8TION no es responsable por:
+	•	Comunicaciones automatizadas
+	•	Acciones de flujos de trabajo
+	•	Decisiones del sistema
+	•	Interacciones con clientes generadas por agentes
+	•	Impactos operativos de la automatización
+
+⸻
+
+4. Modelo de Transferencia de Capacidades y Capacitación
+
+ELEV8TION proporciona capacitación, arquitectura y desarrollo de sistemas destinados a transferir capacidades al Cliente.
+
+Al completar la capacitación o entrega:
+
+El Cliente asume la responsabilidad de:
+	•	Operar los sistemas
+	•	Mantener los sistemas
+	•	Supervisar las automatizaciones
+	•	Actualizar los flujos de trabajo
+
+ELEV8TION ofrece Monitoreo Activo como un compromiso continuo opcional después del plazo mínimo. El Monitoreo Activo está disponible mes a mes e incluye verificaciones del estado del sistema, revisión del rendimiento de agentes y respuesta a incidencias. Si el Cliente no elige el Monitoreo Activo, asume plena responsabilidad por la operación, mantenimiento y supervisión continua de todos los sistemas desplegados.
+
+⸻
+
+5. Sin Garantía de Precisión o Resultados
+
+El Cliente reconoce que los sistemas de IA:
+	•	Pueden contener errores
+	•	Pueden generar contenido incompleto o inexacto
+	•	Pueden no lograr los resultados esperados
+
+Cualquier métrica de rendimiento, proyección de eficiencia o ejemplo de ROI proporcionado por ELEV8TION es meramente ilustrativo y no está garantizado.
+
+⸻
+
+6. Proveedores de IA de Terceros
+
+Los sistemas de IA pueden depender de proveedores de terceros, incluyendo pero no limitado a:
+	•	APIs de modelos
+	•	Herramientas de software
+	•	Plataformas de automatización
+
+ELEV8TION no es responsable de:
+	•	Interrupciones del proveedor
+	•	Cambios de modelos
+	•	Cambios de precios
+	•	Servicios discontinuados
+	•	Manejo de datos del proveedor
+
+El Cliente acepta que el uso de dichas herramientas está sujeto a los términos del proveedor.
+
+Niveles con Costos Incluidos: ELEV8TION gestiona cuentas de API e incluye los costos de infraestructura dentro de la tarifa mensual hasta los límites de uso definidos. El uso que supere los límites se factura como excedente.
+
+Nivel Directo: El Cliente gestiona sus propias cuentas de API. El Cliente es el único responsable de todos los costos de API, límites de uso y relaciones con los proveedores. ELEV8TION no tiene responsabilidad por los gastos de API del Cliente.
+
+⸻
+
+6.5 Límites de Uso y Excedentes (Solo Niveles con Costos Incluidos)
+
+Para los compromisos de niveles con Costos Incluidos, la tarifa mensual incluye un límite de uso según se define en la SOW (500 o 1,500 interacciones de IA por mes).
+
+	•	El uso que supere el límite se factura a $0.08 por interacción
+	•	ELEV8TION notificará al Cliente cuando el uso alcance el 80% del límite mensual
+	•	Al 100% de uso, ELEV8TION puede aplicar límites de emergencia para evitar excedentes no presupuestados
+	•	Los cargos por excedente se facturan en el siguiente ciclo de facturación y no son reembolsables
+
+Esta sección no aplica a los compromisos del Nivel Directo.
+
+⸻
+
+7. Responsabilidad de Despliegue del Cliente
+
+El Cliente es el único responsable de:
+	•	Decidir si desplegar los sistemas
+	•	Determinar los casos de uso apropiados
+	•	Garantizar el cumplimiento de las leyes aplicables
+	•	Monitorear el rendimiento del sistema
+
+ELEV8TION no controla cómo el Cliente utiliza los sistemas entregados después de la implementación.
+
+⸻
+
+8. Limitación de Responsabilidad por Sistemas de IA
+
+En la máxima medida permitida por la ley:
+
+ELEV8TION no será responsable por ningún daño derivado de:
+	•	Dependencia en resultados de IA
+	•	Acciones automatizadas del sistema
+	•	Datos procesados por sistemas de IA
+	•	Decisiones tomadas utilizando herramientas de IA
+
+Todos los sistemas de IA se proporcionan "tal como están" sin garantías de rendimiento o precisión.
+
+⸻
+
+9. Aceptación del Riesgo
+
+Al utilizar sistemas habilitados con IA desarrollados o configurados por ELEV8TION, el Cliente reconoce y acepta los riesgos inherentes asociados con las tecnologías de inteligencia artificial y automatización.
+
+⸻
+
+10. Vigencia
+
+Este Addendum sobrevive a la terminación del Acuerdo Marco de Servicios.
+
+⸻
+
+ADDENDUM DE PROCESAMIENTO DE DATOS
+
+ELEV8TION LLC
+
+Este Addendum de Procesamiento de Datos ("DPA") forma parte del Acuerdo Marco de Servicios entre ELEV8TION LLC y el Cliente.
+
+⸻
+
+1. Rol de las Partes
+
+El Cliente es el controlador de datos.
+ELEV8TION actúa como procesador de datos únicamente para prestar los servicios.
+
+ELEV8TION procesa datos solo en la medida necesaria para realizar los servicios acordados.
+
+⸻
+
+2. Tipos de Datos
+
+Los datos procesados pueden incluir:
+	•	Información de contacto comercial
+	•	Datos de flujos de trabajo
+	•	Datos operativos
+	•	Datos de configuración del sistema
+
+ELEV8TION no recopila intencionalmente datos personales sensibles a menos que el Cliente los proporcione.
+
+⸻
+
+3. Uso de Datos
+
+ELEV8TION:
+	•	Usará datos solo para proporcionar servicios
+	•	No venderá datos del Cliente
+	•	No usará datos del Cliente para entrenar modelos de IA públicos
+	•	Mantendrá salvaguardas razonables
+
+⸻
+
+4. Credenciales y Acceso
+
+El Cliente puede proporcionar:
+	•	Claves de API
+	•	Credenciales de inicio de sesión
+	•	Acceso al sistema
+
+El Cliente sigue siendo responsable de:
+	•	Seguridad de claves
+	•	Alcance de permisos
+	•	Rotación de claves
+
+ELEV8TION no es responsable por daños derivados de credenciales comprometidas que no sean causados por negligencia grave de ELEV8TION.
+
+⸻
+
+5. Herramientas de Terceros
+
+El Cliente reconoce que los datos pueden ser procesados por plataformas de terceros utilizadas para prestar los servicios.
+
+ELEV8TION no es responsable de las prácticas de datos de terceros.
+
+⸻
+
+6. Retención de Datos
+
+ELEV8TION retiene los datos solo el tiempo necesario para prestar los servicios o cumplir con obligaciones legales.
+
+A petición, ELEV8TION eliminará los datos del Cliente donde sea razonablemente factible.
+
+⸻
+
+7. Seguridad
+
+ELEV8TION utilizará medidas comercialmente razonables para proteger los datos, pero no puede garantizar seguridad absoluta.
+
+⸻
+
+8. Responsabilidad de Cumplimiento
+
+El Cliente es responsable de garantizar que:
+	•	Tiene derecho a proporcionar los datos
+	•	Cumple con las leyes de privacidad aplicables
+	•	Su uso de sistemas de IA cumple con las regulaciones
+
+⸻
+
+9. Limitación de Responsabilidad
+
+La responsabilidad de ELEV8TION relacionada con el procesamiento de datos está sujeta a las limitaciones establecidas en el Acuerdo Marco de Servicios.
+
+⸻
+
+10. Vigencia
+
+Este Addendum sobrevive a la terminación de los servicios.
+
+⸻

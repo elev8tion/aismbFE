@@ -69,6 +69,7 @@ export function generateMSA(data: ContractData, signatures?: Parameters<typeof s
       <p>ELEV8TION's services are designed to transfer knowledge and capability to Client.</p>
       <p>Upon completion of training, system delivery, or implementation, Client assumes responsibility for operation, maintenance, and use of systems.</p>
       <p>ELEV8TION is not responsible for outcomes resulting from Client's independent use of delivered systems.</p>
+      <p>ELEV8TION offers optional month-to-month Active Monitoring after the minimum term, available to all tiers. Active Monitoring includes system health reviews, agent performance checks, and issue response. Details are defined in the applicable SOW. If Client does not elect Active Monitoring, Client assumes full responsibility for ongoing system operation and maintenance.</p>
 
       <hr class="section-divider" />
 
@@ -83,6 +84,8 @@ export function generateMSA(data: ContractData, signatures?: Parameters<typeof s
         <li>Third-party data handling</li>
       </ul>
       <p>Client agrees that use of such tools is subject to the respective provider's terms.</p>
+      <p><strong>Bundled Tiers (The Revenue Guard, The Operations Sovereign):</strong> ELEV8TION manages API accounts and infrastructure on Client's behalf. Infrastructure and API costs are included in the monthly fee, subject to usage allowances defined in the SOW. Overages are billed at the rate specified in the SOW.</p>
+      <p><strong>Pass-Through Tier (The Enterprise Fortress):</strong> Client holds and manages their own API accounts directly with providers. Client is solely responsible for all API costs, usage, billing, and provider agreements. ELEV8TION is not responsible for Client's API costs.</p>
 
       <hr class="section-divider" />
 
@@ -107,6 +110,8 @@ export function generateMSA(data: ContractData, signatures?: Parameters<typeof s
         <li>Completed work is non-refundable</li>
         <li>If Client terminates, future unpaid installments are canceled</li>
         <li>Minimum engagement terms remain due</li>
+        <li>For Bundled tiers, monthly fee includes a defined usage allowance; interactions above the allowance are billed at $0.08 per interaction</li>
+        <li>ELEV8TION will notify Client at 80% of allowance usage and may apply emergency rate limits at 100% to prevent unbudgeted overages</li>
       </ul>
       <p>Late payments may result in suspension of services.</p>
 

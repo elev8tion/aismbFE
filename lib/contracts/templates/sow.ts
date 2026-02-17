@@ -13,6 +13,7 @@ function getTierIncludes(tier: string): string[] {
         'Workflow identification',
         'Guided system setup',
         'Capability transfer sessions',
+        'API & infrastructure costs bundled — no surprise bills',
       ];
     case 'foundation':
       return [
@@ -20,6 +21,7 @@ function getTierIncludes(tier: string): string[] {
         'Agent workflow creation',
         'Deeper training',
         'Implementation guidance',
+        'API & infrastructure costs bundled — no surprise bills',
       ];
     case 'architect':
       return [
@@ -28,14 +30,41 @@ function getTierIncludes(tier: string): string[] {
         'Integration planning',
         'High-level advisory',
         'Full capability transfer',
+        'Pass-through model — client holds and manages own API accounts',
       ];
     default:
       return [];
   }
 }
 
+function getTierCostModel(tier: string): { model: string; allowance: string; overage: string } {
+  switch (tier) {
+    case 'discovery':
+      return {
+        model: 'Bundled (API & infrastructure included)',
+        allowance: '500 interactions',
+        overage: '$0.08 per interaction above allowance',
+      };
+    case 'foundation':
+      return {
+        model: 'Bundled (API & infrastructure included)',
+        allowance: '1,500 interactions',
+        overage: '$0.08 per interaction above allowance',
+      };
+    case 'architect':
+      return {
+        model: 'Pass-Through (client holds own API accounts)',
+        allowance: 'Client-managed',
+        overage: 'N/A',
+      };
+    default:
+      return { model: '—', allowance: '—', overage: '—' };
+  }
+}
+
 export function generateSOW(data: ContractData, signatures?: Parameters<typeof signatureBlock>[0]): string {
   const includes = getTierIncludes(data.tier);
+  const costModel = getTierCostModel(data.tier);
 
   return `
     <div class="contract">
@@ -106,6 +135,18 @@ export function generateSOW(data: ContractData, signatures?: Parameters<typeof s
           <td><strong>${formatCents(data.fees.monthly_cents)}/month</strong></td>
         </tr>
         <tr>
+          <td>Cost Model</td>
+          <td>${costModel.model}</td>
+        </tr>
+        <tr>
+          <td>Monthly Usage Allowance</td>
+          <td>${costModel.allowance}</td>
+        </tr>
+        <tr>
+          <td>Overage Rate</td>
+          <td>${costModel.overage}</td>
+        </tr>
+        <tr>
           <td>Minimum Engagement Term</td>
           <td>${data.min_months} months</td>
         </tr>
@@ -161,6 +202,10 @@ export function generateSOW(data: ContractData, signatures?: Parameters<typeof s
       <h3>Minimum Term</h3>
       <p>Client agrees to a minimum engagement term of <strong>${data.min_months} months</strong> for the <strong>${data.tierName}</strong> tier.</p>
       <p>After minimum term, either party may cancel with written notice.</p>
+
+      <h3>Active Monitoring (Post-Term Option)</h3>
+      <p>After the minimum engagement term, Client may elect to continue on a month-to-month basis under ELEV8TION's Active Monitoring service. Active Monitoring includes system health reviews, agent performance checks, issue response, and optimization guidance. Either party may cancel with 30 days written notice.</p>
+      <p>If Client does not elect continued service, Client assumes full responsibility for system operation, maintenance, and supervision.</p>
 
       <hr class="section-divider" />
 

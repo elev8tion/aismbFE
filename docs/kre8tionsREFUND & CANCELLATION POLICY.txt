@@ -39,7 +39,7 @@ Once work has been performed or time has been reserved and delivered, payment fo
 
 3. Deposits & Setup Fees
 
-Any deposit, onboarding fee, or initial setup fee is non-refundable.
+Any deposit, onboarding fee, or Capability Transfer setup fee is non-refundable.
 
 Deposits secure scheduling, preparation, and allocation of time and resources.
 
@@ -51,8 +51,23 @@ For services billed on a monthly basis:
 	•	Clients may cancel future services at any time with written notice
 	•	Cancellation stops future billing after the current billing period
 	•	No refunds are issued for the current or past billing periods
+	•	After the minimum engagement term, month-to-month services require 30 days written notice to cancel
+	•	For Pass-Through tier clients: API costs billed directly by third-party providers are outside ELEV8TION's billing and are not subject to this policy
 
-If a minimum engagement term applies (such as 2-, 3-, or 6-month commitments), the minimum term must be completed before cancellation takes effect.
+If a minimum engagement term applies (The Revenue Guard: 2 months, The Operations Sovereign: 3 months, The Enterprise Fortress: 6 months), the minimum term must be completed before cancellation takes effect.
+
+⸻
+
+4.5 Usage & Overage Charges (Bundled Tiers)
+
+For Bundled tier clients, AI interaction usage above the monthly allowance is billed as overage at $0.08 per interaction.
+
+Overage charges are:
+	•	Non-refundable once billed
+	•	Billed on the following invoice cycle
+	•	Subject to the same payment terms as monthly fees
+
+ELEV8TION provides usage alerts at 80% of allowance to give Client advance notice before overages occur.
 
 ⸻
 

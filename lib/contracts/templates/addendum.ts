@@ -70,7 +70,7 @@ export function generateAddendum(data: ContractData): string {
         <li>Supervising automations</li>
         <li>Updating workflows</li>
       </ul>
-      <p>ELEV8TION does not provide ongoing monitoring unless explicitly defined in a separate agreement.</p>
+      <p>ELEV8TION offers Active Monitoring as an optional continued engagement after the minimum term. Active Monitoring is available month-to-month and includes system health checks, agent performance review, and issue response. If Client does not elect Active Monitoring, Client assumes full responsibility for ongoing system operation, maintenance, and supervision of all deployed systems.</p>
 
       <hr class="section-divider" />
 
@@ -101,6 +101,20 @@ export function generateAddendum(data: ContractData): string {
         <li>Provider data handling</li>
       </ul>
       <p>Client agrees use of such tools is subject to the provider's terms.</p>
+      <p><strong>Bundled Tiers:</strong> ELEV8TION manages API accounts and includes infrastructure costs within the monthly fee up to defined usage allowances. Usage above allowances is billed as overage.</p>
+      <p><strong>Pass-Through Tier:</strong> Client holds their own API accounts. Client is solely responsible for all API costs, usage limits, and provider relationships. ELEV8TION has no liability for Client's API expenses.</p>
+
+      <hr class="section-divider" />
+
+      <h2>6.5 Usage Allowances &amp; Overage (Bundled Tiers Only)</h2>
+      <p>For Bundled tier engagements, the monthly fee includes a usage allowance as defined in the SOW (500 or 1,500 AI interactions per month).</p>
+      <ul>
+        <li>Usage above the allowance is billed at <strong>$0.08 per interaction</strong></li>
+        <li>ELEV8TION will notify Client when usage reaches 80% of the monthly allowance</li>
+        <li>At 100% usage, ELEV8TION may apply emergency rate limits to prevent unbudgeted overages</li>
+        <li>Overage charges are billed on the following invoice cycle and are non-refundable</li>
+      </ul>
+      <p>This section does not apply to Pass-Through tier engagements.</p>
 
       <hr class="section-divider" />
 

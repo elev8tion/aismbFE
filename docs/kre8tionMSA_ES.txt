@@ -1,0 +1,256 @@
+ACUERDO MARCO DE SERVICIOS
+
+ELEV8TION LLC
+
+Este Acuerdo Marco de Servicios ("Acuerdo") se celebra entre ELEV8TION LLC, una compañía de responsabilidad limitada de Connecticut con sede principal en Waterbury, Connecticut ("ELEV8TION"), y el cliente identificado en la Declaración de Trabajo aplicable ("Cliente").
+
+Este Acuerdo rige todos los servicios proporcionados por ELEV8TION al Cliente.
+
+⸻
+
+1. Servicios
+
+ELEV8TION proporciona servicios de consultoría, capacitación y arquitectura de sistemas inteligentes, incluyendo pero no limitado a:
+	•	Diseño e integración de sistemas de IA
+	•	Desarrollo de agentes y automatización
+	•	Transferencia de capacidades y capacitación técnica
+	•	Arquitectura de flujos de trabajo y procesos
+	•	Consultoría estratégica y de asesoría
+
+Los entregables, cronogramas y honorarios específicos se definirán en una o más Declaraciones de Trabajo ("SOW").
+
+ELEV8TION no proporciona asesoría legal, financiera, contable o regulatoria.
+
+⸻
+
+2. Contratista Independiente
+
+ELEV8TION es un contratista independiente. Nada en este Acuerdo crea una sociedad, empresa conjunta o relación laboral.
+
+⸻
+
+3. Responsabilidades del Cliente
+
+El Cliente acepta:
+	•	Proporcionar información precisa y comentarios oportunos
+	•	Revisar todos los resultados del sistema antes de su uso
+	•	Aprobar cualquier automatización antes del despliegue en producción
+	•	Mantener supervisión sobre todos los sistemas desplegados
+	•	Asegurar y gestionar credenciales, claves de API y permisos de acceso
+
+El Cliente es el único responsable de cómo se utilizan los sistemas después de la entrega, capacitación o despliegue.
+
+⸻
+
+4. Aviso Legal sobre Sistemas de IA y Automatización
+
+El Cliente reconoce que:
+	•	Los sistemas de IA pueden producir resultados inexactos o impredecibles
+	•	Los agentes automatizados pueden actuar en base a las instrucciones proporcionadas
+	•	Los modelos de terceros pueden cambiar su comportamiento con el tiempo
+
+El Cliente acepta que todos los resultados de IA deben ser revisados por un humano antes de ser utilizados o ejecutados en operaciones comerciales.
+
+Una vez que los sistemas o automatizaciones son aprobados para su despliegue por el Cliente, el Cliente asume la responsabilidad de monitorear y supervisar dichos sistemas.
+
+ELEV8TION no será responsable por daños derivados de:
+	•	Resultados generados por IA
+	•	Acciones automatizadas tomadas por sistemas desplegados
+	•	Decisiones tomadas basándose en resultados de IA
+
+⸻
+
+5. Modelo de Transferencia de Capacidades
+
+Los servicios de ELEV8TION están diseñados para transferir conocimiento y capacidades al Cliente.
+
+Al completar la capacitación, entrega del sistema o implementación, el Cliente asume la responsabilidad de la operación, mantenimiento y uso de los sistemas.
+
+ELEV8TION no es responsable de los resultados derivados del uso independiente del Cliente de los sistemas entregados.
+
+ELEV8TION ofrece Monitoreo Activo opcional mes a mes después del plazo mínimo, disponible para todos los niveles. El Monitoreo Activo incluye revisiones del estado del sistema, verificaciones del rendimiento de agentes y respuesta a incidencias. Los detalles se definen en la SOW aplicable. Si el Cliente no elige el Monitoreo Activo, asume plena responsabilidad por la operación y mantenimiento continuo del sistema.
+
+⸻
+
+6. Herramientas y APIs de Terceros
+
+Los servicios pueden depender de plataformas de terceros, incluidos proveedores de modelos de IA, APIs y herramientas de software.
+
+ELEV8TION no es responsable de:
+	•	Interrupciones del servicio
+	•	Cambios de precios
+	•	Cambios en el comportamiento del modelo
+	•	Servicios discontinuados
+	•	Manejo de datos por terceros
+
+El Cliente acepta que el uso de dichas herramientas está sujeto a los términos del proveedor respectivo.
+
+Niveles con Costos Incluidos (The Revenue Guard, The Operations Sovereign): ELEV8TION gestiona cuentas de API e infraestructura en nombre del Cliente. Los costos de infraestructura y API están incluidos en la tarifa mensual, sujeto a los límites de uso definidos en la SOW. Los excedentes se facturan a la tarifa especificada en la SOW.
+
+Nivel Directo (The Enterprise Fortress): El Cliente gestiona directamente sus propias cuentas de API con los proveedores. El Cliente es el único responsable de todos los costos, uso, facturación y acuerdos con proveedores de API. ELEV8TION no es responsable de los costos de API del Cliente.
+
+⸻
+
+7. Acceso y Credenciales
+
+El Cliente puede proporcionar credenciales de acceso, claves de API o permisos de sistema únicamente para efectos de realizar los servicios.
+
+El Cliente sigue siendo responsable de:
+	•	Seguridad de credenciales
+	•	Rotación de claves
+	•	Gestión de permisos
+
+ELEV8TION no es responsable por daños derivados de credenciales comprometidas o acceso no autorizado que no sea causado por negligencia grave de ELEV8TION.
+
+⸻
+
+8. Honorarios y Pago
+
+Los honorarios se definirán en cada SOW.
+
+A menos que se indique lo contrario:
+	•	Los pagos son exigibles por adelantado o según se facturen
+	•	Los depósitos son no reembolsables
+	•	El trabajo completado es no reembolsable
+	•	Si el Cliente rescinde, las cuotas futuras no pagadas se cancelan
+	•	Los plazos mínimos de compromiso siguen siendo exigibles
+	•	Para los niveles con Costos Incluidos, la tarifa mensual incluye un límite de uso definido; las interacciones que superen el límite se facturan a $0.08 por interacción
+	•	ELEV8TION notificará al Cliente al alcanzar el 80% del uso permitido y podrá aplicar límites de emergencia al 100% para evitar excedentes no presupuestados
+
+Los pagos atrasados pueden resultar en la suspensión de los servicios.
+
+⸻
+
+9. Propiedad Intelectual
+
+Propiedad del Cliente
+
+El Cliente es propietario de los sistemas configurados finales, flujos de trabajo e implementaciones internas creados específicamente para el Cliente.
+
+Propiedad de ELEV8TION
+
+ELEV8TION retiene la propiedad de:
+	•	Marcos de trabajo
+	•	Plantillas
+	•	Metodologías
+	•	Código reutilizable
+	•	Materiales de capacitación
+	•	Arquitecturas de sistemas
+	•	Procesos propietarios
+
+Nada en este Acuerdo transfiere la propiedad de la propiedad intelectual subyacente de ELEV8TION.
+
+ELEV8TION puede reutilizar el conocimiento general, habilidades y técnicas desarrolladas durante el compromiso.
+
+⸻
+
+10. Confidencialidad
+
+Ambas partes acuerdan mantener la confidencialidad de la información no pública compartida durante el compromiso.
+
+Esta obligación sobrevive a la terminación.
+
+⸻
+
+11. Manejo de Datos
+
+ELEV8TION accederá a los datos del Cliente solo en la medida necesaria para prestar los servicios.
+
+ELEV8TION no vende los datos del Cliente y no utiliza los datos del Cliente para entrenar modelos de IA públicos.
+
+El Cliente es responsable de garantizar que tiene el derecho de usar cualquier dato proporcionado.
+
+Los términos adicionales sobre datos pueden incluirse en un Addendum de Procesamiento de Datos.
+
+⸻
+
+12. Sin Garantía de Resultados
+
+El Cliente reconoce que los resultados comerciales dependen de muchos factores fuera del control de ELEV8TION.
+
+Cualquier ejemplo de ROI, ahorros o mejoras de rendimiento son meramente ilustrativos y no están garantizados.
+
+⸻
+
+13. Limitación de Responsabilidad
+
+En la máxima medida permitida por la ley:
+
+La responsabilidad total de ELEV8TION bajo este Acuerdo no excederá el monto total pagado por el Cliente a ELEV8TION en los tres (3) meses anteriores a la reclamación.
+
+ELEV8TION no será responsable por:
+	•	Pérdida de ganancias
+	•	Interrupción del negocio
+	•	Daños indirectos o consecuentes
+	•	Pérdida de datos
+	•	Resultados de automatización
+
+⸻
+
+14. Indemnización
+
+El Cliente acepta indemnizar y eximir de responsabilidad a ELEV8TION de reclamaciones que surjan de:
+	•	El uso de sistemas por parte del Cliente
+	•	Despliegue de automatización
+	•	Uso indebido de resultados de IA
+	•	Violación de términos de terceros
+
+⸻
+
+15. Vigencia y Rescisión
+
+Este Acuerdo permanece vigente hasta que sea rescindido por cualquiera de las partes.
+
+Cualquiera de las partes puede rescindir con aviso por escrito.
+
+El Cliente sigue siendo responsable del pago de:
+	•	Trabajo completado
+	•	Trabajo en progreso
+	•	Compromisos mínimos de compromiso
+
+No se emitirán reembolsos por fases completadas.
+
+⸻
+
+16. Resolución de Disputas
+
+Cualquier disputa se resolverá primero mediante arbitraje vinculante en Connecticut.
+
+Si el arbitraje no puede ejecutarse, las disputas se resolverán en los tribunales estatales de Connecticut.
+
+Cada parte es responsable de sus propios honorarios legales.
+
+⸻
+
+17. Ley Aplicable
+
+Este Acuerdo se rige por las leyes del Estado de Connecticut.
+
+⸻
+
+18. Acuerdo Completo
+
+Este Acuerdo, junto con cualquier SOW y addenda, constituye el acuerdo completo entre las partes.
+
+⸻
+
+19. Firmas
+
+ELEV8TION LLC
+Waterbury, Connecticut
+connect@elev8tion.one
+
+Firma Autorizada: __________________
+Nombre:
+Título:
+Fecha:
+
+CLIENTE
+
+Firma Autorizada: __________________
+Nombre:
+Título:
+Empresa:
+Fecha:
+
+⸻
