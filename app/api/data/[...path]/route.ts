@@ -33,6 +33,7 @@ const NO_USER_ID_TABLES = new Set([
 interface DataProxyConfig {
   instance: string;
   dataApiUrl: string;
+  openApiUrl: string;
   authApiUrl: string;
   secretKey: string;
 }
@@ -41,6 +42,7 @@ function buildConfig(env: NCBEnv): DataProxyConfig {
   return {
     instance: env.NCB_INSTANCE,
     dataApiUrl: env.NCB_DATA_API_URL,
+    openApiUrl: env.NCB_OPENAPI_URL || 'https://openapi.nocodebackend.com',
     authApiUrl: env.NCB_AUTH_API_URL,
     secretKey: env.NCB_SECRET_KEY || '',
   };
@@ -133,7 +135,10 @@ async function proxyToNCB(config: DataProxyConfig, req: NextRequest, path: strin
     if (key !== "Instance" && key !== "instance" && key !== "path") searchParams.append(key, val);
   });
 
-  const url = `${config.dataApiUrl}/${path}?${searchParams.toString()}`;
+  // bypassRLS: use OpenAPI endpoint (Bearer token, no RLS) so guest records are visible.
+  // Data Proxy endpoint only understands cookie auth — Bearer token there does nothing.
+  const baseUrl = bypassRLS ? config.openApiUrl : config.dataApiUrl;
+  const url = `${baseUrl}/${path}?${searchParams.toString()}`;
   const origin = req.headers.get("origin") || req.nextUrl.origin;
 
   const headers: Record<string, string> = {
@@ -143,7 +148,6 @@ async function proxyToNCB(config: DataProxyConfig, req: NextRequest, path: strin
   };
 
   if (bypassRLS && config.secretKey) {
-    // Use secret key to bypass RLS for customer reads of shared data
     headers["Authorization"] = `Bearer ${config.secretKey}`;
   } else {
     const cookieHeader = req.headers.get("cookie") || "";
