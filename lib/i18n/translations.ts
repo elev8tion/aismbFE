@@ -247,6 +247,10 @@ export interface Translations {
     timezone: string;
     duration: string;
     minutesShort: string;
+    reschedule: string;
+    rescheduleBooking: string;
+    newDate: string;
+    newTime: string;
   };
   // Voice Sessions
   voiceSessions: {
@@ -771,6 +775,10 @@ export const translations: Record<'en' | 'es', Translations> = {
       timezone: 'Timezone',
       duration: 'Duration',
       minutesShort: 'min',
+      reschedule: 'Reschedule Booking',
+      rescheduleBooking: 'Reschedule',
+      newDate: 'New Date',
+      newTime: 'New Start Time',
     },
     voiceSessions: {
       title: 'Voice Sessions',
@@ -1284,6 +1292,10 @@ export const translations: Record<'en' | 'es', Translations> = {
       timezone: 'Zona Horaria',
       duration: 'Duración',
       minutesShort: 'min',
+      reschedule: 'Reprogramar Reserva',
+      rescheduleBooking: 'Reprogramar',
+      newDate: 'Nueva Fecha',
+      newTime: 'Nueva Hora de Inicio',
     },
     voiceSessions: {
       title: 'Sesiones de Voz',

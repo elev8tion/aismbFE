@@ -19,6 +19,10 @@ export default function BookingsPage() {
   const [search, setSearch] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [rescheduleTarget, setRescheduleTarget] = useState<Booking | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('');
+  const [rescheduleSubmitting, setRescheduleSubmitting] = useState(false);
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -85,6 +89,38 @@ export default function BookingsPage() {
       console.error('Failed to update booking:', err);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const rescheduleBooking = async () => {
+    if (!rescheduleTarget || !rescheduleDate || !rescheduleTime) return;
+    setRescheduleSubmitting(true);
+    try {
+      const durationMinutes = rescheduleTarget.booking_type === 'assessment' ? 180 : 30;
+      const [h, m] = rescheduleTime.split(':').map(Number);
+      const endMinutes = h * 60 + m + durationMinutes;
+      const endH = Math.floor(endMinutes / 60);
+      const endM = endMinutes % 60;
+      const end_time = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+
+      const res = await fetch(`/api/data/update/bookings?id=${rescheduleTarget.id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_date: rescheduleDate, start_time: rescheduleTime, end_time }),
+      });
+      if (res.ok) {
+        setBookings(prev => prev.map(b =>
+          b.id === rescheduleTarget.id
+            ? { ...b, booking_date: rescheduleDate, start_time: rescheduleTime, end_time }
+            : b
+        ));
+        setRescheduleTarget(null);
+      }
+    } catch (err) {
+      console.error('Failed to reschedule booking:', err);
+    } finally {
+      setRescheduleSubmitting(false);
     }
   };
 
@@ -277,17 +313,33 @@ export default function BookingsPage() {
                                 >
                                   <XIcon className="w-4 h-4" />
                                 </button>
+                                <button
+                                  onClick={() => { setRescheduleTarget(booking); setRescheduleDate(booking.booking_date); setRescheduleTime(booking.start_time); }}
+                                  className="btn-ghost p-2 text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                                  title={t.bookings.reschedule}
+                                >
+                                  <CalendarEditIcon className="w-4 h-4" />
+                                </button>
                               </>
                             )}
                             {booking.status === 'confirmed' && (
-                              <button
-                                onClick={() => updateBookingStatus(String(booking.id), 'cancelled')}
-                                disabled={updatingId === booking.id}
-                                className="btn-ghost p-2 text-[#EF4444] hover:bg-[#EF4444]/10"
-                                title={t.bookings.cancelBooking}
-                              >
-                                <XIcon className="w-4 h-4" />
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => updateBookingStatus(String(booking.id), 'cancelled')}
+                                  disabled={updatingId === booking.id}
+                                  className="btn-ghost p-2 text-[#EF4444] hover:bg-[#EF4444]/10"
+                                  title={t.bookings.cancelBooking}
+                                >
+                                  <XIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => { setRescheduleTarget(booking); setRescheduleDate(booking.booking_date); setRescheduleTime(booking.start_time); }}
+                                  className="btn-ghost p-2 text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                                  title={t.bookings.reschedule}
+                                >
+                                  <CalendarEditIcon className="w-4 h-4" />
+                                </button>
+                              </>
                             )}
                             <button
                               onClick={() => setExpandedId(expandedId === String(booking.id) ? null : String(booking.id))}
@@ -334,6 +386,54 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      {/* Reschedule Modal */}
+      {rescheduleTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="card w-full max-w-md p-6">
+            <h3 className="text-lg font-bold text-white mb-1">{t.bookings.reschedule}</h3>
+            <p className="text-sm text-white/60 mb-6">{rescheduleTarget.guest_name}</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1">{t.bookings.newDate}</label>
+                <input
+                  type="date"
+                  value={rescheduleDate}
+                  min={today}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  className="input-glass w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1">{t.bookings.newTime}</label>
+                <input
+                  type="time"
+                  value={rescheduleTime}
+                  onChange={(e) => setRescheduleTime(e.target.value)}
+                  className="input-glass w-full"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={rescheduleBooking}
+                disabled={rescheduleSubmitting || !rescheduleDate || !rescheduleTime}
+                className="btn-primary flex-1"
+              >
+                {rescheduleSubmitting ? t.common.loading : t.bookings.rescheduleBooking}
+              </button>
+              <button
+                onClick={() => setRescheduleTarget(null)}
+                className="btn-ghost flex-1"
+              >
+                {t.common.cancel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </ErrorBoundary>
     </DashboardLayout>
   );
@@ -368,6 +468,15 @@ function ChevronDownIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+function CalendarEditIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l2 2 4-4" />
     </svg>
   );
 }
