@@ -213,6 +213,55 @@ export async function ncbServerUpdate(env: NCBEnv, table: string, id: string, da
   return res;
 }
 
+// ─── OpenAPI create / update (server-only, no user session) ────────────────
+// Use these for webhook handlers and external API endpoints that write to NCB
+// with the secret key instead of user cookies.
+
+export async function ncbOpenApiCreate(
+  env: NCBEnv,
+  table: string,
+  data: Record<string, unknown>,
+): Promise<number | null> {
+  const config = getConfig(env);
+  const url = `${config.openApiUrl}/create/${table}?Instance=${config.instance}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.secretKey}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`NCB OpenAPI create ${table} failed (${res.status}): ${text}`);
+  }
+  const result: any = await res.json();
+  return result.id ?? null;
+}
+
+export async function ncbOpenApiUpdate(
+  env: NCBEnv,
+  table: string,
+  id: string | number,
+  data: Record<string, unknown>,
+): Promise<void> {
+  const config = getConfig(env);
+  const url = `${config.openApiUrl}/update/${table}/${id}?Instance=${config.instance}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.secretKey}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`NCB OpenAPI update ${table}/${id} failed (${res.status}): ${text}`);
+  }
+}
+
 export async function ncbOpenApiRead(env: NCBEnv, table: string, filters?: Record<string, string>): Promise<any[]> {
   const config = getConfig(env);
   const params = new URLSearchParams({ Instance: config.instance });
