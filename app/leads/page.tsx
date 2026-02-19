@@ -15,7 +15,8 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Lead } from '@kre8tion/shared-types';
 
 const INDUSTRIES = ['HVAC', 'Plumbing', 'Construction', 'Property Management', 'Electrical', 'Landscaping', 'Other'];
-const SOURCES = ['voice-agent', 'roi-calculator', 'referral', 'website', 'social-media', 'cold-outreach', 'other'];
+// Valid NCB enum values for the source column (confirmed via API testing)
+const SOURCES = ['voice-agent', 'roi-calculator', 'referral', 'other'];
 
 export default function LeadsPage() {
   const { t } = useTranslations();
