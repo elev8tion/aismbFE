@@ -45,9 +45,6 @@ export interface CloudflareEnv {
   COST_MONITOR_KV?: KVNamespace;
   RESPONSE_CACHE_KV?: KVNamespace;
 
-  // External Integration
-  EXTERNAL_API_KEY?: string;
-
   // Feature Flags
   FF_VOICE_LEAD_EXTRACTION?: string;
   FF_VOICE_LEAD_SCORING?: string;
