@@ -220,9 +220,12 @@ export async function GET(
     return forbidden();
   }
 
-  // Bypass RLS for: (1) customer reads on CUSTOMER_TABLES (admin-owned data),
-  // (2) tables without user_id column (NCB can't filter, needs Bearer auth)
+  // Bypass RLS for: (1) admins — use Bearer token so all records are visible regardless
+  // of which user_id wrote them (landing page writes with NCB_DEFAULT_USER_ID, CRM
+  // admin reads need to see everything), (2) customer reads on CUSTOMER_TABLES (admin-owned
+  // data), (3) tables without user_id column (NCB can't filter by user, needs Bearer auth)
   const bypassRLS = !!table && (
+    role === 'admin' ||
     (role === 'customer' && CUSTOMER_TABLES.has(table)) ||
     NO_USER_ID_TABLES.has(table)
   );
