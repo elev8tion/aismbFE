@@ -48,25 +48,25 @@ function buildConfig(env: NCBEnv): DataProxyConfig {
   };
 }
 
-async function getUserRole(config: DataProxyConfig, cookieHeader: string): Promise<string | null> {
-  const authCookies = extractAuthCookies(cookieHeader);
-  if (!authCookies) return null;
+async function getUserRole(config: DataProxyConfig, userId: string): Promise<string | null> {
+  if (!userId || !config.secretKey) return null;
 
-  const url = `${config.dataApiUrl}/read/user_profiles?Instance=${config.instance}`;
+  // Use OpenAPI + Bearer token — no session cookie dependency, always works.
+  const url = `${config.openApiUrl}/read/user_profiles?Instance=${config.instance}`;
 
   const res = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "X-Database-Instance": config.instance,
-      Cookie: authCookies,
+      "Authorization": `Bearer ${config.secretKey}`,
     },
   });
 
   if (res.ok) {
     const data: any = await res.json();
-    if (data.data && data.data.length > 0) {
-      return data.data[0].role;
+    if (data.data && Array.isArray(data.data)) {
+      const profile = data.data.find((p: any) => p.user_id === userId);
+      return profile?.role ?? null;
     }
   }
   return null;
@@ -198,10 +198,8 @@ export async function GET(
   const pathStr = path.join("/");
   const cookieHeader = req.headers.get("cookie") || "";
 
-  const [user, role] = await Promise.all([
-    getSessionUser(env, cookieHeader),
-    getUserRole(config, cookieHeader),
-  ]);
+  const user = await getSessionUser(env, cookieHeader);
+  const role = user ? await getUserRole(config, user.id) : null;
 
   if (!user) {
     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
@@ -249,10 +247,8 @@ export async function POST(
   const body = await req.text();
   const cookieHeader = req.headers.get("cookie") || "";
 
-  const [user, role] = await Promise.all([
-    getSessionUser(env, cookieHeader),
-    getUserRole(config, cookieHeader),
-  ]);
+  const user = await getSessionUser(env, cookieHeader);
+  const role = user ? await getUserRole(config, user.id) : null;
 
   if (!user) {
     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
@@ -298,10 +294,8 @@ export async function PUT(
   const body = await req.text();
   const cookieHeader = req.headers.get("cookie") || "";
 
-  const [user, role] = await Promise.all([
-    getSessionUser(env, cookieHeader),
-    getUserRole(config, cookieHeader),
-  ]);
+  const user = await getSessionUser(env, cookieHeader);
+  const role = user ? await getUserRole(config, user.id) : null;
 
   if (!user) {
     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
@@ -345,10 +339,8 @@ export async function DELETE(
   const pathStr = path.join("/");
   const cookieHeader = req.headers.get("cookie") || "";
 
-  const [user, role] = await Promise.all([
-    getSessionUser(env, cookieHeader),
-    getUserRole(config, cookieHeader),
-  ]);
+  const user = await getSessionUser(env, cookieHeader);
+  const role = user ? await getUserRole(config, user.id) : null;
 
   if (!user) {
     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
